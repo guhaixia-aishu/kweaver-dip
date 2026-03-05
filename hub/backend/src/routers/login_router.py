@@ -246,8 +246,8 @@ def create_login_router(login_service: LoginService, settings: Settings = None) 
             f"&product=dip"
         )
 
-        # 创建响应并设置 Cookie（与 session 服务一致：301 重定向）
-        response = RedirectResponse(url=auth_url, status_code=status.HTTP_301_MOVED_PERMANENTLY)
+        # 使用 302 临时重定向，避免浏览器缓存导致后续登录跳过此端点
+        response = RedirectResponse(url=auth_url, status_code=status.HTTP_302_FOUND)
         
         # 设置 session_id cookie（与 session 服务一致）
         # 注意：Go 版本在没有 session_id 时先设置 cookie 再保存 session
@@ -259,6 +259,10 @@ def create_login_router(login_service: LoginService, settings: Settings = None) 
             max_age=settings.cookie_timeout,
             domain=settings.cookie_domain if settings.cookie_domain else None,
         )
+
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
 
         logger.info("【Login Redirect success】")
         return response
