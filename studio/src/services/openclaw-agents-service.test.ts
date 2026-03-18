@@ -23,7 +23,15 @@ describe("DefaultOpenClawAgentsService", () => {
         defaultId: "main",
         mainKey: "sender",
         scope: "per-sender",
-        agents: []
+        agents: [
+          {
+            id: "main",
+            name: "Main Agent",
+            identity: {
+              avatarUrl: "https://example.com/main.png"
+            }
+          }
+        ]
       })
     };
     const service = new DefaultOpenClawAgentsService(gatewayClient as never);
@@ -32,7 +40,15 @@ describe("DefaultOpenClawAgentsService", () => {
       defaultId: "main",
       mainKey: "sender",
       scope: "per-sender",
-      agents: []
+      agents: [
+        {
+          id: "main",
+          name: "Main Agent",
+          identity: {
+            avatarUrl: "https://example.com/main.png"
+          }
+        }
+      ]
     });
     expect(gatewayClient.invoke).toHaveBeenCalledOnce();
   });

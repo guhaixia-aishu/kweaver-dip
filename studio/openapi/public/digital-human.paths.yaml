@@ -1,0 +1,23 @@
+openapi: 3.1.0
+
+info:
+  title: DIP Studio 公开接口
+  version: 0.1.0
+
+security: []
+
+servers:
+  - url: /api/dip-studio/v1
+  
+paths:
+  /digital-human:
+    get:
+      operationId: getDigitalHumanList
+      summary: 获取数字员工列表
+      responses:
+        "200":
+          description: 服务健康
+          content:
+            application/json:
+              schema:
+                $ref: './digital-human.schemas.yaml#/components/schemas/DigitalHumanList'

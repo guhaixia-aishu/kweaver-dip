@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { describe, expect, it, vi } from "vitest";
 
-import { createOpenClawRouter } from "./openclaw";
+import { createOpenClawRouter, mapAgentsToDigitalHumans } from "./openclaw";
 
 /**
  * Creates a minimal mock response object for router handler tests.
@@ -20,8 +20,8 @@ function createResponseDouble(): Response {
 }
 
 describe("createOpenClawRouter", () => {
-  it("wires GET /api/openclaw/agents to the shared handler", async () => {
-    const client = {
+  it("wires GET /api/dip-studio/v1/digital-human to the shared handler", async () => {
+    const service = {
       listAgents: vi.fn().mockResolvedValue({
         defaultId: "main",
         mainKey: "sender",
@@ -29,7 +29,7 @@ describe("createOpenClawRouter", () => {
         agents: []
       })
     };
-    const router = createOpenClawRouter(client) as {
+    const router = createOpenClawRouter(service) as {
       stack: Array<{
         route?: {
           path: string;
@@ -44,7 +44,7 @@ describe("createOpenClawRouter", () => {
       }>;
     };
     const layer = router.stack.find(
-      (entry) => entry.route?.path === "/api/openclaw/agents"
+      (entry) => entry.route?.path === "/api/dip-studio/v1/digital-human"
     );
 
     expect(layer).toBeDefined();
@@ -56,7 +56,34 @@ describe("createOpenClawRouter", () => {
       vi.fn<NextFunction>()
     );
 
-    expect(client.listAgents).toHaveBeenCalledOnce();
+    expect(service.listAgents).toHaveBeenCalledOnce();
     expect(response.status).toHaveBeenCalledWith(200);
+  });
+});
+
+describe("mapAgentsToDigitalHumans", () => {
+  it("maps OpenClaw agents to the public digital human schema", () => {
+    expect(
+      mapAgentsToDigitalHumans({
+        defaultId: "main",
+        mainKey: "sender",
+        scope: "per-sender",
+        agents: [
+          {
+            id: "main",
+            identity: {
+              name: "Main Agent",
+              avatarUrl: "https://example.com/main.png"
+            }
+          }
+        ]
+      })
+    ).toEqual([
+      {
+        id: "main",
+        name: "Main Agent",
+        avatar: "https://example.com/main.png"
+      }
+    ]);
   });
 });

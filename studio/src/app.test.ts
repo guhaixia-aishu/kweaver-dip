@@ -20,7 +20,7 @@ import { HttpError } from "./errors/http-error";
 import { errorHandler } from "./middleware/error-handler";
 import { notFoundHandler } from "./middleware/not-found";
 import { getHealth } from "./routes/health";
-import { getOpenClawAgents } from "./routes/openclaw";
+import { getDigitalHumans } from "./routes/openclaw";
 import {
   asError,
   asTransportError,
@@ -186,26 +186,45 @@ describe("getHealth", () => {
   });
 });
 
-describe("getOpenClawAgents", () => {
-  it("returns the OpenClaw agent list over HTTP", async () => {
+describe("getDigitalHumans", () => {
+  it("returns the digital human list over HTTP", async () => {
     const response = createResponseDouble();
-    const client = {
-      listAgents: vi.fn().mockResolvedValue(createAgentsFixture())
+    const service = {
+      listAgents: vi.fn().mockResolvedValue({
+        defaultId: "main",
+        mainKey: "sender",
+        scope: "per-sender",
+        agents: [
+          {
+            id: "main",
+            name: "Main Agent",
+            identity: {
+              avatar: "/avatars/main.png"
+            }
+          }
+        ]
+      })
     };
 
-    await getOpenClawAgents(client, {} as Request, response, vi.fn());
+    await getDigitalHumans(service, {} as Request, response, vi.fn());
 
     expect(response.status).toHaveBeenCalledWith(200);
-    expect(response.json).toHaveBeenCalledWith(createAgentsFixture());
+    expect(response.json).toHaveBeenCalledWith([
+      {
+        id: "main",
+        name: "Main Agent",
+        avatar: "/avatars/main.png"
+      }
+    ]);
   });
 
   it("forwards normalized failures to Express", async () => {
     const next = vi.fn<NextFunction>();
-    const client = {
+    const service = {
       listAgents: vi.fn().mockRejectedValue(new Error("boom"))
     };
 
-    await getOpenClawAgents(client, {} as Request, createResponseDouble(), next);
+    await getDigitalHumans(service, {} as Request, createResponseDouble(), next);
 
     const [error] = vi.mocked(next).mock.calls[0] ?? [];
     expect(error).toBeInstanceOf(HttpError);
@@ -214,11 +233,13 @@ describe("getOpenClawAgents", () => {
 
   it("forwards HttpError instances unchanged", async () => {
     const next = vi.fn<NextFunction>();
-    const client = {
-      listAgents: vi.fn().mockRejectedValue(new HttpError(504, "gateway timeout"))
+    const service = {
+      listAgents: vi.fn().mockRejectedValue(
+        new HttpError(504, "gateway timeout")
+      )
     };
 
-    await getOpenClawAgents(client, {} as Request, createResponseDouble(), next);
+    await getDigitalHumans(service, {} as Request, createResponseDouble(), next);
 
     const [error] = vi.mocked(next).mock.calls[0] ?? [];
     expect(error).toMatchObject({

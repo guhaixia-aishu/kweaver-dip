@@ -7,7 +7,7 @@ info:
 security: []
 
 servers:
-  - url: /api/dip-studio/v1
+  - url: /api/dip-studio/internal/v1
   
 paths:
   /healthz:

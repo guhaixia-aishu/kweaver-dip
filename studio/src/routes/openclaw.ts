@@ -1,6 +1,8 @@
 import { Router, type NextFunction, type Request, type Response } from "express";
 
 import { HttpError } from "../errors/http-error";
+import type { DigitalHumanList } from "../types/digital-human";
+import type { OpenClawAgentsListResult } from "../types/openclaw";
 import type { OpenClawAgentsService } from "../services/openclaw-agents-service";
 
 /**
@@ -12,7 +14,7 @@ import type { OpenClawAgentsService } from "../services/openclaw-agents-service"
  * @param next The next middleware callback.
  * @returns Nothing. The response is written directly.
  */
-export async function getOpenClawAgents(
+export async function getDigitalHumans(
   service: OpenClawAgentsService,
   _request: Request,
   response: Response,
@@ -21,12 +23,12 @@ export async function getOpenClawAgents(
   try {
     const result = await service.listAgents();
 
-    response.status(200).json(result);
+    response.status(200).json(mapAgentsToDigitalHumans(result));
   } catch (error) {
     next(
       error instanceof HttpError
         ? error
-        : new HttpError(502, "Failed to query OpenClaw agents")
+        : new HttpError(502, "Failed to query digital humans")
     );
   }
 }
@@ -40,9 +42,25 @@ export async function getOpenClawAgents(
 export function createOpenClawRouter(service: OpenClawAgentsService): Router {
   const router = Router();
 
-  router.get("/api/openclaw/agents", (request, response, next) => {
-    return getOpenClawAgents(service, request, response, next);
+  router.get("/api/dip-studio/v1/digital-human", (request, response, next) => {
+    return getDigitalHumans(service, request, response, next);
   });
 
   return router;
+}
+
+/**
+ * Maps the OpenClaw agents payload to the public digital human schema.
+ *
+ * @param result The OpenClaw agents list result.
+ * @returns The normalized digital human list.
+ */
+export function mapAgentsToDigitalHumans(
+  result: OpenClawAgentsListResult
+): DigitalHumanList {
+  return result.agents.map((agent) => ({
+    id: agent.id,
+    name: agent.name ?? agent.identity?.name ?? agent.id,
+    avatar: agent.identity?.avatarUrl ?? agent.identity?.avatar
+  }));
 }
