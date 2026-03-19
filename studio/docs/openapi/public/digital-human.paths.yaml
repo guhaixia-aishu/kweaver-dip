@@ -33,3 +33,40 @@ paths:
           $ref: '../common.schemas.yaml#/errors/Conflict'
         "500":
           $ref: '../common.schemas.yaml#/errors/InternalServerError'
+
+  /digital-human/{id}/chat/responses:
+    post:
+      operationId: createDigitalHumanResponse
+      summary: 创建数字员工响应流
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 数字员工 ID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './digital-human.schemas.yaml#/components/schemas/DigitalHumanResponseRequest'
+      responses:
+        "200":
+          description: 数字员工响应事件流
+          content:
+            text/event-stream:
+              schema:
+                $ref: './digital-human.schemas.yaml#/components/schemas/DigitalHumanResponseStream'
+        "400":
+          $ref: '../common.schemas.yaml#/errors/InvalidParameter'
+        "401":
+          $ref: '../common.schemas.yaml#/errors/Unauthorized'
+        "403":
+          $ref: '../common.schemas.yaml#/errors/Forbidden'
+        "404":
+          $ref: '../common.schemas.yaml#/errors/NotFound'
+        "409":
+          $ref: '../common.schemas.yaml#/errors/Conflict'
+        "500":
+          $ref: '../common.schemas.yaml#/errors/InternalServerError'

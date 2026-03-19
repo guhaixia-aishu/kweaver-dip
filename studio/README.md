@@ -7,6 +7,7 @@
 1. 部署 OpenClaw 项目。项目地址：https://openclaw.ai 或从 GitHub：https://github.com/openclaw/openclaw
 2. 启动 OpenClaw Gateway
 3. 完成 OpenClaw 配置后，从 `openclaw.json` 中复制 `gateway.auth.token`
+4. 执行 `openclaw config set gateway.http.endpoints.responses.enabled true`，开启 POST /v1/responses HTTP 接口
 
 ## 启动
 
