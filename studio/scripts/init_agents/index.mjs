@@ -1,9 +1,13 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // 基础常量定义
 const STATE_DIR = process.env.OPENCLAW_STATE_DIR || path.join(os.homedir(), ".openclaw");
+const EXTENSIONS_DIR = process.env.OPENCLAW_EXTENSIONS_DIR || path.join(__dirname, "..", "extensions");
 
 // 各个 Agent 的专属人设配置字典
 const AGENT_PERSONAS = {
@@ -104,8 +108,15 @@ async function initOpenClawConfig() {
     cfg.gateway.http = cfg.gateway.http || {};
     cfg.gateway.http.endpoints = cfg.gateway.http.endpoints || {};
     cfg.gateway.http.endpoints.chatCompletions = { enabled: true };
+    cfg.gateway.http.endpoints.responses = { enabled: true };
     
-    console.log("[配置] 开启 Gateway HTTP Endpoints (chatCompletions)");
+    console.log("[配置] 开启 Gateway HTTP Endpoints (chatCompletions, responses)");
+
+    // 开启 archives-access 插件
+    cfg.plugins = cfg.plugins || {};
+    cfg.plugins.entries = cfg.plugins.entries || {};
+    cfg.plugins.entries["archives-access"] = { enabled: true };
+    console.log("[配置] 开启 archives-access 插件");
 
     fs.writeFileSync(configPath, JSON.stringify(cfg, null, 2), "utf8");
     console.log(`✅ openclaw.json 成功写入 ${modifiedCount} 个核心数字员工的配置保障！\n`);
@@ -176,10 +187,32 @@ async function syncAuthProfiles() {
   }
 }
 
+async function syncPlugins() {
+  console.log("📦 同步本地插件到工作区 plugins 目录...");
+  const pluginsDestDir = path.join(STATE_DIR, "plugins");
+  const archivesAccessSrc = path.join(EXTENSIONS_DIR, "archives-access");
+  const archivesAccessDest = path.join(pluginsDestDir, "archives-access");
+
+  try {
+    if (fs.existsSync(archivesAccessSrc)) {
+      if (!fs.existsSync(pluginsDestDir)) {
+        fs.mkdirSync(pluginsDestDir, { recursive: true });
+      }
+      fs.cpSync(archivesAccessSrc, archivesAccessDest, { recursive: true });
+      console.log(`[复制] 成功将 archives-access 插件复制到 -> ${archivesAccessDest}`);
+    } else {
+      console.warn(`⚠️ 未找到源插件目录: ${archivesAccessSrc}，请确认路径`);
+    }
+  } catch (err) {
+    console.error(`[失败] 插件复制报错:`, err.message);
+  }
+}
+
 async function main() {
   await initOpenClawConfig();
   await syncAuthProfiles();
   await initPersonas();
+  await syncPlugins();
 }
 
 main().catch((err) => {
