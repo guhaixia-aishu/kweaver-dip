@@ -212,7 +212,7 @@ async function syncAuthProfiles(builtInAgents) {
 
 async function syncPlugins() {
   console.log("📦 同步本地插件到工作区 plugins 目录...");
-  const pluginsDestDir = path.join(STATE_DIR, "plugins");
+  const pluginsDestDir = path.join(STATE_DIR, "extensions");
 
   try {
     if (!fs.existsSync(EXTENSIONS_DIR) || !fs.statSync(EXTENSIONS_DIR).isDirectory()) {
