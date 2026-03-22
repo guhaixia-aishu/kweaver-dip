@@ -53,7 +53,7 @@ const BaseHeader = ({ headerType }: { headerType: HeaderType }) => {
   const { language } = useLanguageStore()
   const oemResourceConfig = getOEMResourceConfig(language)
 
-  // 不同平台（store/studio）各自的首路由，用于面包屑首页返回
+  // 不同平台（store）各自的首路由，用于面包屑首页返回
   const roleIds = useMemo(() => new Set<string>([]), [])
   const homePath = useMemo(() => {
     const firstRoute = getFirstVisibleRouteBySiderType(headerType as SiderType, roleIds)

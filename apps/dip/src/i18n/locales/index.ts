@@ -13,6 +13,7 @@ import home_tw from './home/zh-TW.json'
 import global_en from './global/en-US.json'
 import global_zh from './global/zh-CN.json'
 import global_tw from './global/zh-TW.json'
+import digitalHuman_zh from './digital-human/zh-CN.json'
 
 const zh_CN = {
   ...error_zh,
@@ -20,6 +21,7 @@ const zh_CN = {
   ...home_zh,
   ...aiPromptInput_zh,
   ...dataAgent_zh,
+  ...digitalHuman_zh,
 }
 
 const zh_TW = {

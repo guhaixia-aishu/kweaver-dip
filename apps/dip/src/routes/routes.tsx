@@ -1,5 +1,4 @@
 import { lazy } from 'react'
-import { SYSTEM_FIXED_APP_ADMIN_USER_ID, SYSTEM_FIXED_NORMAL_USER_ID } from '@/apis/types'
 import applicationsUrl from '@/assets/images/sider/applications.svg'
 import appStoreUrl from '@/assets/images/sider/appStore.svg'
 import dipStudioUrl from '@/assets/images/sider/dipStudio.svg'
@@ -8,10 +7,13 @@ import type { RouteConfig } from './types'
 const MyApp = lazy(() => import('../pages/MyApp'))
 const AppStore = lazy(() => import('../pages/AppStore'))
 const Home = lazy(() => import('../pages/Home'))
-const WorkPlan = lazy(() => import('../pages/DigitalHuman/WorkPlan'))
+const WorkPlan = lazy(() => import('../pages/WorkPlan'))
+const WorkPlanDetail = lazy(() => import('../pages/WorkPlan/Details'))
 const History = lazy(() => import('../pages/DigitalHuman/History'))
+const HistoryItem = lazy(() => import('../pages/DigitalHuman/History/HistoryItem'))
 const DigitalHumanManagement = lazy(() => import('../pages/DigitalHuman/Management'))
-const DESetting = lazy(() => import('../pages/DigitalHuman/DESetting'))
+const DigitalHumanDetail = lazy(() => import('../pages/DigitalHuman/Details'))
+const DHSetting = lazy(() => import('../pages/DigitalHuman/DHSetting'))
 
 /**
  * 路由配置数组
@@ -43,9 +45,10 @@ export const routeConfigs: RouteConfig[] = [
     key: 'my-app',
     label: '应用',
     iconUrl: applicationsUrl,
-    requiredRoleIds: [SYSTEM_FIXED_NORMAL_USER_ID],
+    requiredRoleIds: [],
     element: <MyApp />,
     showInSidebar: true,
+    showInHeader: true,
     handle: {
       layout: {
         hasSider: true,
@@ -60,9 +63,10 @@ export const routeConfigs: RouteConfig[] = [
     key: 'app-store',
     label: '应用商店',
     iconUrl: appStoreUrl,
-    requiredRoleIds: [SYSTEM_FIXED_APP_ADMIN_USER_ID],
+    requiredRoleIds: [],
     element: <AppStore />,
     showInSidebar: true,
+    showInHeader: true,
     handle: {
       layout: {
         hasSider: true,
@@ -75,13 +79,13 @@ export const routeConfigs: RouteConfig[] = [
 
   // --- Digital Human Section ---
   {
-    path: 'digital-human/work-plan',
+    path: 'work-plan',
     key: 'work-plan',
     label: '工作计划',
     iconUrl: dipStudioUrl,
-    requiredRoleIds: [SYSTEM_FIXED_NORMAL_USER_ID],
     element: <WorkPlan />,
     showInSidebar: true,
+    showInHeader: true,
     handle: {
       layout: {
         hasSider: true,
@@ -92,11 +96,10 @@ export const routeConfigs: RouteConfig[] = [
     },
   },
   {
-    path: 'digital-human/work-plan/:workPlanId',
+    path: 'work-plan/:workPlanId',
     key: 'work-plan-item',
     label: '工作计划',
-    requiredRoleIds: [SYSTEM_FIXED_NORMAL_USER_ID],
-    // element: <WorkPlan />,
+    element: <WorkPlanDetail />,
     showInSidebar: false,
     handle: {
       layout: {
@@ -112,9 +115,9 @@ export const routeConfigs: RouteConfig[] = [
     key: 'history',
     label: '历史记录',
     iconUrl: dipStudioUrl,
-    requiredRoleIds: [SYSTEM_FIXED_NORMAL_USER_ID],
     element: <History />,
     showInSidebar: true,
+    showInHeader: true,
     handle: {
       layout: {
         hasSider: true,
@@ -128,8 +131,97 @@ export const routeConfigs: RouteConfig[] = [
     path: 'digital-human/history/:historyId',
     key: 'history-item',
     label: '历史记录',
-    requiredRoleIds: [SYSTEM_FIXED_NORMAL_USER_ID],
-    // element: <WorkPlan />,
+    element: <HistoryItem />,
+    showInSidebar: false,
+    handle: {
+      layout: {
+        hasSider: true,
+        hasHeader: false,
+        siderType: 'digital-human',
+        headerType: 'home',
+      },
+    },
+  },
+  {
+    path: 'digital-human/management/setting',
+    key: 'digital-human-setting-new',
+    label: '数字员工新建配置',
+    element: <DHSetting />,
+    showInSidebar: false,
+    handle: {
+      layout: {
+        hasSider: true,
+        hasHeader: false,
+        siderType: 'digital-human',
+        headerType: 'home',
+      },
+    },
+  },
+  {
+    path: 'digital-human/management/:digitalHumanId/plan',
+    key: 'digital-human-detail-plan',
+    label: '数字员工详情',
+    element: <DigitalHumanDetail />,
+    showInSidebar: false,
+    handle: {
+      layout: {
+        hasSider: true,
+        hasHeader: false,
+        siderType: 'digital-human',
+        headerType: 'home',
+      },
+    },
+  },
+  {
+    path: 'digital-human/management/:digitalHumanId/session',
+    key: 'digital-human-detail-session',
+    label: '数字员工详情',
+    element: <DigitalHumanDetail />,
+    showInSidebar: false,
+    handle: {
+      layout: {
+        hasSider: true,
+        hasHeader: false,
+        siderType: 'digital-human',
+        headerType: 'home',
+      },
+    },
+  },
+  {
+    path: 'digital-human/management/:digitalHumanId/config',
+    key: 'digital-human-detail-config',
+    label: '数字员工详情',
+    element: <DigitalHumanDetail />,
+    showInSidebar: false,
+    handle: {
+      layout: {
+        hasSider: true,
+        hasHeader: false,
+        siderType: 'digital-human',
+        headerType: 'home',
+      },
+    },
+  },
+  {
+    path: 'digital-human/management/:digitalHumanId/setting',
+    key: 'digital-human-setting-item',
+    label: '数字员工配置',
+    element: <DHSetting />,
+    showInSidebar: false,
+    handle: {
+      layout: {
+        hasSider: true,
+        hasHeader: false,
+        siderType: 'digital-human',
+        headerType: 'home',
+      },
+    },
+  },
+  {
+    path: 'digital-human/management/:digitalHumanId',
+    key: 'digital-human-detail',
+    label: '数字员工详情',
+    element: <DigitalHumanDetail />,
     showInSidebar: false,
     handle: {
       layout: {
@@ -143,30 +235,14 @@ export const routeConfigs: RouteConfig[] = [
   {
     path: 'digital-human/management',
     key: 'digital-human-management',
-    label: '数字员工',
+    label: '我的数字员工',
     iconUrl: dipStudioUrl,
-    requiredRoleIds: [SYSTEM_FIXED_NORMAL_USER_ID],
     element: <DigitalHumanManagement />,
     showInSidebar: true,
+    showInHeader: true,
     handle: {
       layout: {
         hasSider: true,
-        hasHeader: false,
-        siderType: 'digital-human',
-        headerType: 'home',
-      },
-    },
-  },
-  {
-    path: 'digital-human/management/:id/setting',
-    key: 'digital-employee-setting',
-    label: '数字员工配置',
-    requiredRoleIds: [SYSTEM_FIXED_NORMAL_USER_ID],
-    element: <DESetting />,
-    showInSidebar: false,
-    handle: {
-      layout: {
-        hasSider: false,
         hasHeader: false,
         siderType: 'digital-human',
         headerType: 'home',

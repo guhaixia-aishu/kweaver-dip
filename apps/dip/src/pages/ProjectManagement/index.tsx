@@ -1,4 +1,3 @@
-import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import { Button, Spin, Tooltip } from 'antd'
 import { memo, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -116,7 +115,7 @@ const ProjectManagement = () => {
           <Button
             className="mt-2"
             type="primary"
-            icon={<PlusOutlined />}
+            icon={<IconFont type="icon-dip-add" />}
             onClick={() => {
               handleProjectMenuClick(ProjectActionEnum.Add)
             }}
@@ -157,7 +156,11 @@ const ProjectManagement = () => {
           <div className="flex items-center gap-x-3">
             <SearchInput onSearch={handleSearch} placeholder="搜索项目" />
             <Tooltip title="刷新">
-              <Button type="text" icon={<ReloadOutlined />} onClick={handleRefresh} />
+              <Button
+                type="text"
+                icon={<IconFont type="icon-dip-refresh" />}
+                onClick={handleRefresh}
+              />
             </Tooltip>
             <Button
               type="primary"

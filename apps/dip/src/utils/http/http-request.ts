@@ -28,7 +28,7 @@ function getCommonHttpHeaders() {
 
 const createHttpRequest = curry((method: string, url: string, options: OptionsType | undefined) => {
   const fullUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}${url}`
-  const { body, headers, timeout = 60000, params, returnFullResponse } = options || {}
+  const { body, headers, timeout = 60000, params, returnFullResponse, responseType } = options || {}
 
   const CancelToken = axios.CancelToken
   let cancel: (message?: string) => void
@@ -37,6 +37,7 @@ const createHttpRequest = curry((method: string, url: string, options: OptionsTy
     method: method.toLowerCase(),
     url: fullUrl,
     data: body,
+    ...(responseType ? { responseType } : {}),
     params,
     paramsSerializer: (params: any) => qs.stringify(params),
     headers: {

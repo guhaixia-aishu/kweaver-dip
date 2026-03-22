@@ -76,6 +76,7 @@
       },
       "a11y": {
         "noAccessKey": "error",
+        "noStaticElementInteractions": "warn",
         "useKeyWithClickEvents": "warn",
         "useKeyWithMouseEvents": "warn"
       }

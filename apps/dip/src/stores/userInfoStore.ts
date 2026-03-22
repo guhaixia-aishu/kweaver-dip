@@ -11,6 +11,8 @@ interface UserInfoState {
   userInfo: UserInfo | null
   /** 加载状态 */
   isLoading: boolean
+  /** 是否是管理员 */
+  isAdmin: boolean
   /** 设置用户信息 */
   setUserInfo: (userInfo: UserInfo | null) => void
   /** 登出：清除用户信息、Cookie 并跳转到登出 URL */
@@ -27,8 +29,10 @@ let requestId = 0 // 用于跟踪当前请求 ID
 export const useUserInfoStore = create<UserInfoState>((set) => ({
   userInfo: null,
   isLoading: false,
+  isAdmin: false,
 
-  setUserInfo: (userInfo: UserInfo | null) => set({ userInfo }),
+  setUserInfo: (userInfo: UserInfo | null) =>
+    set({ userInfo, isAdmin: userInfo?.vision_name === 'admin' }),
 
   logout: () => {
     // 清除本地状态
@@ -90,6 +94,7 @@ export const useUserInfoStore = create<UserInfoState>((set) => ({
           set({
             userInfo,
             isLoading: false,
+            // isAdmin: userInfo.vision_name === 'admin',
           })
         }
       } catch (error) {
@@ -100,6 +105,7 @@ export const useUserInfoStore = create<UserInfoState>((set) => ({
           set({
             userInfo: null,
             isLoading: false,
+            isAdmin: false,
           })
         }
         // 重新抛出错误，让调用者能够捕获到失败的情况

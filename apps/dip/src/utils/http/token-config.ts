@@ -39,7 +39,9 @@ function initDebugTokenFromEnv(): void {
  * 获取当前 access token（从 Cookie 读取，保证获取最新值）
  */
 export function getAccessToken(): string {
-  return Cookies.get(ACCESS_TOKEN_KEY) || (import.meta.env.DEV ? import.meta.env.PUBLIC_TOKEN || '' : '')
+  return (
+    Cookies.get(ACCESS_TOKEN_KEY) || (import.meta.env.DEV ? import.meta.env.PUBLIC_TOKEN || '' : '')
+  )
 }
 
 export function setAccessToken(token: string, refreshToken: string): void {

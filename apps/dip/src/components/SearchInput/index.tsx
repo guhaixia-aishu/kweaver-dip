@@ -82,7 +82,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
       prefix={<IconFont type="icon-dip-search" className="opacity-45" />}
       allowClear
       variant="borderless"
-      className={`bg-white rounded-2xl w-[220px] h-[30px] ${className || ''}`}
+      className={`bg-white rounded-2xl w-[220px] ${className || ''}`}
       {...restProps}
     />
   )

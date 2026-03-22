@@ -1,4 +1,3 @@
-import { PlusOutlined } from '@ant-design/icons'
 import { Button, Drawer, Form, Input, Modal, message, Table, Tooltip } from 'antd'
 import { useCallback, useEffect, useState } from 'react'
 import {
@@ -235,7 +234,7 @@ const ProjectDictionaryDrawer = ({ open, onClose, projectId }: ProjectDictionary
         {/* 头部 */}
         <div className="flex items-center justify-between gap-x-2">
           <span className="text-sm font-medium text-[--dip-text-color]">项目词典列表</span>
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+          <Button type="primary" icon={<IconFont type="icon-dip-add" />} onClick={handleAdd}>
             新建术语
           </Button>
         </div>

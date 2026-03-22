@@ -1,4 +1,5 @@
 // 统一导出所有 store
+export { setGlobalSiderCollapsed, useGlobalLayoutStore } from './globalLayoutStore'
 export { useLanguageStore } from './languageStore'
 export { type CurrentMicroAppInfo, useMicroAppStore } from './microAppStore'
 export { useOEMConfigStore } from './oemConfigStore'

@@ -1,46 +1,47 @@
-import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import { Button, message, Spin, Tooltip } from 'antd'
 import { memo, useEffect, useMemo, useRef, useState } from 'react'
+import intl from 'react-intl-universal'
 import { useNavigate } from 'react-router-dom'
-import type { Employee } from '@/apis'
-import { getDigitalEmployees } from '@/apis'
-import DEList from '@/components/DEList'
-import ActionModal from '@/components/DESetting/ActionModal/ActionModal'
+import { type DigitalHuman, getDigitalHumanList } from '@/apis'
+import DigitalHumanList from '@/components/DigitalHumanList'
+import DeleteModal from '@/components/DigitalHumanSetting/ActionModal/DeleteModal'
 import Empty from '@/components/Empty'
+import IconFont from '@/components/IconFont'
 import SearchInput from '@/components/SearchInput'
 import { useListService } from '@/hooks/useListService'
 import { useUserInfoStore } from '@/stores/userInfoStore'
+import { DigitalHumanManagementActionEnum } from './types'
+import { getDigitalHumanManagementMenuItems } from './utils'
 
 const Management = () => {
   const navigate = useNavigate()
-  const { userInfo } = useUserInfoStore()
+  const { userInfo, isAdmin } = useUserInfoStore()
   const [, messageContextHolder] = message.useMessage()
   const [hasLoadedData, setHasLoadedData] = useState(false)
   const hasEverHadDataRef = useRef(false)
   const prevSearchValueRef = useRef('')
-  const [addModalVisible, setAddModalVisible] = useState(false)
   const [deleteModalVisible, setDeleteModalVisible] = useState(false)
-  const [selectedItem, setSelectedItem] = useState<Employee>()
+  const [selectedItem, setSelectedItem] = useState<DigitalHuman>()
 
   const { items, loading, error, searchValue, handleSearch, handleRefresh } =
-    useListService<Employee>({
-      fetchFn: getDigitalEmployees,
+    useListService<DigitalHuman>({
+      fetchFn: getDigitalHumanList,
     })
 
-  const employees = useMemo(() => {
+  const digitalHumans: DigitalHuman[] = useMemo(() => {
     if (loading) {
       return []
     }
     return [
       {
-        id: 1,
+        id: '1',
         name: '运营小助手',
         description: '负责日常运营数据统计、报表生成和用户消息回复',
         icon: '',
         creator: '张三',
         created_at: new Date().toISOString(),
-        editor: '张三',
-        edited_at: new Date().toISOString(),
+        updated_by: '张三',
+        updated_at: new Date().toISOString(),
         status: 1,
         users: [
           userInfo,
@@ -66,7 +67,7 @@ const Management = () => {
         ],
       },
       {
-        id: 2,
+        id: '2',
         name: '销售小助手',
         description: '负责日常销售数据统计、报表生成和用户消息回复',
         icon: '',
@@ -92,7 +93,7 @@ const Management = () => {
     const wasSearching = prevSearchValueRef.current !== ''
 
     if (!loading) {
-      if (employees.length > 0) {
+      if (digitalHumans.length > 0) {
         setHasLoadedData(true)
         hasEverHadDataRef.current = true
       } else if (!searchValue && hasEverHadDataRef.current) {
@@ -104,59 +105,69 @@ const Management = () => {
     }
 
     prevSearchValueRef.current = searchValue
-  }, [loading, employees.length, searchValue])
+  }, [loading, digitalHumans.length, searchValue])
 
-  /** 新建数字员工 */
+  /** 新建数字员工（仅管理员） */
   const handleCreate = () => {
-    setAddModalVisible(true)
+    navigate(`/digital-human/management/setting`)
   }
 
-  /** 配置数字员工 */
-  const handleSetting = (employee: Employee) => {
-    if (!employee?.id) {
+  const handleCardClick = (digitalHuman: DigitalHuman) => {
+    if (isAdmin) {
+      navigate(`/digital-human/management/${digitalHuman.id}/setting`)
       return
     }
-    navigate(`/studio/digital-employee/${employee.id}/setting`)
+    navigate(`/digital-human/management/${digitalHuman.id}`)
   }
 
-  const handleCardClick = (employee: Employee) => {
-    navigate(`/studio/digital-employee/${employee.id}/setting`)
+  const handleMenuClick = (key: DigitalHumanManagementActionEnum, digitalHuman: DigitalHuman) => {
+    setSelectedItem(digitalHuman)
+    switch (key) {
+      case DigitalHumanManagementActionEnum.Edit:
+        navigate(`/digital-human/management/${digitalHuman.id}/setting?mode=edit`)
+        break
+      case DigitalHumanManagementActionEnum.Delete:
+        setDeleteModalVisible(true)
+        break
+    }
   }
 
   const renderStateContent = () => {
-    if (loading && !employees.length) {
+    if (loading && !digitalHumans.length) {
       return <Spin size="large" />
     }
 
     // if (error) {
     //   return (
-    //     <Empty type="failed" title="数字员工加载失败">
+    //     <Empty type="failed" title={intl.get('digitalHuman.management.loadFailedTitle')}>
     //       <Button type="primary" onClick={handleRefresh}>
-    //         重试
+    //         {intl.get('digitalHuman.management.retry')}
     //       </Button>
     //     </Empty>
     //   )
     // }
 
-    if (employees.length === 0) {
+    if (digitalHumans.length === 0) {
       if (searchValue) {
-        return <Empty type="search" desc="抱歉，没有找到相关内容" />
+        return <Empty type="search" desc={intl.get('digitalHuman.management.emptySearchDesc')} />
       }
       return (
         <Empty
-          title="暂无数字员工"
-          subDesc="当前数字员工空空如也，您可以点击下方按钮新建第一个数字员工。"
+          title={intl.get('digitalHuman.management.emptyTitle')}
+          subDesc={intl.get('digitalHuman.management.emptySubDesc')}
         >
-          <Button
-            className="mt-2"
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => {
-              handleCreate()
-            }}
-          >
-            新建数字员工
-          </Button>
+          {isAdmin ? (
+            <Button
+              className="mt-2"
+              type="primary"
+              icon={<IconFont type="icon-dip-add" />}
+              onClick={() => {
+                handleCreate()
+              }}
+            >
+              {intl.get('digitalHuman.management.createDigitalHuman')}
+            </Button>
+          ) : undefined}
         </Empty>
       )
     }
@@ -171,39 +182,70 @@ const Management = () => {
       return <div className="absolute inset-0 flex items-center justify-center">{stateContent}</div>
     }
 
-    return <DEList employees={employees} onCardClick={handleCardClick} />
+    return (
+      <DigitalHumanList
+        digitalHumans={digitalHumans}
+        onCardClick={handleCardClick}
+        menuItems={
+          isAdmin
+            ? (digitalHuman) =>
+                getDigitalHumanManagementMenuItems(digitalHuman, (key) =>
+                  handleMenuClick(key, digitalHuman),
+                )
+            : undefined
+        }
+      />
+    )
   }
 
   return (
-    <div className="h-full p-6 flex flex-col relative">
+    <div className="h-full p-6 flex flex-col relative bg-white">
       {messageContextHolder}
       <div className="flex justify-between mb-6 flex-shrink-0 z-20">
         <div className="flex flex-col gap-y-2">
-          <span className="font-medium text-base text-[--dip-text-color]">数字员工</span>
-          <span className="text-[--dip-text-color-65]">管理数字员工市场，创建或删除数字员工</span>
+          <span className="font-medium text-base text-[--dip-text-color]">
+            {intl.get('digitalHuman.management.pageTitle')}
+          </span>
+          <span className="text-[--dip-text-color-65]">
+            {intl.get('digitalHuman.management.pageSubtitle')}
+          </span>
         </div>
         {(hasLoadedData || searchValue) && (
           <div className="flex items-center gap-x-3">
-            <SearchInput onSearch={handleSearch} placeholder="搜索数字员工" />
-            <Tooltip title="刷新">
-              <Button type="text" icon={<ReloadOutlined />} onClick={handleRefresh} />
+            <SearchInput
+              variant="outlined"
+              className="!rounded"
+              onSearch={handleSearch}
+              placeholder={intl.get('digitalHuman.management.searchPlaceholder')}
+            />
+            {isAdmin && (
+              <Button type="primary" icon={<IconFont type="icon-dip-add" />} onClick={handleCreate}>
+                {intl.get('digitalHuman.management.createShort')}
+              </Button>
+            )}
+            <Tooltip title={intl.get('digitalHuman.management.refresh')}>
+              <Button
+                type="text"
+                icon={<IconFont type="icon-dip-refresh" />}
+                onClick={handleRefresh}
+              />
             </Tooltip>
-            <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
-              新建
-            </Button>
           </div>
         )}
       </div>
       {renderContent()}
 
-      <ActionModal
-        open={addModalVisible}
+      {/* 删除弹窗 */}
+      <DeleteModal
+        open={deleteModalVisible}
         onCancel={() => {
-          setAddModalVisible(false)
+          setDeleteModalVisible(false)
           setSelectedItem(undefined)
         }}
-        onSuccess={handleSetting}
-        operationType={selectedItem ? 'edit' : 'add'}
+        onOk={() => {
+          handleRefresh()
+        }}
+        deleteData={selectedItem}
       />
     </div>
   )

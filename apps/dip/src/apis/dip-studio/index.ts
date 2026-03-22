@@ -12,7 +12,6 @@ import type {
   Project,
   UpdateDictionaryEntryRequest,
   UpdateNameDescRequest,
-  Employee,
 } from './index.d'
 
 export type {
@@ -28,7 +27,6 @@ export type {
   Project,
   UpdateDictionaryEntryRequest,
   UpdateNameDescRequest,
-  Employee,
 }
 export type { NodeType, ObjectType } from './index.d'
 
@@ -135,12 +133,3 @@ export const putDocument = (
   documentId: number | string,
   patches: PatchDocumentBlocksRequest,
 ): Promise<void> => put(`${BASE}/documents/${documentId}`, { body: patches })
-
-
-// ==================== 数字员工 ====================
-
-/** 获取数字员工列表 */
-export const getDigitalEmployees = (): Promise<Employee[]> =>
-  get(`${BASE}/digital-employees`).then((result: unknown) =>
-    Array.isArray(result) ? (result as Employee[]) : [],
-  )

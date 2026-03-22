@@ -21,7 +21,7 @@ interface SiderProps {
 
 /**
  * 侧边栏主组件
- * 根据 type 选择渲染 BaseSider（store/studio）或 MicroAppSider（micro-app）
+ * 根据 type 选择渲染 HomeSider（home/digital-human）或 StoreSider（store）
  */
 const Sider = ({ collapsed, onCollapse, topOffset = 0, type = 'home' }: SiderProps) => {
   const [transitionEnabled, setTransitionEnabled] = useState(false)

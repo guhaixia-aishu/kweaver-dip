@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 export type HeaderType = 'store' | 'studio' | 'micro-app' | 'home'
-export type SiderType = 'store' | 'home' | 'digital-human'
+export type SiderType = 'store' | 'home' | 'digital-human' | 'studio'
 
 export const WENSHU_APP_KEY = 'cedb529407c345b1a27317baefa62800'
 
@@ -35,6 +35,8 @@ export interface RouteConfig {
   disabled?: boolean
   /** 是否在侧边栏展示 */
   showInSidebar?: boolean
+  /** 是否在顶栏展示 */
+  showInHeader?: boolean
   /** 侧边栏分组 */
   group?: string
   handle?: RouteHandle

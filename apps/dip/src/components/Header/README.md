@@ -284,7 +284,7 @@ interface BreadcrumbProps {
 ```typescript
 // src/routes/index.tsx
 
-// BaseHeader（store/studio 路由）
+// BaseHeader（store 路由）
 {
   path: 'store/my-app',
   element: <MyApp />,

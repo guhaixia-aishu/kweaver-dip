@@ -1,9 +1,9 @@
 import { Layout } from 'antd'
 import type { ReactNode } from 'react'
-import { useState } from 'react'
 import { useMatches } from 'react-router-dom'
 import bg from '@/assets/images/gradient-container-bg.png'
 import type { RouteHandle } from '@/routes/types'
+import { useGlobalLayoutStore } from '@/stores/globalLayoutStore'
 import { useMicroAppStore } from '@/stores/microAppStore'
 import Header from '../../components/Header'
 import Sider from '../../components/Sider'
@@ -18,7 +18,7 @@ const SIDER_WIDTH = 240
 const SIDER_COLLAPSED_WIDTH = 60
 
 const Container = ({ children }: ContainerProps) => {
-  const [collapsed, setCollapsed] = useState(false)
+  const { collapsed, setCollapsed } = useGlobalLayoutStore()
   const matches = useMatches()
   // const params = useParams()
   const { currentMicroApp } = useMicroAppStore()

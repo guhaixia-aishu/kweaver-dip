@@ -1,12 +1,12 @@
-import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import { Button, message, Spin, Tooltip } from 'antd'
 import { memo, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Employee } from '@/apis'
 import { getDigitalEmployees } from '@/apis'
-import DEList from '@/components/DEList'
-import ActionModal from '@/components/DESetting/ActionModal/ActionModal'
+import DEList from '@/components/DigitalHumanList'
+import ActionModal from '@/components/DigitalHumanSetting/ActionModal/ActionModal'
 import Empty from '@/components/Empty'
+import IconFont from '@/components/IconFont'
 import SearchInput from '@/components/SearchInput'
 import { useListService } from '@/hooks/useListService'
 import { useUserInfoStore } from '@/stores/userInfoStore'
@@ -116,11 +116,11 @@ const History = () => {
     if (!employee?.id) {
       return
     }
-    navigate(`/studio/digital-employee/${employee.id}/setting`)
+    navigate(`/digital-human/history/${employee.id}`)
   }
 
   const handleCardClick = (employee: Employee) => {
-    navigate(`/studio/digital-employee/${employee.id}/setting`)
+    navigate(`/digital-human/history/${employee.id}`)
   }
 
   const renderStateContent = () => {
@@ -150,7 +150,7 @@ const History = () => {
           <Button
             className="mt-2"
             type="primary"
-            icon={<PlusOutlined />}
+            icon={<IconFont type="icon-dip-add" />}
             onClick={() => {
               handleCreate()
             }}
@@ -171,7 +171,7 @@ const History = () => {
       return <div className="absolute inset-0 flex items-center justify-center">{stateContent}</div>
     }
 
-    return <DEList employees={employees} onCardClick={handleCardClick} />
+    return <DigitalHumanList digitalHumans={digitalHumans} onCardClick={handleCardClick} />
   }
 
   return (
@@ -186,9 +186,13 @@ const History = () => {
           <div className="flex items-center gap-x-3">
             <SearchInput onSearch={handleSearch} placeholder="搜索数字员工" />
             <Tooltip title="刷新">
-              <Button type="text" icon={<ReloadOutlined />} onClick={handleRefresh} />
+              <Button
+                type="text"
+                icon={<IconFont type="icon-dip-refresh" />}
+                onClick={handleRefresh}
+              />
             </Tooltip>
-            <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
+            <Button type="primary" icon={<IconFont type="icon-dip-add" />} onClick={handleCreate}>
               新建
             </Button>
           </div>

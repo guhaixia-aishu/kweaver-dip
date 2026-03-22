@@ -29,3 +29,8 @@
     }
   }
 }
+
+/* 根节点为同一元素同时带 .dip-tabs、.dip-tabs-top，嵌套会编成 .dip-tabs .dip-tabs-top（后代）无法匹配 */
+.dip-tabs.dip-tabs-top > .dip-tabs-nav::before {
+  border-bottom: none !important;
+}

@@ -5,6 +5,8 @@ export interface OptionsType {
   params?: Record<string, any>
   resHeader?: boolean
   returnFullResponse?: boolean
+  /** axios responseType，如流式接口使用 `text` */
+  responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream'
 }
 
 export enum IncrementalActionEnum {

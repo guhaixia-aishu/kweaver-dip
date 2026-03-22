@@ -1,4 +1,3 @@
-import { PlusOutlined } from '@ant-design/icons'
 import type { MenuProps } from 'antd'
 import { Button, Menu, message, Tooltip } from 'antd'
 import clsx from 'classnames'
@@ -290,7 +289,7 @@ const HomeSider = ({ collapsed, onCollapse }: HomeSiderProps) => {
         <Tooltip title={collapsed ? '新建会话' : ''} placement="right">
           <Button
             type="primary"
-            icon={<PlusOutlined />}
+            icon={<IconFont type="icon-dip-add" />}
             onClick={handleCreateSession}
             styles={{ root: { width: '100%' } }}
           >
