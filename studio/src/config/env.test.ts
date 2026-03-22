@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { asMessage, readOptionalString, resolveBknBackendUrl } from "./env";
+import {
+  asMessage,
+  isDevelopmentMode,
+  readOptionalString,
+  resolveBknBackendUrl,
+  resolveHydraAdminUrl
+} from "./env";
 
 describe("env helpers", () => {
   it("converts non-Error values to strings", () => {
@@ -17,5 +23,18 @@ describe("env helpers", () => {
     expect(resolveBknBackendUrl("https://example.com/api?x=1")).toBe(
       "https://example.com/"
     );
+  });
+
+  it("normalizes the Hydra admin URL", () => {
+    expect(resolveHydraAdminUrl(undefined)).toBe("http://127.0.0.1:4445/");
+    expect(resolveHydraAdminUrl("https://example.com/admin?x=1")).toBe(
+      "https://example.com/"
+    );
+  });
+
+  it("detects development mode from NODE_ENV", () => {
+    expect(isDevelopmentMode("development")).toBe(true);
+    expect(isDevelopmentMode("test")).toBe(false);
+    expect(isDevelopmentMode(undefined)).toBe(false);
   });
 });

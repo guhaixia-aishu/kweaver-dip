@@ -52,6 +52,9 @@ export function getEnv(): {
   port: number;
   bknBackendUrl: string;
   appUserToken?: string;
+  hydraAdminUrl: string;
+  isDevelopment: boolean;
+  oauthMockUserId?: string;
   openClawGatewayUrl: string;
   openClawGatewayHttpUrl: string;
   openClawGatewayToken?: string;
@@ -73,6 +76,9 @@ export function getEnv(): {
     port: resolvePort(process.env.PORT),
     bknBackendUrl: resolveBknBackendUrl(process.env.BKN_BACKEND_URL),
     appUserToken: readOptionalString(process.env.APP_USER_TOKEN),
+    hydraAdminUrl: resolveHydraAdminUrl(process.env.HYDRA_ADMIN_URL),
+    isDevelopment: isDevelopmentMode(process.env.NODE_ENV),
+    oauthMockUserId: readOptionalString(process.env.OAUTH_MOCK_USER_ID),
     openClawGatewayUrl: gatewayUrl,
     openClawGatewayHttpUrl: resolveGatewayHttpUrl(gatewayUrl),
     openClawGatewayToken: readOptionalString(process.env.OPENCLAW_GATEWAY_TOKEN),
@@ -227,6 +233,38 @@ export function resolveBknBackendUrl(value: string | undefined): string {
   url.hash = "";
 
   return url.toString();
+}
+
+/**
+ * Resolves the Hydra admin base URL.
+ *
+ * @param value The raw environment variable value.
+ * @returns A normalized HTTP(S) URL string.
+ * @throws {Error} Thrown when the URL is invalid or uses an unsupported protocol.
+ */
+export function resolveHydraAdminUrl(value: string | undefined): string {
+  const rawValue = readOptionalString(value) ?? "http://127.0.0.1:4445";
+  const url = new URL(rawValue);
+
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    throw new Error(`HYDRA_ADMIN_URL must use http or https protocol: ${rawValue}`);
+  }
+
+  url.pathname = "/";
+  url.search = "";
+  url.hash = "";
+
+  return url.toString();
+}
+
+/**
+ * Returns whether the current runtime should be treated as development mode.
+ *
+ * @param value The raw NODE_ENV value.
+ * @returns `true` when development mode should be enabled.
+ */
+export function isDevelopmentMode(value: string | undefined): boolean {
+  return readOptionalString(value) === "development";
 }
 
 /**

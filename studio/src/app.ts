@@ -2,6 +2,7 @@ import express, { type Express, type Request, type Response } from "express";
 
 import { HttpError } from "./errors/http-error";
 import { errorHandler } from "./middleware/error-handler";
+import { createHydraAuthMiddleware } from "./middleware/hydra-auth";
 import { notFoundHandler } from "./middleware/not-found";
 import { createBknRouter } from "./routes/bkn";
 import { createCronRouter } from "./routes/plan";
@@ -47,6 +48,7 @@ export function createApp(options: AppOptions = {}): Express {
 
   app.disable("x-powered-by");
   app.use(express.json());
+  app.use(createHydraAuthMiddleware());
   app.use(createHealthRouter());
   app.use(createBknRouter());
   app.use(createCronRouter());

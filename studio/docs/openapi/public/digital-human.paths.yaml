@@ -4,7 +4,14 @@ info:
   title: DIP Studio 公开接口
   version: 0.1.0
 
-security: []
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+
+security:
+  - BearerAuth: []
 
 servers:
   - url: /api/dip-studio/v1
@@ -243,6 +250,11 @@ paths:
       responses:
         "200":
           description: 数字员工响应事件流
+          headers:
+            x-openclaw-session-key:
+              description: 实际使用的会话键；当请求未显式传入时由服务端自动生成并返回
+              schema:
+                type: string
           content:
             text/event-stream:
               schema:
