@@ -95,10 +95,6 @@ components:
         `channel` 写入本机 `OPENCLAW_CONFIG_PATH` 指向的 `openclaw.json`（非 Gateway `config.patch`）。
       type: object
       properties:
-        id:
-          type: string
-          title: 数字员工 ID
-          description: 可选；如果不传则后端自动生成 UUID
         name:
           type: string
           title: 展示名称（IDENTITY.md Name）

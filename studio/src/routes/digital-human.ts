@@ -150,7 +150,6 @@ function parseCreateRequest(body: unknown): CreateDigitalHumanRequest {
   }
 
   return {
-    id: parseOptionalString(raw.id),
     name: raw.name.trim(),
     creature: parseOptionalString(raw.creature),
     soul: parseOptionalString(raw.soul),

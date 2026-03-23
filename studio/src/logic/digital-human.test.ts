@@ -557,6 +557,10 @@ describe("DefaultDigitalHumanLogic lifecycle (filesystem + adapter)", () => {
   });
 
   it("createDigitalHuman writes markdown via gateway RPC and configures skills", async () => {
+    vi.spyOn(globalThis.crypto, "randomUUID").mockReturnValue(
+      "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+    );
+
     const listAgentFiles = vi.fn().mockResolvedValue({
       agentId: "",
       files: [] as { name: string }[]
@@ -663,6 +667,10 @@ describe("DefaultDigitalHumanLogic lifecycle (filesystem + adapter)", () => {
   });
 
   it("createDigitalHuman binds channel via config.patch when gateway accepts", async () => {
+    vi.spyOn(globalThis.crypto, "randomUUID").mockReturnValue(
+      "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"
+    );
+
     const cfg = join(fakeHome, "openclaw.json");
     writeFileSync(cfg, "{}\n", "utf8");
     const prev = process.env.OPENCLAW_CONFIG_PATH;
@@ -729,6 +737,10 @@ describe("DefaultDigitalHumanLogic lifecycle (filesystem + adapter)", () => {
   });
 
   it("createDigitalHuman uses config.patch when OPENCLAW_STATE_DIR resolves config path", async () => {
+    vi.spyOn(globalThis.crypto, "randomUUID").mockReturnValue(
+      "cccccccc-cccc-cccc-cccc-cccccccccccc"
+    );
+
     const stateDir = join(fakeHome, "state");
     mkdirSync(stateDir, { recursive: true });
     const cfgPath = join(stateDir, "openclaw.json");
@@ -992,13 +1004,11 @@ describe("DefaultDigitalHumanLogic lifecycle (filesystem + adapter)", () => {
     });
 
     const acc = normalizeOpenClawAccountIdFromAppId("cli_shared_app");
-    await logic.createDigitalHuman({
-      id: "11111111-1111-1111-1111-111111111111",
+    const first = await logic.createDigitalHuman({
       name: "First",
       channel: { appId: "cli_shared_app", appSecret: "s1" }
     });
-    await logic.createDigitalHuman({
-      id: "22222222-2222-2222-2222-222222222222",
+    const second = await logic.createDigitalHuman({
       name: "Second",
       channel: { appId: "cli_shared_app", appSecret: "s2" }
     });
@@ -1007,12 +1017,9 @@ describe("DefaultDigitalHumanLogic lifecycle (filesystem + adapter)", () => {
       bindings: Array<{ agentId: string; match: { channel: string; accountId?: string } }>;
     };
     const feishuBindings = parsed.bindings.filter((b) => b.match.channel === "feishu");
-    expect(feishuBindings.some((b) => b.agentId === "11111111-1111-1111-1111-111111111111")).toBe(
-      false
-    );
+    expect(feishuBindings.some((b) => b.agentId === first.id)).toBe(false);
     expect(
-      feishuBindings.find((b) => b.agentId === "22222222-2222-2222-2222-222222222222")
-        ?.match.accountId
+      feishuBindings.find((b) => b.agentId === second.id)?.match.accountId
     ).toBe(acc);
 
     warnSpy.mockRestore();
@@ -1046,13 +1053,11 @@ describe("DefaultDigitalHumanLogic lifecycle (filesystem + adapter)", () => {
     });
 
     const acc = normalizeOpenClawAccountIdFromAppId("ding_shared_app");
-    await logic.createDigitalHuman({
-      id: "33333333-3333-3333-3333-333333333333",
+    const first = await logic.createDigitalHuman({
       name: "First",
       channel: { type: "dingtalk", appId: "ding_shared_app", appSecret: "s1" }
     });
-    await logic.createDigitalHuman({
-      id: "44444444-4444-4444-4444-444444444444",
+    const second = await logic.createDigitalHuman({
       name: "Second",
       channel: { type: "dingtalk", appId: "ding_shared_app", appSecret: "s2" }
     });
@@ -1061,12 +1066,9 @@ describe("DefaultDigitalHumanLogic lifecycle (filesystem + adapter)", () => {
       bindings: Array<{ agentId: string; match: { channel: string; accountId?: string } }>;
     };
     const dingBindings = parsed.bindings.filter((b) => b.match.channel === "dingtalk");
-    expect(dingBindings.some((b) => b.agentId === "33333333-3333-3333-3333-333333333333")).toBe(
-      false
-    );
+    expect(dingBindings.some((b) => b.agentId === first.id)).toBe(false);
     expect(
-      dingBindings.find((b) => b.agentId === "44444444-4444-4444-4444-444444444444")?.match
-        .accountId
+      dingBindings.find((b) => b.agentId === second.id)?.match.accountId
     ).toBe(acc);
 
     warnSpy.mockRestore();

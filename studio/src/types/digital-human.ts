@@ -152,11 +152,6 @@ export interface ChannelConfig {
  */
 export interface CreateDigitalHumanRequest {
   /**
-   * Optional UUID. When omitted the backend generates one automatically.
-   */
-  id?: string;
-
-  /**
    * Display name for the digital human (maps to IDENTITY.md `Name`).
    */
   name: string;

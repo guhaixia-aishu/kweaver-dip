@@ -201,7 +201,7 @@ export class DefaultDigitalHumanLogic implements DigitalHumanLogic {
    * Creates a new digital human by orchestrating the full setup flow
    * as specified in the design document:
    *
-   * 1. Resolve UUID (use provided id or generate one)
+   * 1. Generate one UUID for the new agent id
    * 2. Create the agent in OpenClaw (`agents.create`)
    * 3. Update IDENTITY.md and SOUL.md via `agents.files.list` then `agents.files.set`
    * 4. Configure skills via {@link AgentSkillsLogic.updateAgentSkills}
@@ -214,7 +214,7 @@ export class DefaultDigitalHumanLogic implements DigitalHumanLogic {
   public async createDigitalHuman(
     request: CreateDigitalHumanRequest
   ): Promise<CreateDigitalHumanResult> {
-    const uuid = request.id ?? randomUUID();
+    const uuid = randomUUID();
     const template = buildTemplate(request);
 
     const workspace = resolveDefaultWorkspace(uuid);

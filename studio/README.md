@@ -155,7 +155,6 @@ openssl pkey -in private.pem -pubout -out public.pem
 
 | 参数 | 类型 | 是否必填 | 说明 |
 | -- | -- | -- | -- |
-| id | string | 否 | 数字员工 ID；不传时后端自动生成 UUID |
 | name | string | 是 | 数字员工名称 |
 | creature | string | 否 | 数字员工岗位/角色 |
 | soul | string | 否 | `SOUL.md` 内容 |

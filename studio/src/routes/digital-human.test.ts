@@ -191,6 +191,39 @@ describe("createDigitalHumanRouter", () => {
     expect(response.json).toHaveBeenCalledWith({ id: "x", name: "n", soul: "" });
   });
 
+  it("POST create ignores client-supplied id", async () => {
+    const createDigitalHuman = vi.fn().mockResolvedValue({ id: "x", name: "n", soul: "" });
+    const { createDigitalHumanRouter } = await importRouterWithLogicMock({
+      createDigitalHuman
+    });
+    const router = createDigitalHumanRouter() as Router;
+    const handler = findHandler(router, "post", listPath);
+    const response = createResponseDouble();
+    const next = vi.fn<NextFunction>();
+
+    await handler?.(
+      {
+        body: {
+          id: "client-id",
+          name: "slug-name",
+          soul: "s"
+        }
+      } as Request,
+      response,
+      next
+    );
+
+    expect(createDigitalHuman).toHaveBeenCalledWith({
+      name: "slug-name",
+      creature: undefined,
+      soul: "s",
+      skills: undefined,
+      bkn: undefined,
+      channel: undefined
+    });
+    expect(next).not.toHaveBeenCalled();
+  });
+
   it("PUT :id updates", async () => {
     const { createDigitalHumanRouter } = await importRouterWithLogicMock({
       updateDigitalHuman: async () => ({
