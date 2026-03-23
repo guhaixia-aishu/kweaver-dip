@@ -1,3 +1,4 @@
+import type { IncomingHttpHeaders } from "node:http";
 import type { NextFunction, Request, Response } from "express";
 
 import { getEnv } from "../utils/env";
@@ -173,4 +174,47 @@ export function readActiveUserId(
  */
 export function injectUserIdHeader(request: Request, userId: string): void {
   request.headers["x-user-id"] = userId;
+}
+
+/**
+ * Injects the authenticated user id into the downstream request context.
+ *
+ * @param request The incoming Express request.
+ * @param userId The authenticated user identifier.
+ */
+export function injectAuthenticatedUserId(request: Request, userId: string): void {
+  injectUserIdHeader(request, userId);
+}
+
+/**
+ * Reads the authenticated user id injected by the authentication middleware.
+ *
+ * @param request The incoming Express request.
+ * @returns The normalized authenticated user id, or undefined when absent.
+ */
+export function readAuthenticatedUserId(
+  request: {
+    headers: IncomingHttpHeaders;
+  }
+): string | undefined {
+  return readAuthenticatedUserIdHeader(request.headers);
+}
+
+/**
+ * Reads the authenticated user id from request headers.
+ *
+ * @param headers The incoming HTTP headers.
+ * @returns The normalized authenticated user id, or undefined when absent.
+ */
+function readAuthenticatedUserIdHeader(headers: IncomingHttpHeaders): string | undefined {
+  const userIdHeader = headers["x-user-id"];
+  const userId = Array.isArray(userIdHeader) ? userIdHeader[0] : userIdHeader;
+
+  if (typeof userId !== "string") {
+    return undefined;
+  }
+
+  const trimmedUserId = userId.trim();
+
+  return trimmedUserId === "" ? undefined : trimmedUserId;
 }

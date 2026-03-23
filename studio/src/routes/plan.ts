@@ -1,10 +1,10 @@
 import { Router, type NextFunction, type Request, type Response } from "express";
-import type { IncomingHttpHeaders } from "node:http";
 
 import { OpenClawCronGatewayAdapter } from "../adapters/openclaw-cron-adapter";
 import { getEnv } from "../utils/env";
 import { HttpError } from "../errors/http-error";
 import { OpenClawGatewayClient } from "../infra/openclaw-gateway-client";
+import { readAuthenticatedUserId } from "../middleware/hydra-auth";
 import { DefaultCronLogic, type CronLogic } from "../logic/plan";
 import type {
   CronListEnabledFilter,
@@ -12,6 +12,7 @@ import type {
   CronListSortDir,
   CronRunDeliveryStatus,
   CronRunStatus,
+  OpenClawCronListResult,
   CronRunsScope,
   CronRunsSortDir,
   OpenClawCronListParams,
@@ -164,7 +165,7 @@ export function createCronRouter(logic: CronLogic = cronLogic): Router {
       try {
         const query = {
           ...readCronJobListQuery(request.query),
-          userId: readOptionalUserIdHeader(request.headers)
+          userId: readAuthenticatedUserId(request)
         };
         const result = await logic.listCronJobs(query);
 
@@ -189,20 +190,11 @@ export function createCronRouter(logic: CronLogic = cronLogic): Router {
       try {
         const query = {
           ...readCronJobListQuery(request.query),
-          userId: readOptionalUserIdHeader(request.headers)
+          userId: readAuthenticatedUserId(request)
         };
         const result = await logic.listCronJobs(query);
-        const plans = result.jobs.filter((job) => job.agentId === request.params.id);
 
-        response.status(200).json({
-          ...result,
-          jobs: plans,
-          total: plans.length,
-          offset: 0,
-          limit: plans.length,
-          hasMore: false,
-          nextOffset: null
-        });
+        response.status(200).json(filterCronJobsByAgentId(result, request.params.id));
       } catch (error) {
         next(
           error instanceof HttpError
@@ -260,22 +252,27 @@ export function readCronJobListQuery(query: CronJobListQuery): OpenClawCronListP
 }
 
 /**
- * Reads the authenticated user id from request headers when available.
+ * Filters one cron jobs result to the specified digital human.
  *
- * @param headers The incoming HTTP headers.
- * @returns The trimmed user id header value, or undefined when absent.
+ * @param result The cron jobs result already filtered for the authenticated user.
+ * @param agentId The target digital human identifier.
+ * @returns A normalized result containing only the requested digital human jobs.
  */
-function readOptionalUserIdHeader(headers: IncomingHttpHeaders): string | undefined {
-  const userIdHeader = headers["x-user-id"];
-  const userId = Array.isArray(userIdHeader) ? userIdHeader[0] : userIdHeader;
+function filterCronJobsByAgentId(
+  result: OpenClawCronListResult,
+  agentId: string
+): OpenClawCronListResult {
+  const jobs = result.jobs.filter((job) => job.agentId === agentId);
 
-  if (typeof userId !== "string") {
-    return undefined;
-  }
-
-  const trimmedUserId = userId.trim();
-
-  return trimmedUserId === "" ? undefined : trimmedUserId;
+  return {
+    ...result,
+    jobs,
+    total: jobs.length,
+    offset: 0,
+    limit: jobs.length,
+    hasMore: false,
+    nextOffset: null
+  };
 }
 
 /**

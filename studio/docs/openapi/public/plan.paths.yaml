@@ -94,7 +94,7 @@ paths:
   /digital-human/{id}/plans:
     get:
       operationId: getDigitalHumanPlanList
-      summary: 获取指定数字员工的计划任务列表
+      summary: 获取当前用户对指定数字员工发起的计划任务列表
       parameters:
         - name: id
           in: path
@@ -160,7 +160,7 @@ paths:
             default: asc
       responses:
         "200":
-          description: 指定数字员工的计划任务列表
+          description: 当前用户对指定数字员工发起的计划任务列表
           content:
             application/json:
               schema:

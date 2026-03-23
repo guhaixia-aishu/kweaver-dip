@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { describe, expect, it, vi } from "vitest";
 
+import { injectAuthenticatedUserId } from "../middleware/hydra-auth";
 import {
   createCronRouter,
   parseBooleanQueryValue,
@@ -213,17 +214,14 @@ describe("createCronRouter", () => {
     const handler = jobsLayer?.route?.stack[0]?.handle;
     const response = createResponseDouble();
     const next = vi.fn<NextFunction>();
+    const request = {
+      query: {},
+      headers: {}
+    } as unknown as Request;
 
-    await handler?.(
-      {
-        query: {},
-        headers: {
-          "x-user-id": "user-1"
-        }
-      } as unknown as Request,
-      response,
-      next
-    );
+    injectAuthenticatedUserId(request, "user-1");
+
+    await handler?.(request, response, next);
 
     expect(listCronJobs).toHaveBeenCalledWith({
       includeDisabled: true,
@@ -302,7 +300,7 @@ describe("createCronRouter", () => {
     });
   });
 
-  it("handles digital human plans request with id filtering", async () => {
+  it("returns the authenticated user's plans for the specified digital human", async () => {
     const listCronJobs = vi.fn().mockResolvedValue({
       jobs: [
         {
@@ -321,7 +319,7 @@ describe("createCronRouter", () => {
         {
           id: "p-2",
           agentId: "dh-2",
-          sessionKey: "agent:dh-2:user:user-2:direct:chat-2",
+          sessionKey: "agent:dh-2:user:user-1:direct:chat-2",
           name: "Plan 2",
           enabled: true,
           createdAtMs: 1,
@@ -361,20 +359,17 @@ describe("createCronRouter", () => {
     const handler = layer?.route?.stack[0]?.handle;
     const response = createResponseDouble();
     const next = vi.fn<NextFunction>();
+    const request = {
+      params: {
+        id: "dh-1"
+      },
+      query: {},
+      headers: {}
+    } as unknown as Request;
 
-    await handler?.(
-      {
-        params: {
-          id: "dh-1"
-        },
-        query: {},
-        headers: {
-          "x-user-id": "user-1"
-        }
-      } as unknown as Request,
-      response,
-      next
-    );
+    injectAuthenticatedUserId(request, "user-1");
+
+    await handler?.(request, response, next);
 
     expect(listCronJobs).toHaveBeenCalledWith({
       includeDisabled: true,
