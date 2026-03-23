@@ -193,12 +193,12 @@ const SelectKnowledgeModal = ({
         }
       >
         <div className="flex flex-col gap-y-6">
-          <AiPromptInput
-            mentionOptions={[]}
+          {/* <AiPromptInput
+            employeeOptions={[]}
             placeholder="可以直接输入你想要创建的业务知识网络，也可以直接选择下方的业务知识网络"
             onSubmit={handleSubmit}
             autoSize={{ minRows: 2, maxRows: 2 }}
-          />
+          /> */}
 
           <ScrollBarContainer className="grid max-h-[400px] overflow-y-auto relative min-h-[180px] mx-[-24px] px-6">
             {renderContent()}

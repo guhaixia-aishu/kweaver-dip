@@ -45,11 +45,11 @@ function TasksPanelInner({ planId, dhId, sessionId: _sessionId }: TasksPanelProp
 
   return (
     <div className="flex min-h-0 flex-1 flex-row overflow-hidden">
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col border-r border-[--dip-border-color] bg-[--dip-white]">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col border-r border-[--dip-border-color] bg-[#FAFAF9]">
         <ScrollBarContainer className="flex min-h-0 flex-1 flex-col">
           <div className="flex shrink-0 flex-col gap-4 px-6">
             {!bannerDismissed ? (
-              <div className="flex items-start gap-2 rounded-lg border border-[#d9f7be] bg-gradient-to-b from-[--dip-white] to-[#f6ffed] px-3 py-[9px]">
+              <div className="flex items-start gap-2 mt-4 rounded-lg border border-[#d9f7be] px-3 py-[9px]">
                 <CheckCircleFilled
                   className="mt-0.5 shrink-0 text-base text-[#52c41a]"
                   aria-hidden
@@ -57,14 +57,14 @@ function TasksPanelInner({ planId, dhId, sessionId: _sessionId }: TasksPanelProp
                 <p className="m-0 min-w-0 flex-1 text-sm leading-[1.57] text-[--dip-text-color]">
                   这里是我们一起对齐的计划文档，我已经根据我们最近的对话完成了最新校准，您可到【会话】页面随时调整。
                 </p>
-                <button
+                {/* <button
                   type="button"
                   className="flex h-[22px] w-[22px] shrink-0 cursor-pointer items-center justify-center rounded border-0 bg-transparent p-0 text-[--dip-text-color-45] transition-colors hover:bg-[--dip-hover-bg-color] hover:text-[--dip-text-color]"
                   aria-label="关闭提示"
                   onClick={dismissBanner}
                 >
                   <IconFont type="icon-dip-close" />
-                </button>
+                </button> */}
               </div>
             ) : null}
           </div>
@@ -80,14 +80,14 @@ function TasksPanelInner({ planId, dhId, sessionId: _sessionId }: TasksPanelProp
         ref={scrollMountRef}
         className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[--dip-white]"
       >
-        <ScrollBarContainer className="flex min-h-0 flex-1 flex-col px-6 py-4">
-          <div className="mx-auto flex w-full max-w-[720px] flex-col gap-5">
+        <ScrollBarContainer className="flex min-h-0 flex-1 flex-col px-6 py-4 relative">
+          <div className="mx-auto h-full flex w-full max-w-[720px] flex-col gap-5">
             {initialLoading ? (
-              <div className="flex flex-1 items-center justify-center py-20">
+              <div className="inset-0 flex flex-1 items-center justify-center py-20">
                 <Spin />
               </div>
             ) : loadError && entries.length === 0 ? (
-              <div className="flex flex-1 items-center justify-center py-12">
+              <div className="inset-0 h-full flex flex-1 items-center justify-center py-12">
                 <Empty type="failed" title="加载失败" />
               </div>
             ) : (
@@ -97,7 +97,7 @@ function TasksPanelInner({ planId, dhId, sessionId: _sessionId }: TasksPanelProp
                 </h2>
 
                 {entries.length === 0 ? (
-                  <div className="flex justify-center py-12">
+                  <div className="inset-0 flex justify-center py-12">
                     <Empty title="暂无数据" />
                   </div>
                 ) : (

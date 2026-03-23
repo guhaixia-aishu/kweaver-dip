@@ -1,5 +1,7 @@
+import XMarkdown from '@ant-design/x-markdown'
 import { Spin } from 'antd'
 import classNames from 'classnames'
+import '@ant-design/x-markdown/dist/x-markdown.css'
 import ScrollBarContainer from '@/components/ScrollBarContainer'
 import type { ArchivePreviewState } from './useArchivePreview'
 
@@ -30,11 +32,7 @@ const ArchivePreviewPanel = ({ preview, className }: ArchivePreviewPanelProps) =
           />
         ) : preview.viewer === 'image' && preview.blobUrl ? (
           <div className="flex w-full justify-center py-2">
-            <img
-              src={preview.blobUrl}
-              alt={preview.title}
-              className="max-w-full object-contain"
-            />
+            <img src={preview.blobUrl} alt={preview.title} className="max-w-full object-contain" />
           </div>
         ) : preview.viewer === 'video' && preview.blobUrl ? (
           <>
@@ -77,6 +75,8 @@ const ArchivePreviewPanel = ({ preview, className }: ArchivePreviewPanelProps) =
               下载文件
             </a>
           </div>
+        ) : preview.viewer === 'markdown' ? (
+          <XMarkdown className="text-[--dip-text-color]">{preview.body}</XMarkdown>
         ) : (
           <pre className="m-0 whitespace-pre-wrap break-words text-[--dip-text-color]">
             {preview.body}

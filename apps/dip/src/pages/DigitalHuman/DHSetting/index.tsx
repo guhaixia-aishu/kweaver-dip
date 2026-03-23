@@ -96,10 +96,11 @@ const DHSetting = () => {
         }
         await updateDigitalHuman(digitalHumanId, updateBody)
         message.success('发布成功')
-        const detail = await getDigitalHumanDetail(digitalHumanId)
-        bindDigitalHuman(detail)
-        resetDirtyState()
-        setUiMode('view')
+        // const detail = await getDigitalHumanDetail(digitalHumanId)
+        // bindDigitalHuman(detail)
+        // resetDirtyState()
+        // setUiMode('view')
+        handleBack()
       } else {
         await createDigitalHuman(createBody)
         message.success('创建成功')

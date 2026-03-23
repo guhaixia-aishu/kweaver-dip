@@ -1,10 +1,12 @@
 import { type CSSProperties, forwardRef, useImperativeHandle, useRef, useState } from 'react'
 import ReactDOM from 'react-dom/client'
 import './style.less'
-import { useDeepCompareEffect, useGetState, useUpdateEffect } from 'ahooks'
 import { Select } from 'antd'
 import classNames from 'classnames'
 import ScrollBarContainer from '@/components/ScrollBarContainer'
+import useDeepCompareEffect from '@/hooks/useDeepCompareEffect'
+import useLatestState from '@/hooks/useLatestState'
+import useUpdateEffect from '@/hooks/useUpdateEffect'
 import { getPromptVarFromString } from './assitant'
 import type { AdPromptInputProps, AdPromptInputRef, Position } from './interface'
 import VarElement from './VarElement'
@@ -27,7 +29,7 @@ const AdPromptInput = forwardRef<AdPromptInputRef, AdPromptInputProps>((props, r
     getPopupContainer,
     footer,
   } = props
-  const [visible, setVisible, getVisible] = useGetState<boolean>(false) // 控制Select的显示与隐藏
+  const [visible, setVisible, getVisible] = useLatestState<boolean>(false) // 控制Select的显示与隐藏
   const currentTriggerCharacterIndex = useRef<number>(0) // 触发字符的索引
   const currentFocusNode = useRef<Node | string>()
   const searchStrRef = useRef<string>('') // 鼠标小手之前的字符串
@@ -35,10 +37,10 @@ const AdPromptInput = forwardRef<AdPromptInputRef, AdPromptInputProps>((props, r
     x: 0,
     y: 0,
   })
-  const [inputFocus, setInputFocus, getInputFocus] = useGetState<boolean>(false)
+  const [inputFocus, setInputFocus, getInputFocus] = useLatestState<boolean>(false)
   const inputRef = useRef<HTMLDivElement | null>(null)
   const selectRef = useRef<any>(null)
-  const [selectSearchText, setSelectSearchText, getSelectSearchText] = useGetState('')
+  const [selectSearchText, setSelectSearchText, getSelectSearchText] = useLatestState('')
 
   const [triggerOptions, setTriggerOptions] = useState<any[]>([])
 

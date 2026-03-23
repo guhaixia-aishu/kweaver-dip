@@ -107,9 +107,7 @@ const SelectSkillModal = ({
     onCancel()
   }
 
-  const handleSubmit = (payload: AiPromptSubmitPayload) => {
-    console.log(payload)
-  }
+  const handleSubmit = (payload: AiPromptSubmitPayload) => {}
 
   /** 渲染状态内容 */
   const renderStateContent = () => {
@@ -218,7 +216,7 @@ const SelectSkillModal = ({
     >
       <div className="flex flex-col gap-y-6">
         <AiPromptInput
-          mentionOptions={[]}
+          defaultEmployeeValue="__internal_skill_agent__"
           placeholder={'可以直接输入你想要创建的Skills，也可以直接选择下方的技能'}
           onSubmit={handleSubmit}
           autoSize={{ minRows: 2, maxRows: 2 }}

@@ -1,7 +1,7 @@
 import classNames from 'classnames'
 import { memo, useId, useState } from 'react'
+import TaskConversation from './TaskConversation'
 import TaskOutcomeList from './TaskOutcomeList'
-import TaskSessionMessages from './TaskSessionMessages'
 
 export type TaskRunExpandedTab = 'session' | 'outcomes'
 
@@ -62,7 +62,7 @@ function TaskRunExpandedPanelInner({ id, digitalHumanId, sessionId }: TaskRunExp
         aria-labelledby={activeTab === 'session' ? tabSessionId : tabOutcomesId}
       >
         {activeTab === 'session' ? (
-          <TaskSessionMessages digitalHumanId={digitalHumanId} sessionId={sessionId} />
+          <TaskConversation digitalHumanId={digitalHumanId} sessionId={sessionId} />
         ) : (
           <TaskOutcomeList digitalHumanId={digitalHumanId} sessionId={sessionId} />
         )}

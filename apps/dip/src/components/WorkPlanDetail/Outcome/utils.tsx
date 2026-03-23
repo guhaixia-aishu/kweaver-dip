@@ -186,12 +186,20 @@ const TEXT_LIKE_EXTENSIONS = new Set([
  */
 export type ArchivePreviewViewer =
   | 'text'
+  | 'markdown'
   | 'pdf'
   | 'image'
   | 'video'
   | 'audio'
   | 'office'
   | 'download'
+
+/** 文本类文件（JSON / TXT / MD 等）在侧栏里用哪种方式展示 */
+export function getArchiveTextPreviewViewer(fileName: string): ArchivePreviewViewer {
+  const ext = getFileExtension(fileName)
+  if (ext === 'md' || ext === 'mdx' || ext === 'markdown') return 'markdown'
+  return 'text'
+}
 
 /** 根据扩展名决定 arraybuffer 拉取后的预览方式（非文本类文件） */
 export function getArchivePreviewViewer(fileName: string): ArchivePreviewViewer {

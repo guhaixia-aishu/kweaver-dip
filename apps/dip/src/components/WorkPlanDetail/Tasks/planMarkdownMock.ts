@@ -29,6 +29,6 @@ export function getPlanPreviewState(): ArchivePreviewState {
     subpath: 'plan.md',
     body: MOCK_PLAN_MARKDOWN,
     loading: false,
-    viewer: 'text',
+    viewer: 'markdown',
   }
 }

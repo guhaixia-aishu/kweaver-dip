@@ -51,7 +51,7 @@ function PlanListItemInner({ job, onClick }: PlanListItemProps) {
             </span>
           ) : (
             <span className="inline-flex shrink-0 items-center rounded bg-[#E6FFFB] px-1.5 py-0.5 text-xs font-normal leading-[18px] text-[#08979C]">
-              条件计划
+              定时计划
             </span>
           )}
         </div>

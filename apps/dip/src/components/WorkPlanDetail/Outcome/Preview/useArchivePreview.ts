@@ -1,4 +1,3 @@
-import { message } from 'antd'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { getDigitalHumanSessionArchiveSubpath } from '@/apis/dip-studio/sessions'
 import {
@@ -9,6 +8,7 @@ import {
   type ArchivePreviewViewer,
   formatPreviewContent,
   getArchiveFileMimeForBlob,
+  getArchiveTextPreviewViewer,
   getArchivePreviewViewer,
   previewResponseType,
 } from '../utils'
@@ -40,7 +40,7 @@ export function useArchivePreview(dhId: string, sessionId: string) {
     async (subpath: string, title: string) => {
       if (!(dhId && sessionId)) return
       revokePreviewBlobUrl()
-      setPreview({ title, subpath, body: '', loading: true, viewer: 'text' })
+      setPreview({ title, subpath, body: '', loading: true, viewer: getArchiveTextPreviewViewer(title) })
       try {
         const rt = previewResponseType(title)
         if (rt === 'arraybuffer') {
@@ -71,7 +71,9 @@ export function useArchivePreview(dhId: string, sessionId: string) {
               responseType: rt,
             })
         const body = formatPreviewContent(res, title)
-        setPreview((p) => (p ? { ...p, body, loading: false, viewer: 'text' } : null))
+        setPreview((p) =>
+          p ? { ...p, body, loading: false, viewer: getArchiveTextPreviewViewer(title) } : null,
+        )
       } catch {
         // message.error('加载文件失败')
         revokePreviewBlobUrl()

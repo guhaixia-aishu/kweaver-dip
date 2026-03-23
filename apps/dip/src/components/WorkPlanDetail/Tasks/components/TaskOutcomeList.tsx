@@ -7,6 +7,11 @@ import {
   type SessionArchivesResponse,
 } from '@/apis/dip-studio/sessions'
 import Empty from '@/components/Empty'
+import {
+  RESULTS_PANEL_USE_MOCK,
+  mockGetDigitalHumanSessionArchiveSubpath,
+  mockGetDigitalHumanSessionArchives,
+} from '../../Outcome/resultsPanelMock'
 
 export type TaskOutcomeListProps = {
   digitalHumanId?: string
@@ -24,9 +29,9 @@ async function resolveFilesInDirectory(
   sessionId: string,
   currentPath: string,
 ): Promise<SessionArchiveFileItem[]> {
-  const res = (await getDigitalHumanSessionArchiveSubpath(sessionId, currentPath, {
-    responseType: 'json',
-  })) as SessionArchivesResponse
+  const res = (RESULTS_PANEL_USE_MOCK
+    ? await mockGetDigitalHumanSessionArchiveSubpath(currentPath, { responseType: 'json' })
+    : await getDigitalHumanSessionArchiveSubpath(sessionId, currentPath, { responseType: 'json' })) as SessionArchivesResponse
 
   const items = res.contents ?? []
   const nested = await Promise.all(
@@ -64,7 +69,9 @@ function TaskOutcomeListInner({ digitalHumanId, sessionId }: TaskOutcomeListProp
         setError(false)
 
         // 1) 先拉目录级（root）产物
-        const root = await getDigitalHumanSessionArchives(sessionIdTrimmed)
+        const root = RESULTS_PANEL_USE_MOCK
+          ? await mockGetDigitalHumanSessionArchives()
+          : await getDigitalHumanSessionArchives(sessionIdTrimmed)
         const rootItems = root.contents ?? []
 
         // 2) 再通过 subpath 拉文件级产物，并汇总为文件列表

@@ -29,7 +29,7 @@ let requestId = 0 // 用于跟踪当前请求 ID
 export const useUserInfoStore = create<UserInfoState>((set) => ({
   userInfo: null,
   isLoading: false,
-  isAdmin: false,
+  isAdmin: true,
 
   setUserInfo: (userInfo: UserInfo | null) =>
     set({ userInfo, isAdmin: userInfo?.vision_name === 'admin' }),
