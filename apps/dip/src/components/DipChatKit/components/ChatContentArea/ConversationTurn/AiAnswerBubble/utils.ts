@@ -1,9 +1,14 @@
 import isString from 'lodash/isString'
 import intl from 'react-intl-universal'
 import type { DipChatKitAnswerEvent, DipChatKitPreviewPayload } from '../../../../types'
+import type { DipChatKitToolCardItem } from './types'
 
 const MARKDOWN_FILE_NAME_PATTERN =
-  /([^\s"'“”‘’<>()\[\]{}]+?\.md)(?=$|[\s,，。！？；:：)）\]】"'“”‘’])/gi
+  /([^\s"'<>()[\]{}]+?\.md)(?=$|[\s,.;:!?"'<>()[\]{}])/gi
+const TOOL_INLINE_THRESHOLD = 80
+const TOOL_PREVIEW_MAX_LINES = 2
+const TOOL_PREVIEW_MAX_CHARS = 100
+const TOOL_DETAIL_MAX_LENGTH = 96
 
 export const normalizeMarkdownText = (value: unknown): string => {
   if (isString(value)) return value
@@ -35,10 +40,10 @@ export const buildCodePreviewPayload = (lang: string, code: string): DipChatKitP
   const resolvedLanguage = lang || resolvedDefaultLanguage
   return {
     title: isMermaidLanguage(lang)
-      ? (intl.get('dipChatKit.mermaidPreview').d('Mermaid 预览') as string)
+      ? (intl.get('dipChatKit.mermaidPreview').d('Mermaid Preview') as string)
       : (intl
           .get('dipChatKit.codeSnippetTitle', { lang: resolvedLanguage })
-          .d(`${resolvedLanguage} 代码片段`) as string),
+          .d(`${resolvedLanguage} code snippet`) as string),
     content: code,
     sourceType,
   }
@@ -71,6 +76,7 @@ export const splitTextByMarkdownFileName = (text: string): TextSegment[] => {
   while (match) {
     const fullMatch = match[0]
     const matchIndex = match.index
+
     if (matchIndex > lastIndex) {
       segments.push({
         type: 'text',
@@ -122,67 +128,28 @@ export const buildMarkdownFilePreviewPayload = (
   sourceContent?: string,
 ): DipChatKitPreviewPayload => {
   return {
-    title: fileName || (intl.get('dipChatKit.markdownFile').d('Markdown 文件') as string),
+    title: fileName || (intl.get('dipChatKit.markdownFile').d('Markdown file') as string),
     content: sourceContent || fileName || '',
     sourceType: 'text',
   }
 }
 
-export const getAnswerEventTypeLabel = (event: DipChatKitAnswerEvent): string => {
-  if (event.type === 'toolCall') {
-    return intl.get('dipChatKit.eventToolCall').d('工具调用') as string
-  }
-
-  if (event.type === 'toolResult') {
-    return intl.get('dipChatKit.eventToolResult').d('工具结果') as string
-  }
-
-  if (event.type === 'system') {
-    return intl.get('dipChatKit.eventSystem').d('系统消息') as string
-  }
-
-  return intl.get('dipChatKit.eventUnknown').d('其他消息') as string
-}
-
-export const getAnswerEventRoleLabel = (event: DipChatKitAnswerEvent): string => {
-  const normalizedRole = event.role.trim().toLowerCase()
-  if (normalizedRole === 'assistant') {
-    return intl.get('dipChatKit.eventRoleAssistant').d('助手') as string
-  }
-  if (normalizedRole === 'toolresult' || normalizedRole === 'tool') {
-    return intl.get('dipChatKit.eventRoleTool').d('工具') as string
-  }
-  if (normalizedRole === 'system') {
-    return intl.get('dipChatKit.eventRoleSystem').d('系统') as string
-  }
-
-  return event.role || (intl.get('dipChatKit.eventRoleUnknown').d('未知') as string)
-}
-
-export const getAnswerEventDisplayText = (event: DipChatKitAnswerEvent): string => {
-  if (event.text.trim()) {
-    return event.text
-  }
-
-  if (event.details) {
-    try {
-      return JSON.stringify(event.details, null, 2)
-    } catch {
-      return String(event.details)
-    }
-  }
-
-  return ''
-}
-
-const EVENT_INLINE_THRESHOLD = 120
-const EVENT_PREVIEW_LENGTH = 240
-
 const normalizeLineBreak = (value: string): string => {
   return value.replace(/\r\n/g, '\n').trim()
 }
 
-const parseTextJson = (value: string): Record<string, unknown> | null => {
+const toTextFromUnknown = (value: unknown): string => {
+  if (value === null || value === undefined) return ''
+  if (typeof value === 'string') return value
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value)
+  try {
+    return JSON.stringify(value, null, 2)
+  } catch {
+    return String(value)
+  }
+}
+
+const parseJsonObject = (value: string): Record<string, unknown> | null => {
   const trimmed = value.trim()
   if (!trimmed) return null
   if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) return null
@@ -196,20 +163,60 @@ const parseTextJson = (value: string): Record<string, unknown> | null => {
   }
 }
 
-const toSimpleString = (value: unknown): string => {
-  if (value === null || value === undefined) return ''
-  if (typeof value === 'string') return value
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value)
-  try {
-    return JSON.stringify(value)
-  } catch {
-    return String(value)
+const normalizeToolCardKind = (event: DipChatKitAnswerEvent): 'call' | 'result' | null => {
+  if (event.type === 'toolCall') return 'call'
+  if (event.type === 'toolResult') return 'result'
+
+  const role = event.role.trim().toLowerCase()
+  if (role === 'toolresult' || role === 'tool_result' || role === 'tool') {
+    return 'result'
   }
+
+  return null
 }
 
-export const getAnswerEventCardDetail = (event: DipChatKitAnswerEvent): string => {
-  const rawText = getAnswerEventDisplayText(event)
-  const parsed = parseTextJson(rawText)
+const getAnswerEventRoleLabel = (event: DipChatKitAnswerEvent): string => {
+  const normalizedRole = event.role.trim().toLowerCase()
+  if (normalizedRole === 'assistant') {
+    return intl.get('dipChatKit.eventRoleAssistant').d('Assistant') as string
+  }
+  if (normalizedRole === 'toolresult' || normalizedRole === 'tool') {
+    return intl.get('dipChatKit.eventRoleTool').d('Tool') as string
+  }
+  if (normalizedRole === 'system') {
+    return intl.get('dipChatKit.eventRoleSystem').d('System') as string
+  }
+
+  return event.role || (intl.get('dipChatKit.eventRoleUnknown').d('Unknown') as string)
+}
+
+export const getAnswerEventDisplayText = (event: DipChatKitAnswerEvent): string => {
+  const text = normalizeLineBreak(event.text || '')
+  if (text) {
+    return text
+  }
+
+  if (event.details) {
+    return toTextFromUnknown(event.details)
+  }
+
+  return ''
+}
+
+const buildToolCardTitle = (event: DipChatKitAnswerEvent): string => {
+  if (event.toolName) {
+    return event.toolName
+  }
+
+  return getAnswerEventRoleLabel(event)
+}
+
+const buildToolCardDetail = (
+  event: DipChatKitAnswerEvent,
+  text: string,
+  kind: 'call' | 'result',
+): string => {
+  const parsed = parseJsonObject(text)
   if (parsed) {
     const detailKeys = [
       'command',
@@ -227,61 +234,106 @@ export const getAnswerEventCardDetail = (event: DipChatKitAnswerEvent): string =
     for (const key of detailKeys) {
       const value = parsed[key]
       if (value !== undefined && value !== null && value !== '') {
-        return `${key}: ${toSimpleString(value)}`
+        const textValue = toTextFromUnknown(value)
+        return `${key}: ${textValue}`
       }
     }
   }
 
-  const oneLineText = normalizeLineBreak(rawText).split('\n')[0] || ''
+  const oneLineText = text.split('\n')[0] || ''
   if (!oneLineText) {
+    if (event.isError) {
+      return intl.get('dipChatKit.eventActionError').d('Error') as string
+    }
+
+    if (kind === 'result') {
+      return intl.get('dipChatKit.toolCompleted').d('Completed') as string
+    }
+
     return ''
   }
 
-  if (oneLineText.length <= 96) {
+  if (oneLineText.length <= TOOL_DETAIL_MAX_LENGTH) {
     return oneLineText
   }
 
-  return `${oneLineText.slice(0, 96)}...`
+  return `${oneLineText.slice(0, TOOL_DETAIL_MAX_LENGTH)}...`
 }
 
-export const getAnswerEventInlineText = (event: DipChatKitAnswerEvent): string => {
-  const text = normalizeLineBreak(getAnswerEventDisplayText(event))
-  if (!text || text.length > EVENT_INLINE_THRESHOLD) {
+const buildInlineText = (text: string): string => {
+  if (!text || text.length > TOOL_INLINE_THRESHOLD) {
     return ''
   }
-
   return text
 }
 
-export const getAnswerEventPreviewText = (event: DipChatKitAnswerEvent): string => {
-  const text = normalizeLineBreak(getAnswerEventDisplayText(event))
-  if (!text || text.length <= EVENT_INLINE_THRESHOLD) {
+const getTruncatedPreview = (text: string): string => {
+  const lines = text.split('\n')
+  const firstLines = lines.slice(0, TOOL_PREVIEW_MAX_LINES)
+  const joined = firstLines.join('\n')
+
+  if (joined.length > TOOL_PREVIEW_MAX_CHARS) {
+    return `${joined.slice(0, TOOL_PREVIEW_MAX_CHARS)}...`
+  }
+
+  if (firstLines.length < lines.length) {
+    return `${joined}...`
+  }
+
+  return joined
+}
+
+const buildPreviewText = (text: string): string => {
+  if (!text || text.length <= TOOL_INLINE_THRESHOLD) {
     return ''
   }
 
-  if (text.length <= EVENT_PREVIEW_LENGTH) {
-    return text
-  }
-
-  return `${text.slice(0, EVENT_PREVIEW_LENGTH)}...`
+  return getTruncatedPreview(text)
 }
 
-export const getAnswerEventFullText = (event: DipChatKitAnswerEvent): string => {
-  return normalizeLineBreak(getAnswerEventDisplayText(event))
+export const buildToolCardItems = (events: DipChatKitAnswerEvent[]): DipChatKitToolCardItem[] => {
+  return events.reduce<DipChatKitToolCardItem[]>((cards, event, index) => {
+    const kind = normalizeToolCardKind(event)
+    if (!kind) {
+      return cards
+    }
+
+    const normalizedText = getAnswerEventDisplayText(event)
+    cards.push({
+      id: event.id || `tool_card_${index}`,
+      kind,
+      title: buildToolCardTitle(event),
+      detail: buildToolCardDetail(event, normalizedText, kind),
+      toolName: event.toolName || (intl.get('dipChatKit.eventRoleTool').d('Tool') as string),
+      toolCallId: event.toolCallId || '',
+      text: normalizedText,
+      inlineText: buildInlineText(normalizedText),
+      previewText: buildPreviewText(normalizedText),
+      isError: event.isError,
+    })
+
+    return cards
+  }, [])
 }
 
-export const getAnswerEventCardTitle = (event: DipChatKitAnswerEvent): string => {
-  const typeLabel = getAnswerEventTypeLabel(event)
-  const roleLabel = getAnswerEventRoleLabel(event)
-  if (event.toolName) {
-    return `${typeLabel} ${roleLabel} ${event.toolName}`
+export const getToolCardsSummary = (toolCards: DipChatKitToolCardItem[]): string => {
+  const toolNames = Array.from(new Set(toolCards.map((card) => card.toolName).filter(Boolean)))
+  if (toolNames.length === 0) {
+    return ''
   }
-  return `${typeLabel} ${roleLabel}`
+
+  if (toolNames.length <= 3) {
+    return toolNames.join(', ')
+  }
+
+  const moreCount = toolNames.length - 2
+  const moreLabel = intl
+    .get('dipChatKit.toolMoreSuffix', { count: moreCount })
+    .d(`+${moreCount} more`) as string
+  return `${toolNames.slice(0, 2).join(', ')} ${moreLabel}`
 }
 
-export const getAnswerEventActionLabel = (event: DipChatKitAnswerEvent): string => {
-  if (event.isError) {
-    return intl.get('dipChatKit.eventActionError').d('错误') as string
-  }
-  return intl.get('dipChatKit.eventActionView').d('查看') as string
+export const isToolRoleEvent = (event: DipChatKitAnswerEvent): boolean => {
+  const role = event.role.trim().toLowerCase()
+  return role === 'toolresult' || role === 'tool_result' || role === 'tool'
 }

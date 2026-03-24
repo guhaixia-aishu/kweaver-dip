@@ -48,6 +48,10 @@
     "unsupportedFileType": "File \"{fileName}\" type is not supported. Only images (jpeg/png/gif/webp/heic/heif) and files (txt/markdown/html/csv/json/pdf) are supported.",
     "imageSizeExceeded": "Image \"{fileName}\" exceeds the 10MB limit.",
     "fileSizeExceeded": "File \"{fileName}\" exceeds the 5MB limit.",
-    "duplicateFileUploaded": "File \"{fileName}\" has already been uploaded and cannot be uploaded again."
+    "duplicateFileUploaded": "File \"{fileName}\" has already been uploaded and cannot be uploaded again.",
+    "toolCountText": "{count} tools",
+    "toolMoreSuffix": "+{count} more",
+    "toolCompleted": "Completed",
+    "toolOutputLabel": "Tool output"
   }
 }

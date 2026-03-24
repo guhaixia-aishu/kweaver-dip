@@ -48,6 +48,10 @@
     "eventCallId": "呼叫ID",
     "eventActionView": "檢視",
     "eventActionError": "錯誤",
-    "inputDisclaimer": "數字員工可能會犯錯，請核查重要業務信息"
+    "inputDisclaimer": "數字員工可能會犯錯，請核查重要業務信息",
+    "toolCountText": "{count} 個工具",
+    "toolMoreSuffix": "+{count} 個",
+    "toolCompleted": "已完成",
+    "toolOutputLabel": "工具輸出"
   }
 }

@@ -48,6 +48,10 @@
     "eventRoleUnknown": "未知",
     "eventCallId": "调用ID",
     "eventActionView": "查看",
-    "eventActionError": "错误"
+    "eventActionError": "错误",
+    "toolCountText": "{count} 个工具",
+    "toolMoreSuffix": "+{count} 个",
+    "toolCompleted": "已完成",
+    "toolOutputLabel": "工具输出"
   }
 }

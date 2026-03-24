@@ -208,8 +208,10 @@ const createEmptyTurn = (
   question = '',
   id?: string,
 ): DipChatKitMessageTurn => {
+  const normalizedId = id ? `${id}_${index}` : String(index)
+
   return {
-    id: id ? `session_turn_${id}` : `session_turn_${index}`,
+    id: `session_turn_${normalizedId}`,
     question,
     questionEmployees: [],
     questionAttachments: [],
@@ -236,7 +238,6 @@ export const mapSessionMessagesToTurns = (
   }
 
   const turns: DipChatKitMessageTurn[] = []
-  let activeTurn: DipChatKitMessageTurn | null = null
 
   messages.forEach((message, index) => {
     const role = normalizeSessionMessageRole(message.role)
@@ -246,40 +247,39 @@ export const mapSessionMessagesToTurns = (
     if (role === 'user') {
       const nextTurn = createEmptyTurn(index, createdAt, content, message.id)
       turns.push(nextTurn)
-      activeTurn = nextTurn
       return
     }
 
-    if (!activeTurn) {
-      const nextTurn = createEmptyTurn(index, createdAt, '', message.id)
-      turns.push(nextTurn)
-      activeTurn = nextTurn
-    }
+    const nextTurn = createEmptyTurn(index, createdAt, '', message.id)
 
     if (role === 'assistant' && content) {
-      activeTurn.answerMarkdown = activeTurn.answerMarkdown
-        ? `${activeTurn.answerMarkdown}\n\n${content}`
-        : content
+      nextTurn.answerMarkdown = content
     }
 
     if (role === 'assistant') {
       const toolCallEvents = extractToolCallEventsFromMessage(message, index)
       if (toolCallEvents.length > 0) {
-        activeTurn.answerEvents.push(...toolCallEvents)
+        nextTurn.answerEvents.push(...toolCallEvents)
       }
     }
 
     const event = createSessionEvent(message, index, role)
     if (event) {
-      activeTurn.answerEvents.push(event)
+      nextTurn.answerEvents.push(event)
+    }
+
+    if (role !== 'assistant' && content) {
+      nextTurn.answerMarkdown = content
+    }
+
+    if (
+      nextTurn.question.trim().length > 0 ||
+      nextTurn.answerMarkdown.trim().length > 0 ||
+      nextTurn.answerEvents.length > 0
+    ) {
+      turns.push(nextTurn)
     }
   })
 
-  return turns.filter((turn) => {
-    return (
-      turn.question.trim().length > 0 ||
-      turn.answerMarkdown.trim().length > 0 ||
-      turn.answerEvents.length > 0
-    )
-  })
+  return turns
 }

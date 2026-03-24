@@ -1,9 +1,22 @@
-﻿import type { DipChatKitMessageTurn, DipChatKitPreviewPayload } from '../../../../types'
+import type { DipChatKitMessageTurn, DipChatKitPreviewPayload } from '../../../../types'
 
 export interface AiAnswerBubbleProps {
   turn: DipChatKitMessageTurn
   onCopy: () => void
   onRegenerate: () => void
   onOpenPreview: (payload: DipChatKitPreviewPayload) => void
+}
+
+export interface DipChatKitToolCardItem {
+  id: string
+  kind: 'call' | 'result'
+  title: string
+  detail: string
+  toolName: string
+  toolCallId: string
+  text: string
+  inlineText: string
+  previewText: string
+  isError?: boolean
 }
 
