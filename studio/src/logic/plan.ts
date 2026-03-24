@@ -5,6 +5,7 @@ import type { OpenClawCronAdapter } from "../adapters/openclaw-cron-adapter";
 import { HttpError } from "../errors/http-error";
 import type {
   DeleteCronJobCommand,
+  GetCronJobCommand,
   GetPlanContentCommand,
   OpenClawCronListParams,
   OpenClawCronJob,
@@ -23,6 +24,14 @@ const OWNERSHIP_SCAN_LIMIT = 200;
  * Application logic used to fetch cron jobs and run history.
  */
 export interface CronLogic {
+  /**
+   * Reads one cron job after ownership validation.
+   *
+   * @param command The read command.
+   * @returns The owned cron job.
+   */
+  getCronJob(command: GetCronJobCommand): Promise<OpenClawCronJob>;
+
   /**
    * Fetches cron jobs with the requested filters.
    *
@@ -78,6 +87,16 @@ export class DefaultCronLogic implements CronLogic {
     private readonly openClawCronAdapter: OpenClawCronAdapter,
     private readonly openClawWorkspaceDir: string
   ) {}
+
+  /**
+   * Reads one cron job from OpenClaw.
+   *
+   * @param command The read command.
+   * @returns The owned cron job.
+   */
+  public async getCronJob(command: GetCronJobCommand): Promise<OpenClawCronJob> {
+    return this.readOwnedJob(command.id, command.userId);
+  }
 
   /**
    * Fetches cron jobs from OpenClaw.

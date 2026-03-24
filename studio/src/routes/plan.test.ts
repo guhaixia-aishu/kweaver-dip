@@ -149,6 +149,7 @@ describe("createCronRouter", () => {
   it("registers plans routes", () => {
     const router = createCronRouter({
       listCronJobs: vi.fn(),
+      getCronJob: vi.fn(),
       getPlanContent: vi.fn(),
       updateCronJob: vi.fn(),
       deleteCronJob: vi.fn(),
@@ -171,6 +172,9 @@ describe("createCronRouter", () => {
       (entry) =>
         entry.route?.path === "/api/dip-studio/v1/plans/:id/runs"
     );
+    const planLayer = router.stack.find(
+      (entry) => entry.route?.path === "/api/dip-studio/v1/plans/:id"
+    );
     const planContentLayer = router.stack.find(
       (entry) => entry.route?.path === "/api/dip-studio/v1/plans/:id/content"
     );
@@ -185,6 +189,7 @@ describe("createCronRouter", () => {
 
     expect(jobsLayer).toBeDefined();
     expect(plansLayer).toBeDefined();
+    expect(planLayer).toBeDefined();
     expect(planContentLayer).toBeDefined();
     expect(planRunsLayer).toBeDefined();
     expect(patchLayer).toBeDefined();
@@ -202,6 +207,7 @@ describe("createCronRouter", () => {
     });
     const router = createCronRouter({
       listCronJobs,
+      getCronJob: vi.fn(),
       getPlanContent: vi.fn(),
       updateCronJob: vi.fn(),
       deleteCronJob: vi.fn(),
@@ -253,6 +259,7 @@ describe("createCronRouter", () => {
     const badRequest = new HttpError(400, "Invalid query parameter `limit`");
     const router1 = createCronRouter({
       listCronJobs: vi.fn().mockRejectedValue(badRequest),
+      getCronJob: vi.fn(),
       getPlanContent: vi.fn(),
       updateCronJob: vi.fn(),
       deleteCronJob: vi.fn(),
@@ -284,6 +291,7 @@ describe("createCronRouter", () => {
 
     const router2 = createCronRouter({
       listCronJobs: vi.fn().mockRejectedValue(new Error("boom")),
+      getCronJob: vi.fn(),
       getPlanContent: vi.fn(),
       updateCronJob: vi.fn(),
       deleteCronJob: vi.fn(),
@@ -356,6 +364,7 @@ describe("createCronRouter", () => {
     });
     const router = createCronRouter({
       listCronJobs,
+      getCronJob: vi.fn(),
       getPlanContent: vi.fn(),
       updateCronJob: vi.fn(),
       deleteCronJob: vi.fn(),
@@ -428,11 +437,25 @@ describe("createCronRouter", () => {
   });
 
   it("reads PLAN.md content for the authenticated user", async () => {
+    const getCronJob = vi.fn().mockResolvedValue({
+      id: "plan-1",
+      agentId: "dh-1",
+      sessionKey: "agent:dh-1:user:user-1:direct:chat-1",
+      name: "Plan 1",
+      enabled: true,
+      createdAtMs: 1,
+      updatedAtMs: 2,
+      schedule: {
+        expr: "0 9 * * *",
+        tz: "Asia/Shanghai"
+      }
+    });
     const getPlanContent = vi.fn().mockResolvedValue({
       content: "# PLAN\nhello"
     });
     const router = createCronRouter({
       listCronJobs: vi.fn(),
+      getCronJob,
       getPlanContent,
       updateCronJob: vi.fn(),
       deleteCronJob: vi.fn(),
@@ -479,6 +502,79 @@ describe("createCronRouter", () => {
     expect(next).not.toHaveBeenCalled();
   });
 
+  it("reads one plan for the authenticated user", async () => {
+    const getCronJob = vi.fn().mockResolvedValue({
+      id: "plan-1",
+      agentId: "dh-1",
+      sessionKey: "agent:dh-1:user:user-1:direct:chat-1",
+      name: "Plan 1",
+      enabled: true,
+      createdAtMs: 1,
+      updatedAtMs: 2,
+      schedule: {
+        expr: "0 9 * * *",
+        tz: "Asia/Shanghai"
+      }
+    });
+    const router = createCronRouter({
+      listCronJobs: vi.fn(),
+      getCronJob,
+      getPlanContent: vi.fn(),
+      updateCronJob: vi.fn(),
+      deleteCronJob: vi.fn(),
+      listCronRuns: vi.fn()
+    }) as {
+      stack: Array<{
+        route?: {
+          path: string;
+          stack: Array<{
+            handle: (
+              request: Request,
+              response: Response,
+              next: NextFunction
+            ) => Promise<void>;
+          }>;
+        };
+      }>;
+    };
+    const layer = router.stack.find(
+      (entry) => entry.route?.path === "/api/dip-studio/v1/plans/:id"
+    );
+    const handler = layer?.route?.stack[0]?.handle;
+    const response = createResponseDouble();
+    const next = vi.fn<NextFunction>();
+    const request = {
+      params: {
+        id: "plan-1"
+      },
+      headers: {}
+    } as unknown as Request;
+
+    injectAuthenticatedUserId(request, "user-1");
+
+    await handler?.(request, response, next);
+
+    expect(getCronJob).toHaveBeenCalledWith({
+      id: "plan-1",
+      userId: "user-1"
+    });
+    expect(response.status).toHaveBeenCalledWith(200);
+    expect(response.json).toHaveBeenCalledWith({
+      id: "plan-1",
+      agentId: "dh-1",
+      sessionKey: "agent:dh-1:user:user-1:direct:chat-1",
+      name: "Plan 1",
+      enabled: true,
+      createdAtMs: 1,
+      updatedAtMs: 2,
+      schedule: {
+        expr: "0 9 * * *",
+        tz: "Asia/Shanghai"
+      }
+    });
+    expect(next).not.toHaveBeenCalled();
+  });
+
   it("handles plan runs request with id override", async () => {
     const listCronRuns = vi.fn().mockResolvedValue({
       entries: [],
@@ -490,6 +586,7 @@ describe("createCronRouter", () => {
     });
     const router = createCronRouter({
       listCronJobs: vi.fn(),
+      getCronJob: vi.fn(),
       getPlanContent: vi.fn(),
       updateCronJob: vi.fn(),
       deleteCronJob: vi.fn(),
@@ -553,6 +650,7 @@ describe("createCronRouter", () => {
     });
     const router = createCronRouter({
       listCronJobs: vi.fn(),
+      getCronJob: vi.fn(),
       getPlanContent: vi.fn(),
       updateCronJob,
       deleteCronJob: vi.fn(),
@@ -620,6 +718,7 @@ describe("createCronRouter", () => {
     const deleteCronJob = vi.fn().mockResolvedValue({ removed: true, id: "plan-1" });
     const router = createCronRouter({
       listCronJobs: vi.fn(),
+      getCronJob: vi.fn(),
       getPlanContent: vi.fn(),
       updateCronJob,
       deleteCronJob,

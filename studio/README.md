@@ -230,6 +230,20 @@ GitHub：https://github.com/kweaver-ai/web
 
 结构同 `GET /api/dip-studio/v1/plans`。
 
+#### 获取单条计划任务
+
+`GET /api/dip-studio/v1/plans/{id}`
+
+路径参数：
+
+| 参数 | 类型 | 是否必填 | 说明 |
+| -- | -- | -- | -- |
+| id | string | 是 | 计划任务 ID |
+
+响应：`200 application/json`
+
+返回单个 `CronJob` 对象。
+
 #### 获取计划任务运行记录
 
 `GET /api/dip-studio/v1/plans/{id}/runs`

@@ -183,6 +183,30 @@ export function createCronRouter(logic: CronLogic = cronLogic): Router {
   );
 
   router.get(
+    "/api/dip-studio/v1/plans/:id",
+    async (
+      request: Request<PlanParams, unknown, unknown>,
+      response: Response,
+      next: NextFunction
+    ): Promise<void> => {
+      try {
+        const result = await logic.getCronJob({
+          id: request.params.id,
+          userId: readAuthenticatedUserId(request)
+        });
+
+        response.status(200).json(result);
+      } catch (error) {
+        next(
+          error instanceof HttpError
+            ? error
+            : new HttpError(502, "Failed to read plan")
+        );
+      }
+    }
+  );
+
+  router.get(
     "/api/dip-studio/v1/plans/:id/content",
     async (
       request: Request<PlanParams, PlanContentResponse, unknown>,

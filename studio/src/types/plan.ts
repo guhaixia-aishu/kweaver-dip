@@ -233,6 +233,21 @@ export interface GetPlanContentCommand {
 }
 
 /**
+ * Plan read command accepted by application logic.
+ */
+export interface GetCronJobCommand {
+  /**
+   * Stable job identifier.
+   */
+  id: string;
+
+  /**
+   * Optional authenticated user identifier.
+   */
+  userId?: string;
+}
+
+/**
  * Response payload returned by the plan content endpoint.
  */
 export interface PlanContentResponse {

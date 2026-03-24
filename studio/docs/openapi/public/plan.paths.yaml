@@ -268,6 +268,36 @@ paths:
           $ref: '../common.schemas.yaml#/errors/InternalServerError'
 
   /plans/{id}:
+    get:
+      operationId: getPlan
+      summary: 获取单条计划任务
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 计划任务 ID
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 单条计划任务
+          content:
+            application/json:
+              schema:
+                $ref: './plan.schemas.yaml#/components/schemas/CronJob'
+        "400":
+          $ref: '../common.schemas.yaml#/errors/InvalidParameter'
+        "401":
+          $ref: '../common.schemas.yaml#/errors/Unauthorized'
+        "403":
+          $ref: '../common.schemas.yaml#/errors/Forbidden'
+        "404":
+          $ref: '../common.schemas.yaml#/errors/NotFound'
+        "409":
+          $ref: '../common.schemas.yaml#/errors/Conflict'
+        "500":
+          $ref: '../common.schemas.yaml#/errors/InternalServerError'
+
     put:
       operationId: updateCronJob
       summary: 编辑计划任务
