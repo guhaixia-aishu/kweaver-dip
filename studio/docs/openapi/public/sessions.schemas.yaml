@@ -41,74 +41,51 @@ components:
       additionalProperties: true
 
     SessionSummary:
-      summary: 会话摘要
       type: object
+      additionalProperties: false
+      required:
+        - key
+        - kind
+        - updatedAt
+        - sessionId
+        - abortedLastRun
+        - totalTokensFresh
+        - modelProvider
+        - model
+        - contextTokens
       properties:
         key:
           type: string
-          description: 会话唯一 key
+          description: 规范化后的 session key。
         kind:
           type: string
-          description: 会话类型
-        label:
-          type: string
-          description: 会话标签
-        displayName:
-          type: string
-          description: 展示名称
+          enum:
+            - direct
+            - group
+            - global
+            - unknown
         updatedAt:
           type: integer
-          description: 最近更新时间（毫秒）
+          format: int64
+          description: 最近活动时间戳，单位为毫秒。
         sessionId:
           type: string
-          description: 会话实例 ID
-        chatType:
-          type: string
-        origin:
-          $ref: '#/components/schemas/SessionOrigin'
-        deliveryContext:
-          $ref: '#/components/schemas/SessionDeliveryContext'
-        lastChannel:
-          type: string
-        systemSent:
-          type: boolean
+          description: 底层 transcript/session 的标识符。
         abortedLastRun:
           type: boolean
         totalTokensFresh:
           type: boolean
         modelProvider:
           type: string
+          description: 为当前 session 解析得到的模型提供方。
         model:
           type: string
+          description: 为当前 session 解析得到的模型。
         contextTokens:
           type: integer
-          minimum: 0
-      required:
-        - key
-        - kind
-        - updatedAt
-        - sessionId
-      additionalProperties: true
-
-    SessionOrigin:
-      summary: 会话来源信息
-      type: object
-      properties:
-        provider:
+        derivedTitle:
           type: string
-        surface:
-          type: string
-        chatType:
-          type: string
-      additionalProperties: true
-
-    SessionDeliveryContext:
-      summary: 会话投递上下文
-      type: object
-      properties:
-        channel:
-          type: string
-      additionalProperties: true
+          description: 从 transcript 内容推导出的标题；仅在 includeDerivedTitles=true 时返回。
 
     SessionGetResponse:
       summary: 单个会话消息响应
