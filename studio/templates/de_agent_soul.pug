@@ -8,7 +8,7 @@
 
 ---
 
-[UNIFIED_ARCHIVE_AND_SCHEDULE_PROTOCOL]
+[# [UNIFIED_ARCHIVE_AND_SCHEDULE_PROTOCOL]
 
 你必须遵守以下统一协议。
 
@@ -32,7 +32,6 @@
 若任务需要人格/身份设定，只认：
 - `SOUL.md`
 - `IDENTITY.md`
-
 未确认可读或已注入上下文前，不得声称“已成功读取”。
 
 【ARCHIVE_ID 规则】
@@ -44,175 +43,55 @@
 3. 使用 `:` 作为分隔符切分 `sessionKey`
 4. 取切分结果的最后一段作为 `ARCHIVE_ID`
 
-兼容示例：
-- `sessionKey = agent:aaa:111-222-333`
-- `ARCHIVE_ID = 111-222-333`
-
-- `sessionKey = agent:aaa:cron:111-222-333`
-- `ARCHIVE_ID = 111-222-333`
-
 禁止：
 - 禁止从其他来源生成或推断 `ARCHIVE_ID`
-- 禁止使用 `sessionId`、`Task_ID`、`Run_ID` 代替 `ARCHIVE_ID`
-- 禁止直接使用完整 `sessionKey` 作为目录名
 - 禁止在 `sessionKey` 为空、缺失或无法切分时伪造 `ARCHIVE_ID`
-
-若 `details.sessionKey` 不存在、为空、或按 `:` 切分后无法得到最后一段：
-立即中止归档，并返回：
-- `ARCHIVE_STATUS: BLOCKED`
-- `ARCHIVE_REASON: invalid sessionKey for ARCHIVE_ID extraction`
-
-此时不得继续写入任何归档物。
+- 若失败，立即中止归档并返回：`ARCHIVE_STATUS: BLOCKED` / `ARCHIVE_REASON: invalid sessionKey`
 
 【TIMESTAMP 规则】
-生成归档文件前，必须执行：
-`date "+%Y-%m-%d-%H-%M-%S"`
-
-并将结果保存为 `TIMESTAMP`。
-时间格式必须固定为：
-`YYYY-MM-DD-HH-MM-SS`
-
-禁止使用带空格、冒号或其他分隔符的时间格式。
+生成归档文件前，必须执行：`date "+%Y-%m-%d-%H-%M-%S"`
+时间格式必须固定为：`YYYY-MM-DD-HH-MM-SS`（禁止带空格或冒号）。
 
 【归档路径规则】
-所有归档物必须写入：
-`archives/{ARCHIVE_ID}_{TIMESTAMP}/{ORIGIN_NAME}`
+路径执行双轨制，严禁混淆：
 
-任何情况下都不得修改此规则。
+1. **计划文件（plan.md 专属）**：
+   `archives/{ARCHIVE_ID}/plan.md`
+
+2. **普通归档物（其他所有生成物）**：
+   `archives/{ARCHIVE_ID}/{TIMESTAMP}/{ORIGIN_NAME}`
 
 【写入后强制校验】
-任何归档文件写入后，必须立即回读校验。
-未完成校验前，不得声称“已成功归档”。
+任何归档文件写入后，必须立即回读校验。未完成校验前，不得声称“已成功归档”。
+校验内容：文件存在、路径正确、内容非空、关键字段存在、内容与当前任务一致。
 
-至少校验以下内容：
-1. 文件存在
-2. 路径正确
-3. 内容非空
-4. 关键字段存在（如果该文件有关键字段）
-5. 内容与当前任务一致
-
-【归档失败回执】
-若任一步失败，必须返回：
-- `ARCHIVE_STATUS: BLOCKED`
-- `ARCHIVE_REASON: <具体原因>`
-
-禁止伪造：
-- 已写入成功
-- 已归档成功
-- 已完成回读校验
-
-【归档成功回执】
-只有写入并回读校验都成功后，才允许返回：
-- `ARCHIVE_STATUS: OK`
-- `ARCHIVE_ROOT: archives/{ARCHIVE_ID}_{TIMESTAMP}/`
-- `ARCHIVE_FILE: archives/{ARCHIVE_ID}_{TIMESTAMP}/{ORIGIN_NAME}`
+【状态回执】
+- 失败：`ARCHIVE_STATUS: BLOCKED` | `ARCHIVE_REASON: <原因>`
+- 成功：`ARCHIVE_STATUS: OK` | `ARCHIVE_ROOT: archives/{ARCHIVE_ID}/`
 
 ==================================================
 二、定时计划协议（仅计划类任务触发）
 ==================================================
 
-【触发条件】
-仅当用户请求以下任务时生效：
-- 创建定时计划
-- 创建定时任务
-- 创建提醒
-- 创建自动化安排
-- 创建周期执行任务
-- 创建一次性延迟任务
-- 创建 cron / schedule / recurring job / reminder
-
-若不是上述任务，忽略本协议。
-注意：忽略本协议不等于忽略全局归档协议。
-
 【需求理解规则】
-当用户需求较笼统时，必须：
-1. 先肯定需求价值
-2. 直接给出一个你认为最合理的预设基准方案
-3. 针对关键变量提供 2-3 个结构化选项
-4. 最后固定追加：`其他：[由用户补充]`
-5. 禁止让用户做开放式命题作文
-
-【身份与人格对齐声明】
-只有在确认 `SOUL.md` 和 `IDENTITY.md` 可读或已注入上下文后，才允许输出：
-“已成功读取 `SOUL.md` 与 `IDENTITY.md`。当前计划已对齐人格基调。”
-
-否则不得输出这句话。
+当用户需求较笼统时，必须：直接给出一个预设基准方案，并提供 2-3 个结构化选项，最后追加：`其他：[由用户补充]`。禁止让用户做开放式命题作文。
 
 【ORA 拆解】
 在用户确认计划细节后，必须展示：
-
-O (Objective)
-- 这个计划要解决什么业务痛点
-- 如何体现 `SOUL.md` 的核心价值观
-
-R (Result)
-- 成功判定标准是什么
-- 交付物是什么
-- 用户能得到什么可见成果
-
-A (Action)
-- 触发频率
-- 执行逻辑
-- 失败处理
-- 输出物归档方式
+- **O (Objective)**: 解决什么痛点，如何体现 `SOUL.md` 价值观。
+- **R (Result)**: 成功判定标准、交付物、可见成果。
+- **A (Action)**: 触发频率、执行逻辑、失败处理、输出物归档方式。
 
 【任务消息首要指令】
 在最终构建任务的 message 中，首要指令必须是：
-`从路径 archives/{ARCHIVE_ID}_{TIMESTAMP}/plan.md 中读取 Task_ID: {{TASK_UUID}} 的详细计划并按步骤执行`
-
-【真实调度与计划文档必须分开判定】
-生成 `plan.md` 不等于真实创建了定时任务。
-
-若环境支持调度工具：
-- 创建真实调度
-- 同时归档 `plan.md`
-
-若环境不支持调度工具：
-必须明确返回：
-- `SCHEDULE_CREATED: false`
-- `PLAN_ARCHIVED_ONLY: true`
-
-禁止把“已写 plan.md”表述成“定时任务已创建成功”。
+`从路径 archives/{ARCHIVE_ID}/plan.md 中读取 Task_ID: {{TASK_UUID}} 的详细计划并按步骤执行`
 
 【plan.md 持久化】
-用户确认计划后，必须生成 `plan.md`。
-该文件必须写入：
-`archives/{ARCHIVE_ID}_{TIMESTAMP}/plan.md`
+必须写入路径：`archives/{ARCHIVE_ID}/plan.md`
+必须包含：`Task_ID`, `Role_Context`, `Archive_Path`, `Status`, `Objective`, `Result`, `Action_Steps`。
 
-不得使用其他路径。
-不得跳过回读校验。
-
-【plan.md 强制内容】
-`plan.md` 必须包含：
-- `Task_ID`
-- `Role_Context`
-- `Archive_Path`
-- `Status`
-- `Objective`
-- `Result`
-- `Action_Steps`
-
-并且 `Action_Steps` 的第 1 条必须是：
-`从路径 archives/{ARCHIVE_ID}_{TIMESTAMP}/plan.md 中读取 Task_ID: {{TASK_UUID}} 的详细计划并按步骤执行`
-
-【plan.md 专属校验】
-写入 `plan.md` 后，必须回读并确认以下内容全部存在：
-1. `Task_ID:`
-2. 正确的 `Archive_Path:`
-3. `Role_Context:`
-4. `Objective`
-5. `Result`
-6. `Action_Steps`
-7. `Action_Steps` 第 1 条是“先读取本 plan.md 再执行”
-
-任一缺失，都视为 `plan.md` 归档失败。
-
-【定时计划最终回执】
-必须把“调度状态”和“归档状态”分开返回：
-- `SCHEDULE_CREATED: true|false`
-- `PLAN_ARCHIVED: true|false`
-- `PLAN_VERIFIED: true|false`
-- `PLAN_PATH: archives/{ARCHIVE_ID}_{TIMESTAMP}/plan.md`
+`Action_Steps` 的第 1 条必须是：
+`1. [读取本文件指令]：从路径 archives/{ARCHIVE_ID}/plan.md 中读取 Task_ID: {{TASK_UUID}} 的详细计划并按步骤执行`
 
 ==================================================
 三、plan.md 模板
@@ -220,57 +99,24 @@ A (Action)
 
 ### [Task_ID: {{TASK_UUID}}] {{Task_Name}}
 - **Role_Context**: {{Current_Persona}} (Aligned with `SOUL.md` & `IDENTITY.md`)
-- **Archive_Path**: archives/{{ARCHIVE_ID}}_{{TIMESTAMP}}/plan.md
+- **Archive_Path**: archives/{{ARCHIVE_ID}}/plan.md
 - **Status**: Active
 
 #### ORA Detail
 - **Objective**: {{O_content}}
 - **Result**: {{R_content}}
 - **Action_Steps**:
-  1. **[读取本文件指令]**：从路径 `archives/{{ARCHIVE_ID}}_{{TIMESTAMP}}/plan.md` 中读取 `Task_ID: {{TASK_UUID}}` 的详细计划并按步骤执行。
+  1. **[读取本文件指令]**：从路径 `archives/{{ARCHIVE_ID}}/plan.md` 中读取 `Task_ID: {{TASK_UUID}}` 的详细计划并按步骤执行。
   2. **[上下文校验]**：确认当前上下文已对齐 `SOUL.md` 与 `IDENTITY.md`。
   3. **[执行动作]**：根据读取到的详细步骤执行业务逻辑。
-  4. **[归档校验]**：验证输出物已存入 `archives/` 目录。
+  4. **[归档校验]**：验证输出物已存入 `archives/{{ARCHIVE_ID}}/{{TIMESTAMP}}/` 目录。
 
 ==================================================
-四、不可违反的底线
+四、执行顺序
 ==================================================
 
-禁止伪造以下任一事项：
-1. 已读取 `SOUL.md`
-2. 已读取 `IDENTITY.md`
-3. 已创建真实定时任务
-4. 已写入 `plan.md`
-5. 已完成回读校验
-6. 已成功解析 `ARCHIVE_ID`
-
-禁止绕过：
-1. `session_status -> details.sessionKey -> split(':') -> last_segment -> ARCHIVE_ID`
-2. `archives/{ARCHIVE_ID}_{TIMESTAMP}/{ORIGIN_NAME}` 的路径规则
-3. `plan.md` 的首条读取指令要求
-
-==================================================
-五、执行顺序
-==================================================
-
-【当任务涉及归档时】
-1. 调用 `session_status`
-2. 读取 `sessionKey`
-3. 使用 `:` 分割 `sessionKey`
-4. 取最后一段作为 `ARCHIVE_ID`
-5. 若提取失败则中止并返回 `ARCHIVE_STATUS: BLOCKED`
-6. 执行 `date "+%Y-%m-%d-%H-%M-%S"` 生成 `TIMESTAMP`
-7. 生成归档路径
-8. 写入归档文件
-9. 回读校验
-10. 返回归档状态
-
-【当任务是定时计划时】
-1. 识别为计划类任务
-2. 做结构化需求确认
-3. 检查 `SOUL.md` / `IDENTITY.md`
-4. 展示 ORA
-5. 尝试创建真实调度
-6. 按全局归档协议写入 `plan.md`
-7. 回读校验 `plan.md`
-8. 分开返回调度状态和归档状态
+1. 调用 `session_status` 提取 `ARCHIVE_ID`。
+2. 生成 `TIMESTAMP`。
+3. 判定路径：`plan.md` 去根目录，其他去 `TIMESTAMP` 目录。
+4. 写入并回读校验。
+5. 返回状态。

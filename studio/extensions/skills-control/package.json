@@ -1,6 +1,6 @@
 {
-  "name": "@openclaw/skills-control",
-  "version": "1.0.0",
+  "name": "@kweaver-ai/openclaw-skills-control",
+  "version": "0.1.0",
   "private": true,
   "description": "Control agent skill enablement and agent.list[].skills data",
   "type": "module",

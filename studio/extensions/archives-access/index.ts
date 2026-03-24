@@ -48,9 +48,9 @@ export default function register(api: OpenClawPluginApi) {
     match: "prefix",
     auth: "gateway",
     handler: async (req: IncomingMessage, res: ServerResponse) => {
-      api.logger.debug(`Incoming request to archives-access: ${req.url}`);
+      api.logger.debug?.(`Incoming request to archives-access: ${req.url}`);
       try {
-        let workspaceDir = api.runtime.workspaceDir || process.cwd();
+        let workspaceDir = api.resolvePath(".") || process.cwd();
 
         const urlStr = req.url || "/";
         const urlObj = new URL(urlStr, "http://localhost");
@@ -62,7 +62,7 @@ export default function register(api: OpenClawPluginApi) {
           if (Array.isArray(agentList)) {
             const agentCfg = agentList.find(a => a.id === agentId);
             if (agentCfg && agentCfg.workspace) {
-              const baseDir = api.runtime.workspaceDir || process.cwd();
+              const baseDir = api.resolvePath(".") || process.cwd();
               workspaceDir = path.resolve(baseDir, agentCfg.workspace);
             } else {
               api.logger.warn(`Agent workspace not found for: ${agentId}`);
@@ -156,7 +156,7 @@ export default function register(api: OpenClawPluginApi) {
     if (!filePathInfo || typeof filePathInfo !== 'string') return;
 
     try {
-      const workspaceDir = api.runtime.workspaceDir || process.cwd();
+      const workspaceDir = api.resolvePath(".") || process.cwd();
       const archivesBaseDir = path.join(workspaceDir, "archives");
       const sourcePath = path.resolve(workspaceDir, filePathInfo);
       
@@ -180,31 +180,52 @@ export default function register(api: OpenClawPluginApi) {
       const sessionIdSafe = sessionUuid.replace(/[^a-zA-Z0-9-_]/g, "_");
       
       const originalFileName = path.basename(sourcePath);
+      const isPlan = originalFileName.toLowerCase() === "plan.md";
       const sanitizedFileName = sanitizeFileName(originalFileName);
 
-      // Regex for the compliant folder naming pattern: [any]_[YYYY-MM-DD-HH-mm-ss]
-      const compliantFolderRegex = /^.+_\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}$/;
-      
       const pathSegments = relToWorkspace.split(path.sep);
       const isInArchives = pathSegments[0] === "archives";
-      // Folder must match regex AND the prefix must be the current sessionId
-      const isCorrectFolder = pathSegments.length >= 2 && 
-                              compliantFolderRegex.test(pathSegments[1]) && 
-                              pathSegments[1].startsWith(sessionIdSafe);
-      // Rule: If directory structure is correct, session matches, and time is accurate to second, it's compliant.
-      if (isInArchives && isCorrectFolder) {
+
+      // Timestamp regex: YYYY-MM-DD-HH-mm-ss
+      const timestampRegex = /^\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}$/;
+
+      let isPathCompliant = false;
+
+      if (isPlan) {
+        // Track 1: archives/{ARCHIVE_ID}/plan.md (3 segments)
+        isPathCompliant = isInArchives && 
+                          pathSegments.length === 3 && 
+                          pathSegments[1] === sessionIdSafe && 
+                          pathSegments[2].toLowerCase() === "plan.md";
+      } else {
+        // Track 2: archives/{ARCHIVE_ID}/{TIMESTAMP}/{ORIGIN_NAME} (4 segments)
+        isPathCompliant = isInArchives && 
+                          pathSegments.length === 4 && 
+                          pathSegments[1] === sessionIdSafe && 
+                          timestampRegex.test(pathSegments[2]) && 
+                          pathSegments[3] === sanitizedFileName;
+      }
+
+      if (isPathCompliant) {
         return;
       }
 
       const timestamp = formatTimestamp(new Date());
-      const archiveFolderName = `${sessionIdSafe}_${timestamp}`;
-      const targetArchiveDir = path.join(archivesBaseDir, archiveFolderName);
+      let targetArchiveDir: string;
+      let finalFileName: string = sanitizedFileName;
+
+      if (isPlan) {
+        // archives/{ARCHIVE_ID}/
+        targetArchiveDir = path.join(archivesBaseDir, sessionIdSafe);
+        finalFileName = "plan.md"; // Force lowercase plan.md
+      } else {
+        // archives/{ARCHIVE_ID}/{TIMESTAMP}/
+        targetArchiveDir = path.join(archivesBaseDir, sessionIdSafe, timestamp);
+      }
       
       await fs.promises.mkdir(targetArchiveDir, { recursive: true });
       
-      const directory = path.dirname(sourcePath);
-      let finalSourcePath = sourcePath;
-      let finalTargetInWorkspace = path.join(targetArchiveDir, sanitizedFileName);
+      const finalTargetInWorkspace = path.join(targetArchiveDir, finalFileName);
 
       if (sourcePath !== finalTargetInWorkspace) {
         try {
@@ -216,7 +237,7 @@ export default function register(api: OpenClawPluginApi) {
         }
       }
 
-      api.logger.info(`Processed non-compliant file: ${originalFileName} in ${archiveFolderName}`);
+      api.logger.info(`Processed ${isPlan ? "plan" : "archived"} file: ${originalFileName} in ${path.relative(archivesBaseDir, targetArchiveDir)}`);
     } catch (err: any) {
       api.logger.error(`Failed to handle archive naming: ${err.message}`);
     }
