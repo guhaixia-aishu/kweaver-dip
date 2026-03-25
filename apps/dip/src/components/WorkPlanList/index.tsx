@@ -21,6 +21,7 @@ function PlanListInner({
   pageSize = DEFAULT_PAGE_SIZE,
   className,
   onPlanClick,
+  searchValue,
 }: PlanListProps) {
   const pausePlan = useUserWorkPlanStore((state) => state.pausePlan)
   const resumePlan = useUserWorkPlanStore((state) => state.resumePlan)
@@ -205,6 +206,13 @@ function PlanListInner({
   const isNoDigitalHumanId = source.mode === 'digitalHuman' && !source.digitalHumanId.trim()
   const initialLoading = isGlobalMode ? globalLoading : digitalHumanLoading
   const listData = isGlobalMode ? globalPlans : digitalHumanJobs
+  const trimmedSearchValue = searchValue?.trim() ?? ''
+
+  const filteredListData = useMemo(() => {
+    if (!trimmedSearchValue) return listData
+    const keyword = trimmedSearchValue.toLowerCase()
+    return listData.filter((job) => (job.name ?? '').toLowerCase().includes(keyword))
+  }, [listData, trimmedSearchValue])
 
   const stateContent = (() => {
     if (isNoDigitalHumanId) {
@@ -215,7 +223,10 @@ function PlanListInner({
       return <Spin />
     }
 
-    if (listData.length === 0) {
+    if (filteredListData.length === 0) {
+      if (trimmedSearchValue) {
+        return <Empty type="search" desc="抱歉，没有找到相关内容" />
+      }
       return <Empty title="暂无数据" />
     }
 
@@ -236,10 +247,10 @@ function PlanListInner({
                 tagName={ScrollBarContainer as any}
                 className="h-full w-full"
                 rowComponent={getRow}
-                rowCount={listData.length}
+                rowCount={filteredListData.length}
                 rowHeight={PLAN_LIST_ROW_HEIGHT}
                 rowProps={{
-                  data: listData,
+                  data: filteredListData,
                 }}
                 style={{ height: '100%', width: '100%' }}
                 // onScroll={(e) => {

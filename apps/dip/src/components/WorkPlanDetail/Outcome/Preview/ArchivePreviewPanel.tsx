@@ -26,10 +26,6 @@ const ArchivePreviewPanel = ({ preview, className }: ArchivePreviewPanelProps) =
           <div className="flex min-h-[200px] flex-1 items-center justify-center py-10">
             <Spin />
           </div>
-        ) : preview.body === '' ? (
-          <div className="flex min-h-[200px] flex-1 items-center justify-center py-10">
-            <Empty title="暂无预览内容" />
-          </div>
         ) : preview.viewer === 'pdf' && preview.blobUrl ? (
           <iframe
             title={preview.title}
@@ -83,6 +79,10 @@ const ArchivePreviewPanel = ({ preview, className }: ArchivePreviewPanelProps) =
           </div>
         ) : preview.viewer === 'markdown' ? (
           <XMarkdown className={styles.markdownRoot}>{preview.body}</XMarkdown>
+        ) : preview.body === '' ? (
+          <div className="flex min-h-[200px] flex-1 items-center justify-center py-10">
+            <Empty title="暂无预览内容" />
+          </div>
         ) : (
           <pre className="m-0 whitespace-pre-wrap break-words text-[--dip-text-color]">
             {preview.body}

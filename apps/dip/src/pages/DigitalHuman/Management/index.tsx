@@ -147,15 +147,8 @@ const Management = () => {
   return (
     <div className="h-full p-6 flex flex-col relative bg-white">
       {messageContextHolder}
-      <div className="flex justify-between mb-6 flex-shrink-0 z-20">
-        <div className="flex flex-col gap-y-2">
-          <span className="font-medium text-base text-[--dip-text-color]">
-            {intl.get('digitalHuman.management.pageTitle')}
-          </span>
-          <span className="text-[--dip-text-color-65]">
-            {intl.get('digitalHuman.management.pageSubtitle')}
-          </span>
-        </div>
+      <div className="flex justify-between items-center mb-4 flex-shrink-0 z-20">
+        <span className="font-bold text-lg text-[--dip-text-color]">全部</span>
         {(hasLoadedData || searchValue) && (
           <div className="flex items-center gap-x-3">
             <SearchInput

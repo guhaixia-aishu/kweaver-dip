@@ -156,7 +156,7 @@ function TasksPanelInner({ planId, dhId, sessionId: _sessionId }: TasksPanelProp
                     <Empty title="暂无数据" />
                   </div>
                 ) : (
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-2 pb-2">
                     {entries.map((entry, i) => {
                       const rowKey = `${entry.jobId}-${entry.ts}-${i}`
                       return (

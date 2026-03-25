@@ -53,10 +53,10 @@ const SkillConfig = ({ readonly }: SkillConfigProps) => {
         width: '40%',
         render: (text: string) => {
           return (
-            <div className="flex items-center gap-2 truncate">
+            <div className="flex items-center truncate">
               <IconFont
                 type="icon-dip-deep-thinking"
-                className="text-[--dip-primary-color] text-xl h-6 w-6 shrink-0"
+                className="text-[--dip-primary-color] text-base h-6 w-6 shrink-0"
               />
               <span title={text} className="truncate">
                 {text || '--'}

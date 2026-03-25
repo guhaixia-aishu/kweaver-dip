@@ -1,5 +1,10 @@
 import type { SessionArchivesResponse } from '@/apis/dip-studio/sessions'
 
+// 不要再 import ...pdf?url / ...jpeg?url
+
+const jpegAssetUrl = encodeURI('/123图片.jpeg')
+const pdfAssetUrl = encodeURI('/_2018年世界杯转播平台洞察报告 (1).pdf')
+
 /** 为 true 时成果 Tab 走本地 mock，不调归档接口 */
 export const RESULTS_PANEL_USE_MOCK = false
 
@@ -31,35 +36,63 @@ function mockFolderListing(folderName: string): SessionArchivesResponse {
       { name: '企业数字员工简报.md', type: 'file' },
       { name: '企业数字员工简报.html', type: 'file' },
       { name: 'config.json', type: 'file' },
-      { name: '示例.pdf', type: 'file' },
+      { name: '_2018年世界杯转播平台洞察报告 (1).pdf', type: 'file' },
       { name: '示例.docx', type: 'file' },
-      { name: '示例.png', type: 'file' },
+      { name: '123图片.jpeg', type: 'file' },
       { name: '示例.zip', type: 'file' },
     ],
   }
 }
 
 function base64ToArrayBuffer(b64: string): ArrayBuffer {
-  const binary = atob(b64)
+  // 有些 mock base64 可能会包含换行/空白，atob 不一定接受，先统一清理
+  const binary = atob(b64.replace(/\s+/g, ''))
   const len = binary.length
   const bytes = new Uint8Array(len)
   for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i)
   return bytes.buffer
 }
 
-/** 最小可内嵌预览的 PDF（单页） */
+/** 可见内容的 mock PDF（单页） */
 const MOCK_MINI_PDF_BASE64 =
-  'JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PC9UeXBlL0NhdGFsb2cvUGFnZXMgMiAwIFI+PgplbmRvYmoKMiAwIG9iago8PC9UeXBlL1BhZ2VzL0tpZHNbMyAwIFJdL0NvdW50IDE+PgplbmRvYmoKMyAwIG9iago8PC9UeXBlL1BhZ2UvUGFyZW50IDIgMCBSL01lZGlhQm94WzAgMCAyMDAgMjAwXT4+CmVuZG9iagp4cmVmCjAgNAowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAwMDkgMDAwMDAgbiAKMDAwMDAwMDI1OSAwMDAwMCBuIAowMDAwMDAwMDc5IDAwMDAwIG4gCnRyYWlsZXIKPDwvU2l6ZSA0L1Jvb3QgMSAwIFI+Pg/startxrefCjEzOAplbm9iagolJUVPRgo='
+  'JVBERi0xLjQKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2JqCjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDEgPj4KZW5kb2JqCjQgMCBvYmoKPDwgL1R5cGUgL0ZvbnQgL1N1YnR5cGUgL1R5cGUxIC9CYXNlRm9udCAvSGVsdmV0aWNhID4+CmVuZG9iagozIDAgb2JqCjw8IC9UeXBlIC9QYWdlIC9QYXJlbnQgMiAwIFIgL01lZGlhQm94IFswIDAgNjEyIDc5Ml0gL1Jlc291cmNlcyA8PCAvRm9udCA8PCAvRjEgNCAwIFIgPj4gPj4gL0NvbnRlbnRzIDUgMCBSID4+CmVuZG9iago1IDAgb2JqCjw8IC9MZW5ndGggMTQyID4+CnN0cmVhbQpxCjAuOSB3CjcyIDcyIDQ2OCA2MDAgcmUKUwpCVAovRjEgMjQgVGYKMTAwIDcwMCBUZAooIk1vY2sgUERGIFByZXZpZXciKSBUagovRjEgMTIgVGYKMTAwIDY3MCBUZAooU2luZ2xlLXBhZ2UgUERGIGZvciBwcmV2aWV3IHRlc3RpbmcpIFRqCkVUClEKCmVuZHN0cmVhbQplbmRvYmoKeHJlZgowIDYKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDA5IDAwMDAwIG4gCjAwMDAwMDAwNTggMDAwMDAgbiAKMDAwMDAwMDE4NSAwMDAwMCBuIAowMDAwMDAwMTE1IDAwMDAwIG4gCjAwMDAwMDAwMzExIDAwMDAwIG4gCXRyaWxlcnMKPDwvU2l6ZSA2IC9Sb290IDEgMCBSID4+CnN0YXJ0eHJlZgowNTA0CiUlRU9GCg=='
 
-/** 1×1 透明 PNG，用于 mock 图片类预览 */
+void MOCK_MINI_PDF_BASE64
+/** minimal 可解析 PDF（用于 mock iframe 预览） */
+const MOCK_MINI_PDF_BASE64_GOOD =
+  'JVBERi0xLjEKJcKlwrHDqwoKMSAwIG9iagogIDw8IC9UeXBlIC9DYXRhbG9nCiAgICAgL1BhZ2VzIDIgMCBSCiAgPj4KZW5kb2JqCgoyIDAgb2JqCiAgPDwgL1R5cGUgL1BhZ2VzCiAgICAgL0tpZHMgWzMgMCBSXQogICAgIC9Db3VudCAxCiAgICAgL01lZGlhQm94IFswIDAgMzAwIDE0NF0KICA+PgplbmRvYmoKCjMgMCBvYmoKICA8PCAgL1R5cGUgL1BhZ2UKICAgICAgL1BhcmVudCAyIDAgUgogICAgICAvUmVzb3VyY2VzCiAgICAgICA8PCAvRm9udAogICAgICAgICAgIDw8IC9GMQogICAgICAgICAgICAgICAgIDw8IC9UeXBlIC9Gb250CiAgICAgICAgICAgICAgICAgICAvU3VidHlwZSAvVHlwZTEKICAgICAgICAgICAgICAgICAgICAgICAvQmFzZUZvbnQgL1RpbWVzLV' +
+  'vb21hbgogICAgICAgICAgICAgICA+PgogICAgICAgICAgID4+CiAgICAgICA+PgogICAgICAvQ29udGVudHMgNCAwIFIKICA+PgplbmRvYmoKCjQgMCBvYmoKICA8PCAvTGVuZ3RoIDU1ID4+CnN0cmVhbQogIEJUCiAgICAvRjEgMTggVGYKICAgIDAgMCBUZAogICAgKEhlbGxvIFdvcmxkKSBUagogIEVUCmVuZHN0cmVhbQplbmRvYmoKCnhyZWYKMCA1CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAxOCAwMDAwMCBuIAowMDAwMDAwMDc3IDAwMDAwIG4gCjAwMDAwMDAxNzggMDAwMDAgbiAKMDAwMDAwMDQ1NyAwMDAwMCBuIAp0cmFpbGVyCiAgPDwgIC9Sb290IDEgMCBSCiAgICAgIC9TaXplIDUKICA+PgpzdGFydHhyZWYKNTY1CiUlRU9GCg=='
+
+/** 64×64 纯色 PNG（用于 mock 图片类预览，避免渲染过小看不见） */
 const MOCK_1X1_PNG_BASE64 =
-  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
+  'iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAAT0lEQVR42u3PQQkAAAgEsOtkGPsn0Qi+hcEKLNP1WgQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQELgurj5Fp2s+3WAAAAABJRU5ErkJggg=='
 
 /** 二进制：与真实接口一致返回 ArrayBuffer（按扩展名给占位数据） */
-function mockBinaryArchiveBody(subpath: string): ArrayBuffer {
+let cachedJpeg: ArrayBuffer | null = null
+let cachedPdf: ArrayBuffer | null = null
+async function mockBinaryArchiveBody(subpath: string): Promise<ArrayBuffer> {
+  const jpegName = '123图片.jpeg'
+  const pdfName = '_2018年世界杯转播平台洞察报告 (1).pdf'
+
+  if (subpath.endsWith(jpegName)) {
+    if (cachedJpeg) return cachedJpeg
+    const res = await fetch(jpegAssetUrl)
+    const buf = await res.arrayBuffer()
+    cachedJpeg = buf
+    return buf
+  }
+
+  if (subpath.endsWith(pdfName)) {
+    if (cachedPdf) return cachedPdf
+    const res = await fetch(pdfAssetUrl)
+    const buf = await res.arrayBuffer()
+    cachedPdf = buf
+    return buf
+  }
+
   const l = subpath.toLowerCase()
   if (l.endsWith('.pdf')) {
-    return base64ToArrayBuffer(MOCK_MINI_PDF_BASE64)
+    return base64ToArrayBuffer(MOCK_MINI_PDF_BASE64_GOOD)
   }
   if (
     l.endsWith('.png') ||
@@ -174,7 +207,7 @@ export async function mockGetDigitalHumanSessionArchiveSubpath(
   }
 
   if (rt === 'arraybuffer') {
-    return mockBinaryArchiveBody(subpath)
+    return await mockBinaryArchiveBody(subpath)
   }
 
   return mockFileBody(subpath, rt ?? 'text')

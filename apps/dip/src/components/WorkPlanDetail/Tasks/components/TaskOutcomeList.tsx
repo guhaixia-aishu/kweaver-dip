@@ -139,6 +139,8 @@ function TaskOutcomeListInner({ digitalHumanId, sessionId }: TaskOutcomeListProp
     sessionIdTrimmed ?? '',
   )
 
+  console.log('preview', preview)
+
   useEffect(() => {
     setEntries([])
     setError('')
@@ -181,11 +183,11 @@ function TaskOutcomeListInner({ digitalHumanId, sessionId }: TaskOutcomeListProp
   }, [dhId, sessionIdTrimmed])
 
   if (!canFetch) {
-    return <Empty title="暂无产物" desc="缺少请求参数" />
+    return <Empty title="暂无产物" />
   }
   if (loading) {
     return (
-      <div className="flex justify-center py-10">
+      <div className="flex justify-center items-center h-full">
         <Spin />
       </div>
     )
@@ -198,7 +200,7 @@ function TaskOutcomeListInner({ digitalHumanId, sessionId }: TaskOutcomeListProp
   }
   return (
     <>
-      <ul className="mt-4 list-none space-y-2 p-0 px-4">
+      <ul className="space-y-2 px-4">
         {entries.map((item) => {
           const fileTypeMeta = renderFileTypeMeta(item.name)
           return (
@@ -212,13 +214,14 @@ function TaskOutcomeListInner({ digitalHumanId, sessionId }: TaskOutcomeListProp
                 }}
               >
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm text-[--dip-text-color]">{item.name}</div>
+                  <div className="truncate text-sm text-[--dip-text-color]" title={item.name}>
+                    {item.name}
+                  </div>
                   <div className="mt-0.5 inline-flex items-center gap-1.5 text-xs text-[--dip-text-color-45]">
                     {fileTypeMeta.icon}
                     <span>{fileTypeMeta.label}</span>
                   </div>
                 </div>
-                {/* <span className="ml-3 shrink-0 text-xs text-[--dip-primary-color]">预览</span> */}
               </button>
             </li>
           )

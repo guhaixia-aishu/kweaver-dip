@@ -100,21 +100,21 @@ export const Breadcrumb = ({
                   <button
                     type="button"
                     className={clsx(
-                      'max-w-[200px] font-medium cursor-default',
+                      'max-w-[200px] truncate min-w-0 font-medium cursor-default',
                       type === 'micro-app' ? '' : 'px-1',
                       isDisabled && 'text-black/45',
                       isLast && 'font-medium',
                     )}
                   >
                     {hasIcon && renderIcon(item.icon, item.name)}
-                    <span className="truncate" title={item.name}>
+                    <span className="truncate max-w-[200px] min-w-0" title={item.name}>
                       {item.name}
                     </span>
                   </button>
                 ) : (
                   <button
                     type="button"
-                    className={`max-w-[200px] font-medium text-black/45 ${type === 'micro-app' ? '' : 'px-1'}`}
+                    className={`max-w-[200px] truncate min-w-0 font-medium text-black/45 ${type === 'micro-app' ? '' : 'px-1'}`}
                     onClick={(e) => !isDisabled && handleNavigate(item, e)}
                   >
                     {hasIcon && renderIcon(item.icon, item.name)}

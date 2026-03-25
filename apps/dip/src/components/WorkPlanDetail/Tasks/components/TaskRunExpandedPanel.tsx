@@ -1,5 +1,6 @@
 import classNames from 'classnames'
 import { memo, useId, useState } from 'react'
+import ScrollBarContainer from '@/components/ScrollBarContainer'
 import TaskConversation from './TaskConversation'
 import TaskOutcomeList from './TaskOutcomeList'
 
@@ -28,9 +29,9 @@ function TaskRunExpandedPanelInner({ id, digitalHumanId, sessionId }: TaskRunExp
   const [activeTab, setActiveTab] = useState<TaskRunExpandedTab>('session')
 
   return (
-    <section id={id} className="pb-4" aria-label="执行记录展开内容">
+    <section id={id} className="" aria-label="执行记录展开内容">
       <div className="mx-5 h-px bg-[#f5f5f5] mb-4" aria-hidden />
-      <div className="flex gap-2 mx-5" role="tablist" aria-label="执行记录详情">
+      <div className="flex gap-2 mx-5 mb-2" role="tablist" aria-label="执行记录详情">
         <button
           type="button"
           id={tabSessionId}
@@ -57,14 +58,17 @@ function TaskRunExpandedPanelInner({ id, digitalHumanId, sessionId }: TaskRunExp
 
       <div
         id={tabPanelId}
-        className="min-h-[120px]"
+        className="flex flex-col overflow-hidden"
+        style={{ height: '60vh', maxHeight: '60vh' }}
         role="tabpanel"
         aria-labelledby={activeTab === 'session' ? tabSessionId : tabOutcomesId}
       >
         {activeTab === 'session' ? (
           <TaskConversation digitalHumanId={digitalHumanId} sessionId={sessionId} />
         ) : (
-          <TaskOutcomeList digitalHumanId={digitalHumanId} sessionId={sessionId} />
+          <ScrollBarContainer className="py-2">
+            <TaskOutcomeList digitalHumanId={digitalHumanId} sessionId={sessionId} />
+          </ScrollBarContainer>
         )}
       </div>
     </section>

@@ -212,12 +212,12 @@ const WorkPlanDetail = () => {
       },
       {
         key: 'tasks' satisfies WorkPlanDetailTab,
-        label: '任务',
+        label: '执行',
         icon: <IconFont type="icon-dip-task-list" />,
       },
       {
         key: 'conversation' satisfies WorkPlanDetailTab,
-        label: '会话',
+        label: '指令',
         icon: <IconFont type="icon-dip-chat" />,
       },
     ],
@@ -246,7 +246,7 @@ const WorkPlanDetail = () => {
               <span className="truncate font-medium text-[--dip-text-color]">
                 {currentPlan?.name || '--'}
               </span>
-              <span className="text-xs text-[--dip-text-color-65]">
+              <span className="text-xs text-[--dip-text-color-65] truncate">
                 数字员工：{digitalHumanName}
               </span>
             </div>

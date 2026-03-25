@@ -43,7 +43,7 @@ const KnowledgeConfig = ({ readonly }: KnowledgeConfigProps) => {
           <div className="flex items-center gap-2 truncate">
             <AppIcon
               name={text}
-              size={24}
+              size={20}
               className="w-6 h-6 rounded flex-shrink-0"
               shape="square"
             />

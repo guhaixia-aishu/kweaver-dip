@@ -21,6 +21,8 @@ export interface PlanListProps {
   /** 每页条数 */
   pageSize?: number
   className?: string
+  /** 搜索值（前端过滤标题） */
+  searchValue?: string
   /** 点击计划行 */
   onPlanClick?: (job: CronJob) => void
 }
