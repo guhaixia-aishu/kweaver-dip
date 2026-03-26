@@ -18,7 +18,9 @@ const hydraHttpClient = new DefaultHydraHttpClient({
 /**
  * Reserved whitelist of request paths that can bypass authentication.
  */
-export const DEFAULT_AUTH_WHITELIST: readonly string[] = [];
+export const DEFAULT_AUTH_WHITELIST: readonly string[] = [
+  "/health"
+];
 
 /**
  * Options used to create the Hydra authentication middleware.

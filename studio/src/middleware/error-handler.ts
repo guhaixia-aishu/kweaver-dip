@@ -50,9 +50,13 @@ export function errorHandler(
   const statusCode = error instanceof HttpError ? error.statusCode : 500;
   const description =
     error instanceof HttpError ? error.message : "Internal Server Error";
+  const code =
+    error instanceof HttpError && error.code !== undefined
+      ? error.code
+      : resolveErrorCode(statusCode);
 
   response.status(statusCode).json({
-    code: resolveErrorCode(statusCode),
+    code,
     description
   });
 }

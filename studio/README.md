@@ -76,6 +76,53 @@ GitHub：https://github.com/kweaver-ai/web
 
 公开接口基础路径：`/api/dip-studio/v1`
 
+#### 初始化引导
+
+`GET /api/dip-studio/v1/guide/status`
+
+响应：`200 application/json`
+
+| 参数 | 类型 | 说明 |
+| -- | -- | -- |
+| state | string | 初始化状态，枚举值：`ready`、`pending` |
+| ready | boolean | 是否已完成初始化 |
+| missing | string[] | 当前缺失的初始化项，可能值包括 `envFile`、`gatewayProtocol`、`gatewayHost`、`gatewayPort`、`gatewayToken`、`workspaceDir`、`privateKey`、`publicKey` |
+
+`GET /api/dip-studio/v1/guide/openclaw-config`
+
+响应：`200 application/json`
+
+| 参数 | 类型 | 说明 |
+| -- | -- | -- |
+| protocol | string | OpenClaw Gateway 协议，枚举值：`ws`、`wss` |
+| host | string | OpenClaw Gateway 主机地址 |
+| port | integer | OpenClaw Gateway 端口 |
+| token | string | 从本机 OpenClaw 配置中读取的 Gateway Token |
+
+错误响应：`500`、`502`
+
+`POST /api/dip-studio/v1/guide/initialize`
+
+请求体示例：
+
+```json
+{
+  "openclaw_address": "ws://127.0.0.1:18789",
+  "openclaw_token": "your-openclaw-token"
+}
+```
+
+请求体参数：
+
+| 参数 | 类型 | 是否必填 | 说明 |
+| -- | -- | -- | -- |
+| openclaw_address | string | 是 | 完整 OpenClaw Gateway 地址，例如 `ws://127.0.0.1:18789` |
+| openclaw_token | string | 是 | OpenClaw Gateway Token |
+
+响应：`200`，无响应体。
+
+错误响应：`400`、`500`、`502`
+
 #### 获取会话列表
 
 `GET /api/dip-studio/v1/sessions`

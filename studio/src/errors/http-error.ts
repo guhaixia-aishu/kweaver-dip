@@ -7,10 +7,12 @@ export class HttpError extends Error {
    *
    * @param statusCode The HTTP status code to return.
    * @param message The safe error message to expose.
+   * @param code Optional stable business error code.
    */
   public constructor(
     public readonly statusCode: number,
-    message: string
+    message: string,
+    public readonly code?: string
   ) {
     super(message);
     this.name = "HttpError";

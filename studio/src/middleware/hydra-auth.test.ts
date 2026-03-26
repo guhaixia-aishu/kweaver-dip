@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { HttpError } from "../errors/http-error";
 import {
+  DEFAULT_AUTH_WHITELIST,
   createHydraAuthMiddleware,
   injectUserIdHeader,
   isWhitelistedPath,
@@ -15,6 +16,15 @@ describe("isWhitelistedPath", () => {
   it("matches exact whitelisted paths only", () => {
     expect(isWhitelistedPath("/health", ["/health"])).toBe(true);
     expect(isWhitelistedPath("/v1/chat", ["/health"])).toBe(false);
+  });
+
+  it("includes the public guide endpoints", () => {
+    expect(DEFAULT_AUTH_WHITELIST).toContain("/health");
+    expect(DEFAULT_AUTH_WHITELIST).not.toContain("/api/dip-studio/v1/guide/status");
+    expect(DEFAULT_AUTH_WHITELIST).not.toContain(
+      "/api/dip-studio/v1/guide/openclaw-config"
+    );
+    expect(DEFAULT_AUTH_WHITELIST).not.toContain("/api/dip-studio/v1/guide/initialize");
   });
 });
 

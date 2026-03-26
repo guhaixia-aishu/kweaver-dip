@@ -229,6 +229,23 @@ describe("errorHandler", () => {
     });
   });
 
+  it("prefers custom business error codes when provided", () => {
+    const response = createResponseDouble();
+
+    errorHandler(
+      new HttpError(500, "OpenClaw is not installed on this node", "OPENCLAW_CMD_NOT_FOUND"),
+      {} as Request,
+      response,
+      vi.fn()
+    );
+
+    expect(response.status).toHaveBeenCalledWith(500);
+    expect(response.json).toHaveBeenCalledWith({
+      code: "OPENCLAW_CMD_NOT_FOUND",
+      description: "OpenClaw is not installed on this node"
+    });
+  });
+
   it("delegates when headers have already been sent", () => {
     const response = {
       headersSent: true
@@ -977,5 +994,12 @@ describe("HttpError", () => {
     expect(error.statusCode).toBe(400);
     expect(error.message).toBe("Bad Request");
     expect(error.name).toBe("HttpError");
+    expect(error.code).toBeUndefined();
+  });
+
+  it("stores an optional business code", () => {
+    const error = new HttpError(500, "Missing command", "OPENCLAW_CMD_NOT_FOUND");
+
+    expect(error.code).toBe("OPENCLAW_CMD_NOT_FOUND");
   });
 });
