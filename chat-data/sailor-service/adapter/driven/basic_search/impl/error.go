@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/kweaver-ai/chat-data/sailor-service/common/errorcode"
 	"github.com/kweaver-ai/idrm-go-frame/core/errorx/agcodes"
 	"github.com/kweaver-ai/idrm-go-frame/core/errorx/agerrors"
 	"github.com/kweaver-ai/idrm-go-frame/core/utils/httpclient"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/errorcode"
 )
 
 // ResponseError 定义上游返回的包含错误码的结构化错误

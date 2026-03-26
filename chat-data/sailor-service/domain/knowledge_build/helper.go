@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/kweaver-ai/chat-data/sailor-service/client"
-	"github.com/kweaver-ai/chat-data/sailor-service/infrastructure/repository/db/model"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/client"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/infrastructure/repository/db/model"
 
-	repo "github.com/kweaver-ai/chat-data/sailor-service/adapter/driven/gorm/knowledge_network"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/errorcode"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/settings"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/log"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/trace"
+	repo "github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/adapter/driven/gorm/knowledge_network"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/errorcode"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/settings"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
 )

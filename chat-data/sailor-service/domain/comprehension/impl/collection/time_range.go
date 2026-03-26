@@ -1,6 +1,6 @@
 package collection
 
-import "github.com/kweaver-ai/chat-data/sailor-service/common/util"
+import "github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/util"
 
 type TimeRange struct {
 	Start int64 `json:"start"`

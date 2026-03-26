@@ -4,9 +4,9 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/kweaver-ai/chat-data/sailor-service/common/util"
-	"github.com/kweaver-ai/chat-data/sailor-service/infrastructure/repository/db/model"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/log"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/util"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/infrastructure/repository/db/model"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )

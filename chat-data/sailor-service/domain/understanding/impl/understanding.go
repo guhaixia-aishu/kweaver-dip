@@ -3,13 +3,13 @@ package impl
 import (
 	"context"
 
-	"github.com/kweaver-ai/chat-data/sailor-service/adapter/driven/copilot_helper"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/constant"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/errorcode"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/models"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/util"
-	"github.com/kweaver-ai/chat-data/sailor-service/domain/understanding"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/log"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/adapter/driven/copilot_helper"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/constant"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/errorcode"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/models"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/util"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/domain/understanding"
 )
 
 type useCase struct {

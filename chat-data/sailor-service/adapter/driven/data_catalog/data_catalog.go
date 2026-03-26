@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/kweaver-ai/chat-data/sailor-service/common/constant"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/settings"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/constant"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/settings"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
 )

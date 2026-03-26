@@ -1,12 +1,12 @@
 package server
 
 import (
-	"github.com/kweaver-ai/chat-data/sailor-service/common/settings"
-	"github.com/kweaver-ai/chat-data/sailor-service/domain/knowledge_build"
-	"github.com/kweaver-ai/chat-data/sailor-service/domain/mq"
 	goFrame "github.com/kweaver-ai/idrm-go-frame"
 	"github.com/kweaver-ai/idrm-go-frame/core/transport"
 	"github.com/kweaver-ai/idrm-go-frame/core/transport/rest"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/settings"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/domain/knowledge_build"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/domain/mq"
 )
 
 var arg = settings.MainArgs{

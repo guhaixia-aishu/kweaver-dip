@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/jinzhu/copier"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/util"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/log"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/util"
 )
 
 type MiddleData map[string]any

@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/jinzhu/copier"
-	"github.com/kweaver-ai/chat-data/sailor-service/client"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/util"
-	"github.com/kweaver-ai/chat-data/sailor-service/infrastructure/repository/db"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/client"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/util"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/infrastructure/repository/db"
 	"github.com/samber/lo"
 )
 

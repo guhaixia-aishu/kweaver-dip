@@ -3,10 +3,10 @@ package copilot
 import (
 	"context"
 
-	"github.com/kweaver-ai/chat-data/sailor-service/common/errorcode"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/util"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/log"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/trace"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/errorcode"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/util"
 )
 
 func (u *useCase) LogicalViewDataCategorize(ctx context.Context, req *LogicalViewDatacategorizeReq) (*LogicalViewDataCategorizeResp, error) {

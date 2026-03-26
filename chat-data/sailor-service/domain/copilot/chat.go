@@ -16,11 +16,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/constant"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/errorcode"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/settings"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/log"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/trace"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/constant"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/errorcode"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/settings"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
 )

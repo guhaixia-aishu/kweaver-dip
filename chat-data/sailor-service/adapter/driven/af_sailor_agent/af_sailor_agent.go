@@ -12,10 +12,10 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/kweaver-ai/chat-data/sailor-service/common/errorcode"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/settings"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/log"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/trace"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/errorcode"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/settings"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
 )

@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	domain "github.com/kweaver-ai/chat-data/sailor-service/domain/intelligence"
 	"github.com/kweaver-ai/idrm-go-frame/core/transport/rest/ginx"
+	domain "github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/domain/intelligence"
 )
 
 type Service struct {

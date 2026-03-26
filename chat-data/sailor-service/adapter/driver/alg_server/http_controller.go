@@ -4,12 +4,12 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/errorcode"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/middleware"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/models/response"
-	domain "github.com/kweaver-ai/chat-data/sailor-service/domain/alg_server"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/log"
 	"github.com/kweaver-ai/idrm-go-frame/core/transport/rest/ginx"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/errorcode"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/middleware"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/models/response"
+	domain "github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/domain/alg_server"
 )
 
 // FullText AD图谱全文搜索

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/kweaver-ai/chat-data/sailor-service/cmd/server"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/settings"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/cmd/server"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/settings"
 	"github.com/spf13/cobra"
 )
 

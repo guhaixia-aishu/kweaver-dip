@@ -7,10 +7,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/kweaver-ai/chat-data/sailor-service/common/models"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/settings"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/log"
 	"github.com/kweaver-ai/idrm-go-frame/core/utils/httpclient"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/models"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/settings"
 	"github.com/mitchellh/mapstructure"
 	"go.uber.org/zap"
 )

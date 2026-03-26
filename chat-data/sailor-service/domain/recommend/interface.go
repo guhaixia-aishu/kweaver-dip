@@ -3,8 +3,8 @@ package recommend
 import (
 	"context"
 
-	"github.com/kweaver-ai/chat-data/sailor-service/client"
-	//"github.com/kweaver-ai/chat-data/sailor-service/common/settings"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/client"
+	//"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/settings"
 )
 
 type UseCase interface {

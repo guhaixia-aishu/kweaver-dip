@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/kweaver-ai/chat-data/sailor-service/common/call"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/errorcode"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/settings"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/util"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/call"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/errorcode"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/settings"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/util"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/log"

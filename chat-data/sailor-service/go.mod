@@ -1,4 +1,4 @@
-module github.com/kweaver-ai/chat-data/sailor-service
+module github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service
 
 go 1.24.0
 

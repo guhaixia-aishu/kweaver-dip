@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin/binding"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/errorcode"
 	"github.com/kweaver-ai/idrm-go-frame/core/transport/rest/ginx"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/errorcode"
 
 	"github.com/gin-gonic/gin"
 	ut "github.com/go-playground/universal-translator"

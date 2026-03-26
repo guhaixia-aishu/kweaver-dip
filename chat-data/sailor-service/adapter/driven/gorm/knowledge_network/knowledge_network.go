@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/kweaver-ai/chat-data/sailor-service/infrastructure/repository/db"
-	"github.com/kweaver-ai/chat-data/sailor-service/infrastructure/repository/db/model"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/infrastructure/repository/db"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/infrastructure/repository/db/model"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )

@@ -3,7 +3,7 @@ package auth_service
 import (
 	"time"
 
-	"github.com/kweaver-ai/chat-data/sailor-service/common/settings"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/settings"
 
 	"context"
 	"net/http"

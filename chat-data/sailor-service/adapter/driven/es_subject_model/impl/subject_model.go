@@ -6,11 +6,11 @@ import (
 	"errors"
 	"net/http"
 
-	es "github.com/kweaver-ai/chat-data/sailor-service/adapter/driven/es_subject_model"
-	"github.com/kweaver-ai/chat-data/sailor-service/adapter/driven/opensearch"
-	es_common_object "github.com/kweaver-ai/chat-data/sailor-service/common/es"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/log"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/trace"
+	es "github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/adapter/driven/es_subject_model"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/adapter/driven/opensearch"
+	es_common_object "github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/es"
 	"github.com/olivere/elastic/v7"
 )
 

@@ -4,11 +4,11 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/errorcode"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/form_validator"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/models/response"
-	"github.com/kweaver-ai/chat-data/sailor-service/domain/comprehension"
 	"github.com/kweaver-ai/idrm-go-frame/core/transport/rest/ginx"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/errorcode"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/form_validator"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/models/response"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/domain/comprehension"
 )
 
 var _ response.NameIDResp

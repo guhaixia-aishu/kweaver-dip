@@ -3,10 +3,10 @@ package tools
 import (
 	"context"
 
-	"github.com/kweaver-ai/chat-data/sailor-service/common/util"
-	"github.com/kweaver-ai/chat-data/sailor-service/domain/comprehension"
-	"github.com/kweaver-ai/chat-data/sailor-service/domain/comprehension/impl/collection"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/log"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/util"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/domain/comprehension"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/domain/comprehension/impl/collection"
 	"go.uber.org/zap"
 )
 

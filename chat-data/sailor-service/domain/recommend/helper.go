@@ -6,9 +6,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/kweaver-ai/chat-data/sailor-service/client"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/util"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/log"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/client"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/util"
 	"go.uber.org/zap"
 )
 

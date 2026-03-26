@@ -3,8 +3,8 @@ package alg_server
 import (
 	"context"
 
-	adProxy "github.com/kweaver-ai/chat-data/sailor-service/adapter/driven/knowledge_network"
-	"github.com/kweaver-ai/chat-data/sailor-service/client"
+	adProxy "github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/adapter/driven/knowledge_network"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/client"
 )
 
 type UseCase interface {

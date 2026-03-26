@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/kweaver-ai/chat-data/sailor-service/adapter/driven/large_language_model"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/util"
-	"github.com/kweaver-ai/chat-data/sailor-service/domain/intelligence"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/log"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/trace"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/adapter/driven/large_language_model"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/util"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/domain/intelligence"
 )
 
 type useCase struct {

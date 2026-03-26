@@ -1,6 +1,6 @@
 package errorcode
 
-import "github.com/kweaver-ai/chat-data/sailor-service/common/constant"
+import "github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/constant"
 
 // Model Name
 const (

@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/kweaver-ai/chat-data/sailor-service/adapter/driven/opensearch"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/log"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/adapter/driven/opensearch"
 	"github.com/olivere/elastic/v7"
 )
 

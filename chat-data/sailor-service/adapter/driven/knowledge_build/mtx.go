@@ -11,10 +11,10 @@ import (
 
 	"github.com/avast/retry-go/v4"
 	"github.com/bsm/redislock"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/settings"
-	"github.com/kweaver-ai/chat-data/sailor-service/infrastructure/repository/db"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/log"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/trace"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/settings"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/infrastructure/repository/db"
 	"github.com/redis/go-redis/v9"
 	"github.com/samber/lo"
 	"go.uber.org/atomic"

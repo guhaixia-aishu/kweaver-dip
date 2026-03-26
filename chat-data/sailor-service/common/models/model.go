@@ -3,7 +3,7 @@ package models
 import (
 	"context"
 
-	"github.com/kweaver-ai/chat-data/sailor-service/common/constant"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/constant"
 )
 
 type DepInfo struct {

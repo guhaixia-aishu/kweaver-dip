@@ -3,11 +3,11 @@ package settings
 import (
 	"context"
 
-	"github.com/kweaver-ai/chat-data/sailor-service/common/form_validator"
 	conf "github.com/kweaver-ai/idrm-go-frame/core/config"
 	"github.com/kweaver-ai/idrm-go-frame/core/logx/zapx"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/log"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/trace"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/form_validator"
 )
 
 type MainArgs struct {

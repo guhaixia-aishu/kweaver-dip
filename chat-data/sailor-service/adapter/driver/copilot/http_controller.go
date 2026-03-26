@@ -4,10 +4,10 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/constant"
-	"github.com/kweaver-ai/chat-data/sailor-service/common/middleware"
-	domain "github.com/kweaver-ai/chat-data/sailor-service/domain/copilot"
 	"github.com/kweaver-ai/idrm-go-frame/core/transport/rest/ginx"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/constant"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/middleware"
+	domain "github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/domain/copilot"
 )
 
 // CopilotRecommendation 表单推荐

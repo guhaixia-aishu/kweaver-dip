@@ -4,11 +4,11 @@ import (
 	"context"
 	"strings"
 
-	"github.com/kweaver-ai/chat-data/sailor-service/domain/comprehension"
-	"github.com/kweaver-ai/chat-data/sailor-service/domain/comprehension/impl/concepts"
-	"github.com/kweaver-ai/chat-data/sailor-service/infrastructure/repository/db"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/log"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/trace"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/domain/comprehension"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/domain/comprehension/impl/concepts"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/infrastructure/repository/db"
 	"go.uber.org/zap"
 )
 

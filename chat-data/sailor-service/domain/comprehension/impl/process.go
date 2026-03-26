@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/kweaver-ai/chat-data/sailor-service/common/util"
-	"github.com/kweaver-ai/chat-data/sailor-service/domain/comprehension"
-	"github.com/kweaver-ai/chat-data/sailor-service/domain/comprehension/impl/tools"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/log"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/common/util"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/domain/comprehension"
+	"github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/domain/comprehension/impl/tools"
 	"go.uber.org/zap"
 )
 

@@ -1,6 +1,6 @@
 package alg_server
 
-import domain "github.com/kweaver-ai/chat-data/sailor-service/domain/alg_server"
+import domain "github.com/kweaver-ai/kweaver-dip/chat-data/sailor-service/domain/alg_server"
 
 type Service struct {
 	uc domain.UseCase
