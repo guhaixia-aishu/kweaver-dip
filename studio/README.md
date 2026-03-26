@@ -2,6 +2,10 @@
 
 本项目基于 OpenClaw，使用 TypeScript 开发
 
+```
+请选择 ** v2026.3.11 ** 版本的 OpenClaw。
+```
+
 ## 准备
 
 1. 部署 OpenClaw 项目。项目地址：https://openclaw.ai 或从 GitHub：https://github.com/openclaw/openclaw
