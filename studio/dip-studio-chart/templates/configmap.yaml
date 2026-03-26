@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Chart.Name }}-config
+  namespace: {{ .Values.namespace }}
+data:
+  OPENCLAW_GATEWAY_AUTH_MODE: {{ .Values.openclaw.authMode | quote }}
+  OPENCLAW_GATEWAY_BIND: {{ .Values.openclaw.bind | quote }}
+  OPENCLAW_STATE_DIR: {{ .Values.openclaw.stateDir | quote }}
+  OPENCLAW_CONFIG_PATH: {{ .Values.openclaw.configPath | quote }}
+  OPENCLAW_WORKSPACE_DIR: {{ .Values.openclaw.workspaceDir | quote }}
+  OPENCLAW_GATEWAY_PORT: {{ .Values.openclaw.port | quote }}
+  NODE_ENV: {{ .Values.studio.nodeEnv | quote }}
+  PORT: {{ .Values.studio.port | quote }}
+  OAUTH_MOCK_USER_ID: {{ .Values.studio.oauthMockUserId | quote }}
+  OPENCLAW_GATEWAY_PROTOCOL: {{ .Values.studio.gatewayProtocol | quote }}
+  OPENCLAW_GATEWAY_HOST: {{ .Values.studio.gatewayHost | quote }}
+  OPENCLAW_GATEWAY_PORT_STUDIO: {{ .Values.studio.gatewayPort | quote }}
+  OPENCLAW_GATEWAY_TIMEOUT_MS: {{ .Values.studio.gatewayTimeoutMs | quote }}
+  OPENCLAW_WORKSPACE_DIR_STUDIO: {{ .Values.studio.workspaceDir | quote }}
+  BKN_BACKEND_URL: {{ .Values.studio.bknBackendUrl | quote }}
+  HYDRA_ADMIN_URL: {{ .Values.studio.hydraAdminUrl | quote }}

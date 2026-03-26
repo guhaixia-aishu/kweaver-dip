@@ -1,0 +1,94 @@
+namespace: anyshare
+
+labels:
+  deployment:
+    name: dip-studio
+  pod:
+    app: dip-studio
+  service:
+    app: dip-studio
+
+name: dip-studio-deployment
+replicaCount: 1
+
+image:
+  studio:
+    registry: acr.aishu.cn
+    repository: dip/studio-local
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  openclaw:
+    registry: acr.aishu.cn
+    repository: dip/openclaw-gateway-local
+    tag: "2026.3.11"
+    pullPolicy: IfNotPresent
+
+service:
+  name: dip-studio
+  type: ClusterIP
+  port: 3100
+  targetPort: 3100
+
+ingress:
+  enabled: true
+  className: class-443
+  path: /api/dip-studio
+  pathType: Prefix
+  annotations:
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+
+openclaw:
+  authMode: token
+  bind: lan
+  token: local-dev-token
+  stateDir: /data/openclaw/state
+  configPath: /data/openclaw/state/openclaw.json
+  workspaceDir: /data/openclaw/workspace
+  port: 19001
+
+studio:
+  nodeEnv: production
+  port: 3100
+  oauthMockUserId: local-user
+  gatewayProtocol: ws
+  gatewayHost: 127.0.0.1
+  gatewayPort: 19001
+  gatewayTimeoutMs: 5000
+  workspaceDir: /data/openclaw/workspace
+  bknBackendUrl: http://127.0.0.1:13014
+  hydraAdminUrl: http://127.0.0.1:4445
+
+resources:
+  studio:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 1
+      memory: 1Gi
+  openclaw:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 1
+      memory: 1Gi
+
+persistence:
+  state:
+    enabled: true
+    size: 5Gi
+    storageClassName: ""
+    accessModes:
+      - ReadWriteOnce
+  workspace:
+    enabled: true
+    size: 10Gi
+    storageClassName: ""
+    accessModes:
+      - ReadWriteOnce
+
+nodeSelector: {}
+affinity: {}
+tolerations: []

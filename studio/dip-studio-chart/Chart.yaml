@@ -1,0 +1,6 @@
+apiVersion: v2
+name: dip-studio
+description: A Helm chart for DIP Studio with OpenClaw gateway sidecar
+type: application
+version: 1.0.0-develop
+appVersion: "0.1.0"
