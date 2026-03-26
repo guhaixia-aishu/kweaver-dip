@@ -79,7 +79,7 @@ const ChannelConfig = ({ readonly }: ChannelConfigProps) => {
               <Button
                 type="text"
                 onClick={() => deleteChannel()}
-                icon={<IconFont type="icon-dip-trash" />}
+                icon={<IconFont type="icon-trash" />}
               />
             </Tooltip>
           </Flex>
@@ -100,11 +100,7 @@ const ChannelConfig = ({ readonly }: ChannelConfigProps) => {
         </div>
         {channel && !readonly && (
           <div className="flex items-end gap-x-3">
-            <Button
-              type="primary"
-              icon={<IconFont type="icon-dip-add" />}
-              onClick={handleAddChannel}
-            >
+            <Button type="primary" icon={<IconFont type="icon-add" />} onClick={handleAddChannel}>
               通道
             </Button>
           </div>
@@ -124,7 +120,7 @@ const ChannelConfig = ({ readonly }: ChannelConfigProps) => {
             <Empty type="empty" title="暂无通道">
               {readonly ? undefined : (
                 <Button
-                  icon={<IconFont type="icon-dip-add" />}
+                  icon={<IconFont type="icon-add" />}
                   type="primary"
                   onClick={handleAddChannel}
                 >

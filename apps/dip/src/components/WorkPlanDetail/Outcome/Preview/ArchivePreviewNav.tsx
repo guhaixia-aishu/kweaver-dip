@@ -32,7 +32,7 @@ const ArchivePreviewNav = ({
           className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-[var(--dip-text-color-45)] transition-colors hover:bg-[--dip-hover-bg-color] hover:text-[--dip-text-color]"
           onClick={() => onClose?.()}
         >
-          <IconFont type="icon-dip-close" />
+          <IconFont type="icon-close" />
         </button>
       ) : null}
     </div>

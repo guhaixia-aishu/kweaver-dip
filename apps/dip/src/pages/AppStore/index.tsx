@@ -152,7 +152,7 @@ const AppStore = () => {
           <Button
             className="mt-1"
             type="primary"
-            icon={<IconFont type="icon-dip-upload" />}
+            icon={<IconFont type="icon-upload" />}
             onClick={() => {
               setInstallModalVisible(true)
             }}
@@ -198,15 +198,11 @@ const AppStore = () => {
           <div className="flex items-center gap-x-2">
             <SearchInput onSearch={handleSearch} placeholder="搜索应用" />
             <Tooltip title="刷新">
-              <Button
-                type="text"
-                icon={<IconFont type="icon-dip-refresh" />}
-                onClick={handleRefresh}
-              />
+              <Button type="text" icon={<IconFont type="icon-refresh" />} onClick={handleRefresh} />
             </Tooltip>
             <Button
               type="primary"
-              icon={<IconFont type="icon-dip-upload" />}
+              icon={<IconFont type="icon-upload" />}
               onClick={() => setInstallModalVisible(true)}
             >
               安装应用

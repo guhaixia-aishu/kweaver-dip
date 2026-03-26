@@ -118,7 +118,7 @@ function TasksPanelInner({ planId, dhId, sessionId: _sessionId }: TasksPanelProp
                   aria-label="关闭提示"
                   onClick={dismissBanner}
                 >
-                  <IconFont type="icon-dip-close" />
+                  <IconFont type="icon-close" />
                 </button> */}
               </div>
             ) : null}

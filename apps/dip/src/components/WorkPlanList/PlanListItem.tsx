@@ -1,13 +1,13 @@
-import { EllipsisOutlined } from '@ant-design/icons'
 import {
   CalendarOutlined,
   ClockCircleOutlined,
+  EllipsisOutlined,
   ExclamationCircleFilled,
-  SnippetsOutlined,
 } from '@ant-design/icons'
 import type { MenuProps } from 'antd'
 import { Dropdown, Modal } from 'antd'
 import { memo, type ReactNode } from 'react'
+import IconFont from '@/components/IconFont'
 import type { PlanListItemProps } from './types'
 import { formatPlanRelativeDayTime, planExecutionConditionText, planJobDescription } from './utils'
 
@@ -101,7 +101,7 @@ function PlanListItemInner({
         className="group max-w-[880px] mx-auto flex w-full items-center gap-4 rounded-lg border border-[#EAEEF3] bg-[--dip-white] px-4 py-3 text-left transition-[border-color,background-color] hover:border-[#BEDBFF] hover:bg-[#EFF6FF]"
       >
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#60AEFF]">
-          <SnippetsOutlined className="text-lg text-white" />
+          <IconFont type="icon-plan" className="text-lg text-white" />
         </div>
 
         <div className="min-w-0 flex-1 flex flex-col gap-1">

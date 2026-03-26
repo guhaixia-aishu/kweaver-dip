@@ -106,7 +106,7 @@ const Management = () => {
             <Button
               className="mt-2"
               type="primary"
-              icon={<IconFont type="icon-dip-add" />}
+              icon={<IconFont type="icon-add" />}
               onClick={() => {
                 handleCreate()
               }}
@@ -158,16 +158,12 @@ const Management = () => {
               placeholder={intl.get('digitalHuman.management.searchPlaceholder')}
             />
             {isAdmin && (
-              <Button type="primary" icon={<IconFont type="icon-dip-add" />} onClick={handleCreate}>
+              <Button type="primary" icon={<IconFont type="icon-add" />} onClick={handleCreate}>
                 {intl.get('digitalHuman.management.createShort')}
               </Button>
             )}
             <Tooltip title={intl.get('digitalHuman.management.refresh')}>
-              <Button
-                type="text"
-                icon={<IconFont type="icon-dip-refresh" />}
-                onClick={handleRefresh}
-              />
+              <Button type="text" icon={<IconFont type="icon-refresh" />} onClick={handleRefresh} />
             </Tooltip>
           </div>
         )}

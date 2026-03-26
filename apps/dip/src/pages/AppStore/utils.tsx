@@ -13,13 +13,13 @@ export const getAppStoreMenuItems = (
   const items: any = [
     {
       key: AppStoreActionEnum.Config,
-      icon: <IconFont type="icon-dip-shezhi" />,
+      icon: <IconFont type="icon-settings" />,
       label: '配置',
       onClick: () => onMenuClick(AppStoreActionEnum.Config),
     },
     {
       key: AppStoreActionEnum.Run,
-      icon: <IconFont type="icon-dip-run" />,
+      icon: <IconFont type="icon-run" />,
       label: '运行',
       onClick: () => onMenuClick(AppStoreActionEnum.Run),
     },
@@ -30,7 +30,7 @@ export const getAppStoreMenuItems = (
         { type: 'divider' },
         {
           key: AppStoreActionEnum.Uninstall,
-          icon: <IconFont type="icon-dip-trash" />,
+          icon: <IconFont type="icon-trash" />,
           danger: true,
           label: '卸载',
           onClick: () => onMenuClick(AppStoreActionEnum.Uninstall),

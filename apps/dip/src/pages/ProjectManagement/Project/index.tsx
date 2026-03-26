@@ -122,7 +122,7 @@ const Project = () => {
               <Button
                 type="primary"
                 onClick={handleAddApplication}
-                icon={<IconFont type="icon-dip-add" />}
+                icon={<IconFont type="icon-add" />}
               >
                 新建应用
               </Button>

@@ -38,7 +38,7 @@ function HistoryListItemInner({ session, onClick, onDelete, digitalHumanName }: 
       onClick={() => onClick?.(session)}
       className="max-w-[880px] mx-auto flex w-full items-center gap-4 rounded-lg border border-[#EAEEF3] bg-[--dip-white] px-4 py-3 text-left transition-[border-color,background-color] hover:border-[#BEDBFF] hover:bg-[#EFF6FF] group"
     >
-      <IconFont type="icon-dip-chat" className="text-xl text-[--dip-text-color-45]" />
+      <IconFont type="icon-dialog" className="text-xl text-[--dip-text-color-45]" />
 
       <div className="min-w-0 flex-1 flex flex-col gap-1">
         <div className="flex min-w-0 items-center gap-2">
@@ -65,7 +65,7 @@ function HistoryListItemInner({ session, onClick, onDelete, digitalHumanName }: 
           }}
           aria-label="删除历史会话"
         >
-          <IconFont type="icon-dip-trash" />
+          <IconFont type="icon-trash" />
         </button>
       ) : null}
     </button>

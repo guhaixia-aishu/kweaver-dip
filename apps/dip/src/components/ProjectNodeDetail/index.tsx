@@ -331,7 +331,7 @@ const ProjectNodeDetail = ({ nodeId, projectId }: ProjectNodeDetailProps) => {
           className="ml-2 cursor-pointer"
           onClick={() => handleCopy(url)}
         >
-          <IconFont type="icon-dip-copy" />
+          <IconFont type="icon-copy" />
         </button>
       </div>
       <div className="mb-2 text-[13px] leading-5 text-[--dip-text-color-45]">
@@ -345,7 +345,7 @@ const ProjectNodeDetail = ({ nodeId, projectId }: ProjectNodeDetailProps) => {
           className="ml-2 cursor-pointer"
           onClick={() => handleCopy(prompt)}
         >
-          <IconFont type="icon-dip-copy" />
+          <IconFont type="icon-copy" />
         </button>
       </div>
     </div>

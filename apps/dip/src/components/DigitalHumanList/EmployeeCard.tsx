@@ -94,7 +94,7 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({
                         : 'opacity-0 invisible group-hover:opacity-100 group-hover:visible',
                     )}
                   >
-                    <IconFont type="icon-dip-gengduo" />
+                    <IconFont type="icon-more" />
                   </button>
                 </Dropdown>
               )}

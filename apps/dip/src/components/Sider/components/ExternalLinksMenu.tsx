@@ -81,7 +81,7 @@ export const ExternalLinksMenu = ({ collapsed, roleIds }: ExternalLinksMenuProps
             <span>业务知识网络</span> <span>&gt;</span>
           </a>
         ),
-        icon: <IconFont type="icon-yewuzhishiwangluo" />,
+        icon: <IconFont type="icon-graph" />,
       },
       {
         key: 'system',

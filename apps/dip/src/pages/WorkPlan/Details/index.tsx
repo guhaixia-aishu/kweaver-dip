@@ -4,7 +4,7 @@ import { Dropdown, Modal, message, Tabs } from 'antd'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { getDigitalHumanDetail } from '@/apis/dip-studio/digital-human'
-import { getCronJob, type CronJob } from '@/apis/dip-studio/plan'
+import { type CronJob, getCronJob } from '@/apis/dip-studio/plan'
 import IconFont from '@/components/IconFont'
 import ActionModal from '@/components/WorkPlanDetail/ActionModal/ActionModal'
 import Outcome from '@/components/WorkPlanDetail/Outcome'
@@ -21,7 +21,13 @@ const WorkPlanDetail = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const locationState = location.state as { from?: string } | null
+  type WorkPlanDetailLocationState = {
+    from?: string
+    /** 从数字员工详情「工作计划」Tab 进入时由上游传入，用于面包屑祖先链 */
+    breadcrumbFrom?: 'digital-human-detail'
+    digitalHumanName?: string
+  }
+  const locationState = location.state as WorkPlanDetailLocationState | null
   const from = locationState?.from
   const sessionKey = searchParams.get('sessionKey')?.trim() ?? ''
   const digitalHumanId = sessionKey.split('agent:')[1]?.split(':')[0]
@@ -92,8 +98,26 @@ const WorkPlanDetail = () => {
     const detailTitle = currentPlan?.id === workPlanId ? currentPlan.name?.trim() : undefined
     const title = detailTitle ?? listTitle
 
-    setDetailBreadcrumb(title ? { routeKey: 'work-plan-item', title } : null)
-  }, [workPlanId, plans, currentPlan, setDetailBreadcrumb])
+    const isFromDigitalHumanDetail = locationState?.breadcrumbFrom === 'digital-human-detail'
+    const dhName = locationState?.digitalHumanName?.trim()
+    const replaceAncestorRoutes =
+      isFromDigitalHumanDetail && dhName
+        ? [
+            {
+              key: 'breadcrumb-digital-human-mgmt',
+              name: '我的数字员工',
+              path: '/digital-human/management',
+            },
+            {
+              key: 'breadcrumb-digital-human-name',
+              name: dhName,
+              path: locationState?.from,
+            },
+          ]
+        : undefined
+
+    setDetailBreadcrumb(title ? { routeKey: 'work-plan-item', title, replaceAncestorRoutes } : null)
+  }, [workPlanId, plans, currentPlan, setDetailBreadcrumb, locationState])
 
   useEffect(() => {
     let disposed = false
@@ -208,17 +232,17 @@ const WorkPlanDetail = () => {
       {
         key: 'results' satisfies WorkPlanDetailTab,
         label: '成果',
-        icon: <IconFont type="icon-dip-wendang" />,
+        icon: <IconFont type="icon-doclib" />,
       },
       {
         key: 'tasks' satisfies WorkPlanDetailTab,
         label: '执行',
-        icon: <IconFont type="icon-dip-task-list" />,
+        icon: <IconFont type="icon-taskplanning" />,
       },
       {
         key: 'conversation' satisfies WorkPlanDetailTab,
         label: '指令',
-        icon: <IconFont type="icon-dip-chat" />,
+        icon: <IconFont type="icon-dialog" />,
       },
     ],
     [],
@@ -236,7 +260,7 @@ const WorkPlanDetail = () => {
             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-[--dip-text-color]"
             aria-label="返回"
           >
-            <IconFont type="icon-dip-left" />
+            <IconFont type="icon-left" />
           </button>
           <div className="flex min-w-0 items-center gap-3">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#60AEFF]">

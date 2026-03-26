@@ -72,7 +72,7 @@ export const AppMenu = () => {
     >
       <div className="flex items-center justify-center cursor-pointer">
         <IconFont
-          type="icon-dip-a-quanbu1"
+          type="icon-all"
           className="!text-xl hover:!text-[--dip-primary-color]"
           onClick={handleButtonClick}
         />

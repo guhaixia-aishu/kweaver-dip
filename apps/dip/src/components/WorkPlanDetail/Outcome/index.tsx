@@ -163,7 +163,7 @@ const ResultsPanel = ({ planId: _planId, dhId, sessionId }: ResultsPanelProps) =
                       >
                         <span className="flex min-w-0 items-center gap-2">
                           <IconFont
-                            type="icon-dip-faildetails"
+                            type="icon-document"
                             className="shrink-0 text-[var(--dip-text-color-45)]"
                           />
                           <span className="min-w-0 truncate" title={file.name}>

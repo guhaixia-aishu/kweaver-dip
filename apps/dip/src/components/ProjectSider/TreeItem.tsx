@@ -68,9 +68,9 @@ export const TreeItem = forwardRef<HTMLDivElement, TreeItemProps>(
     const getIcon = () => {
       switch (type) {
         case 'application':
-          return <IconFont type="icon-dip-yingyong" />
+          return <IconFont type="icon-application" />
         case 'page':
-          return <IconFont type="icon-dip-UserAgreement" />
+          return <IconFont type="icon-user-agreement" />
         case 'function':
           return <BorderlessTableOutlined />
         default:
@@ -134,7 +134,7 @@ export const TreeItem = forwardRef<HTMLDivElement, TreeItemProps>(
         >
           {!clone && type !== 'application' && (
             <IconFont
-              type="icon-dip-right"
+              type="icon-right"
               className={clsx(
                 'text-xs text-[--dip-text-color-65] flex w-6 h-full items-center justify-center cursor-pointer shrink-0 opacity-0',
                 onCollapse && 'opacity-100',
@@ -173,7 +173,7 @@ export const TreeItem = forwardRef<HTMLDivElement, TreeItemProps>(
                   ? [
                       {
                         key: 'add',
-                        icon: <IconFont type="icon-dip-add" />,
+                        icon: <IconFont type="icon-add" />,
                         label: `新建${type === 'application' ? '页面' : '功能'}`,
                         disabled: !canEdit,
                         onClick: (e: { domEvent: React.MouseEvent }) => {
@@ -185,7 +185,7 @@ export const TreeItem = forwardRef<HTMLDivElement, TreeItemProps>(
                   : []),
                 {
                   key: 'edit',
-                  icon: <IconFont type="icon-dip-bianji" />,
+                  icon: <IconFont type="icon-edit" />,
                   label: `编辑${objectTypeNameMap(type)}`,
                   disabled: !canEdit,
                   onClick: (e: { domEvent: React.MouseEvent }) => {
@@ -198,7 +198,7 @@ export const TreeItem = forwardRef<HTMLDivElement, TreeItemProps>(
                 { type: 'divider' },
                 {
                   key: 'delete',
-                  icon: <IconFont type="icon-dip-trash" />,
+                  icon: <IconFont type="icon-trash" />,
                   label: `删除${objectTypeNameMap(type)}`,
                   danger: true,
                   disabled: !canDelete,
@@ -227,7 +227,7 @@ export const TreeItem = forwardRef<HTMLDivElement, TreeItemProps>(
                 e.stopPropagation()
               }}
             >
-              <IconFont type="icon-dip-gengduo" className="text-[--dip-text-color-75]" />
+              <IconFont type="icon-more" className="text-[--dip-text-color-75]" />
             </button>
           </Dropdown>
         )}

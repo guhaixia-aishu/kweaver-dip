@@ -55,7 +55,7 @@ const SkillConfig = ({ readonly }: SkillConfigProps) => {
           return (
             <div className="flex items-center truncate">
               <IconFont
-                type="icon-dip-deep-thinking"
+                type="icon-deep-thinking"
                 className="text-[--dip-primary-color] text-base h-6 w-6 shrink-0"
               />
               <span title={text} className="truncate">
@@ -85,7 +85,7 @@ const SkillConfig = ({ readonly }: SkillConfigProps) => {
                   e.stopPropagation()
                   handleMenuItemClick('edit', record)
                 }}
-                icon={<IconFont type="icon-dip-shezhi" />}
+                icon={<IconFont type="icon-settings" />}
               />
             </Tooltip> */}
             <Tooltip title="删除">
@@ -95,7 +95,7 @@ const SkillConfig = ({ readonly }: SkillConfigProps) => {
                   e.stopPropagation()
                   handleMenuItemClick('delete', record)
                 }}
-                icon={<IconFont type="icon-dip-trash" />}
+                icon={<IconFont type="icon-trash" />}
               />
             </Tooltip>
           </Flex>
@@ -117,7 +117,7 @@ const SkillConfig = ({ readonly }: SkillConfigProps) => {
         {skills.length > 0 && !readonly && (
           <div className="flex items-end gap-x-3">
             {/* <SearchInput onSearch={handleSearch} placeholder="搜索技能" variant="outlined" /> */}
-            <Button type="primary" icon={<IconFont type="icon-dip-add" />} onClick={handleAddSkill}>
+            <Button type="primary" icon={<IconFont type="icon-add" />} onClick={handleAddSkill}>
               技能
             </Button>
           </div>
@@ -136,11 +136,7 @@ const SkillConfig = ({ readonly }: SkillConfigProps) => {
           emptyText: (
             <Empty type="empty" title="暂无技能">
               {readonly ? undefined : (
-                <Button
-                  icon={<IconFont type="icon-dip-add" />}
-                  type="primary"
-                  onClick={handleAddSkill}
-                >
+                <Button icon={<IconFont type="icon-add" />} type="primary" onClick={handleAddSkill}>
                   技能
                 </Button>
               )}

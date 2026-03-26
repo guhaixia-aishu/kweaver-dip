@@ -12,7 +12,7 @@ export const getDigitalHumanManagementMenuItems = (
   return [
     {
       key: DigitalHumanManagementActionEnum.Edit,
-      icon: <IconFont type="icon-dip-bianji" />,
+      icon: <IconFont type="icon-edit" />,
       label: intl.get('digitalHuman.management.menuEdit'),
       onClick: (e) => {
         e.domEvent.stopPropagation()
@@ -21,7 +21,7 @@ export const getDigitalHumanManagementMenuItems = (
     },
     {
       key: DigitalHumanManagementActionEnum.Delete,
-      icon: <IconFont type="icon-dip-trash" />,
+      icon: <IconFont type="icon-trash" />,
       label: intl.get('digitalHuman.management.menuDelete'),
       danger: true,
       onClick: (e) => {

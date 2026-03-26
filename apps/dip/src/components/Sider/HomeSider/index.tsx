@@ -260,7 +260,7 @@ const HomeSider = ({ collapsed, onCollapse, siderType = 'home' }: HomeSiderProps
                   : 'bg-[#EBF4FF] text-[--dip-primary-color]',
             )}
           >
-            <IconFont type="icon-dip-add" />
+            <IconFont type="icon-add" />
             {collapsed ? '' : '会话'}
           </button>
         </Tooltip>
@@ -339,7 +339,7 @@ const HomeSider = ({ collapsed, onCollapse, siderType = 'home' }: HomeSiderProps
                   className="flex h-10 min-h-10 w-full min-w-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-[var(--dip-text-color)]"
                   onClick={() => onCollapse(false)}
                 >
-                  <IconFont type="icon-dip-cebianlan" className="text-base leading-none" />
+                  <IconFont type="icon-sidebar" className="text-base leading-none" />
                 </button>
               </span>
             </Tooltip>
@@ -359,7 +359,7 @@ const HomeSider = ({ collapsed, onCollapse, siderType = 'home' }: HomeSiderProps
               className="flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-[var(--dip-text-color)] hover:text-[var(--dip-primary-color)]"
               onClick={() => onCollapse(true)}
             >
-              <IconFont type="icon-dip-cebianlan" className="text-base leading-none" />
+              <IconFont type="icon-sidebar" className="text-base leading-none" />
             </button>
           </Tooltip>
         </div>

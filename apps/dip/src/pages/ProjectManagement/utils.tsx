@@ -10,7 +10,7 @@ export const getProjectMenuItems = (
   return [
     {
       key: ProjectActionEnum.Edit,
-      icon: <IconFont type="icon-dip-bianji" />,
+      icon: <IconFont type="icon-edit" />,
       label: '编辑',
       onClick: (e: any) => {
         e.domEvent.stopPropagation()
@@ -20,7 +20,7 @@ export const getProjectMenuItems = (
     { type: 'divider' },
     {
       key: ProjectActionEnum.Delete,
-      icon: <IconFont type="icon-dip-trash" />,
+      icon: <IconFont type="icon-trash" />,
       danger: true,
       label: '删除',
       onClick: (e: any) => {

@@ -114,12 +114,12 @@ const MetricView: React.FC<NodeViewProps> = (props) => {
     >
       {!currentMetric ? (
         <>
-          <IconFont type="icon-dip-color-metric" className="text-lg" />
+          <IconFont type="icon-metrics-model" className="text-lg" />
           <span className="text-[rgba(0,0,0,0.65)]">请选择{extension.options.dictionary.name}</span>
         </>
       ) : (
         <div className="max-w-full flex items-center gap-x-2">
-          <IconFont type="icon-dip-color-metric" className="text-lg" />
+          <IconFont type="icon-metrics-model" className="text-lg" />
           <span className="truncate w-fit max-w-full">{currentMetric.name}</span>
         </div>
       )}

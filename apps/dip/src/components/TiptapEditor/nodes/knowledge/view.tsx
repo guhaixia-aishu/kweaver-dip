@@ -146,7 +146,7 @@ const KnowledgeView: React.FC<NodeViewProps> = (props) => {
         selected && isEditable && 'border-[--dip-link-color]',
       )}
     >
-      <IconFont type="icon-yewuzhishiwangluo" className="text-lg" />
+      <IconFont type="icon-graph" className="text-lg" />
       {!id ? (
         <span className="text-[rgba(0,0,0,0.65)]">请选择{extension.options.dictionary.name}</span>
       ) : (

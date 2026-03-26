@@ -100,14 +100,29 @@ const BaseHeader = ({ headerType }: { headerType: HeaderType }) => {
     })
 
     if (currentRoute) {
-      const ancestorRoutes = getBreadcrumbAncestorRoutes(currentRoute)
-      for (const ancestor of ancestorRoutes) {
-        if (!ancestor.label) continue
-        result.push({
-          key: ancestor.key || `route-${ancestor.path}`,
-          name: ancestor.label,
-          path: getBreadcrumbLinkPathForRoute(ancestor),
-        })
+      const customAncestors =
+        detailBreadcrumb && detailBreadcrumb.routeKey === currentRoute.key
+          ? detailBreadcrumb.replaceAncestorRoutes
+          : undefined
+
+      if (customAncestors?.length) {
+        for (const item of customAncestors) {
+          result.push({
+            key: item.key,
+            name: item.name,
+            path: item.path,
+          })
+        }
+      } else {
+        const ancestorRoutes = getBreadcrumbAncestorRoutes(currentRoute)
+        for (const ancestor of ancestorRoutes) {
+          if (!ancestor.label) continue
+          result.push({
+            key: ancestor.key || `route-${ancestor.path}`,
+            name: ancestor.label,
+            path: getBreadcrumbLinkPathForRoute(ancestor),
+          })
+        }
       }
 
       if (shouldShowCurrentRouteInBreadcrumb(currentRoute) && currentRoute.label) {

@@ -18,7 +18,7 @@ const AddSkillDrawer = ({ open, onClose, payload }: AddSkillDrawerProps) => {
             onClick={onClose}
             className="flex items-center justify-center w-8 h-8 rounded-md text-[--dip-text-color]"
           >
-            <IconFont type="icon-dip-left" />
+            <IconFont type="icon-left" />
           </button>
           <span
             className="flex-1 min-w-0 font-medium text-[--dip-text-color] truncate"

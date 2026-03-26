@@ -151,7 +151,7 @@ const MetricList = () => {
           }
         }}
       >
-        <IconFont type="icon-dip-color-zhibiaometirc" className="text-2xl" />
+        <IconFont type="icon-metrics-model" className="text-2xl" />
         <span className="flex flex-col overflow-hidden">
           <Tooltip title={item.name}>
             <span className="truncate w-fit max-w-full">{item.name}</span>

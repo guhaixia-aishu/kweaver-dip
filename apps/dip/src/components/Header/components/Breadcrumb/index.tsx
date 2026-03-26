@@ -89,7 +89,7 @@ export const Breadcrumb = ({
                 className="flex items-center justify-center w-6 h-6 rounded-md text-[--dip-text-color] hover:bg-[--dip-hover-bg-color]"
                 onClick={(e) => handleNavigate(item, e)}
               >
-                <IconFont type="icon-dip-back" className="!text-base !leading-none" />
+                <IconFont type="icon-back" className="!text-base !leading-none" />
               </button>
             ) : (
               <>

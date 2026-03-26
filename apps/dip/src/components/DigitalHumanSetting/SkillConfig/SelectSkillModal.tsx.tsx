@@ -113,7 +113,7 @@ const SelectSkillModal = ({
             >
               <div className="flex items-center gap-x-2">
                 <IconFont
-                  type="icon-dip-deep-thinking"
+                  type="icon-deep-thinking"
                   className="text-[--dip-primary-color] text-xl h-4 w-4 shrink-0"
                 />
                 <span

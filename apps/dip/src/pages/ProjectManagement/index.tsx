@@ -115,7 +115,7 @@ const ProjectManagement = () => {
           <Button
             className="mt-2"
             type="primary"
-            icon={<IconFont type="icon-dip-add" />}
+            icon={<IconFont type="icon-add" />}
             onClick={() => {
               handleProjectMenuClick(ProjectActionEnum.Add)
             }}
@@ -156,15 +156,11 @@ const ProjectManagement = () => {
           <div className="flex items-center gap-x-3">
             <SearchInput onSearch={handleSearch} placeholder="搜索项目" />
             <Tooltip title="刷新">
-              <Button
-                type="text"
-                icon={<IconFont type="icon-dip-refresh" />}
-                onClick={handleRefresh}
-              />
+              <Button type="text" icon={<IconFont type="icon-refresh" />} onClick={handleRefresh} />
             </Tooltip>
             <Button
               type="primary"
-              icon={<IconFont type="icon-dip-add" />}
+              icon={<IconFont type="icon-add" />}
               onClick={() => setAddProjectModalVisible(true)}
             >
               新建项目

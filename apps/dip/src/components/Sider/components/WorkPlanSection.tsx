@@ -170,7 +170,7 @@ export const WorkPlanSection = ({
                         className="w-6 h-6 flex-shrink-0 hidden items-center justify-center rounded text-[--dip-text-color-45] group-hover:inline-flex hover:bg-[rgba(0,0,0,0.06)]"
                         onClick={(event) => event.stopPropagation()}
                       >
-                        <IconFont type="icon-dip-gengduo" />
+                        <IconFont type="icon-more" />
                       </button>
                     </Dropdown>
                   </button>

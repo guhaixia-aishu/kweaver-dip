@@ -36,7 +36,7 @@ const Details = () => {
   const [, messageContextHolder] = message.useMessage()
 
   const digitalHumanId = params.digitalHumanId
-  const [activeTab, setActiveTab] = useState<DigitalHumanDetailTab>('plan')
+  const [activeTab, setActiveTab] = useState<DigitalHumanDetailTab>('session')
 
   /** 管理员走全页配置 */
   useLayoutEffect(() => {
@@ -77,19 +77,19 @@ const Details = () => {
   const tabItems = useMemo(() => {
     return [
       {
-        key: 'plan',
-        label: '工作计划',
-        icon: <IconFont type="icon-dip-gailan" />,
-      },
-      {
         key: 'session',
         label: '会话',
-        icon: <IconFont type="icon-dip-chat" />,
+        icon: <IconFont type="icon-dialog" />,
+      },
+      {
+        key: 'plan',
+        label: '工作计划',
+        icon: <IconFont type="icon-plan" />,
       },
       {
         key: 'config',
         label: '员工配置',
-        icon: <IconFont type="icon-dip-shezhi" />,
+        icon: <IconFont type="icon-settings" />,
       },
     ]
   }, [])
@@ -120,7 +120,7 @@ const Details = () => {
             onClick={() => navigate('/digital-human/management')}
             className="flex items-center justify-center w-8 h-8 rounded-md text-[--dip-text-color] shrink-0"
           >
-            <IconFont type="icon-dip-left" />
+            <IconFont type="icon-left" />
           </button>
           <div className="flex items-center gap-3 min-w-0">
             <AppIcon
@@ -157,7 +157,7 @@ const Details = () => {
       </div>
 
       {activeTab === 'plan' && (
-        <div className="flex-1 min-h-0 overflow-hidden flex flex-col pt-5">
+        <div className="flex-1 min-h-0 overflow-hidden flex flex-col pt-5 relative">
           <WorkPlanList
             source={{ mode: 'digitalHuman', digitalHumanId: digitalHumanId }}
             onPlanClick={(job) => {
@@ -169,7 +169,13 @@ const Details = () => {
                     sessionKey: job.sessionKey,
                   })}`,
                 },
-                { state: { from } },
+                {
+                  state: {
+                    from,
+                    breadcrumbFrom: 'digital-human-detail' as const,
+                    digitalHumanName: basic.name?.trim() || '--',
+                  },
+                },
               )
             }}
           />

@@ -101,7 +101,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, width, menuItems, on
                     : 'opacity-0 invisible group-hover:opacity-100 group-hover:visible',
                 )}
               >
-                <IconFont type="icon-dip-gengduo" />
+                <IconFont type="icon-more" />
               </button>
             </Dropdown>
           )}

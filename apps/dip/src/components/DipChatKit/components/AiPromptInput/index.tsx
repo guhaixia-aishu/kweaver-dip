@@ -96,7 +96,8 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
   const canSubmit = !(disabled || loading)
   const normalizedAssignEmployeeValue = assignEmployeeValue?.trim() || ''
   const showEmployeeSelector = !normalizedAssignEmployeeValue
-  const resolvedEmployeePanelTitle = employeePanelTitle ?? intl.get('aiPromptInput.mentionPanelTitle')
+  const resolvedEmployeePanelTitle =
+    employeePanelTitle ?? intl.get('aiPromptInput.mentionPanelTitle')
   const resolvedEmployeeButtonLabel = employeeButtonLabel ?? intl.get('aiPromptInput.mentionButton')
   const resolvedAttachButtonTitle = attachButtonTitle ?? intl.get('aiPromptInput.attach')
   const resolvedSendButtonTitle = sendButtonTitle ?? intl.get('aiPromptInput.send')
@@ -140,7 +141,11 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
       } catch {
         if (disposed) return
         setFetchedEmployeeOptions([])
-        message.error(intl.get('dipChatKit.fetchDigitalHumanListFailed').d('鑾峰彇鏁板瓧鍛樺伐鍒楄〃澶辫触锛岃绋嶅悗閲嶈瘯'))
+        message.error(
+          intl
+            .get('dipChatKit.fetchDigitalHumanListFailed')
+            .d('鑾峰彇鏁板瓧鍛樺伐鍒楄〃澶辫触锛岃绋嶅悗閲嶈瘯'),
+        )
       }
     }
 
@@ -153,11 +158,12 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
 
   useEffect(() => {
     if (normalizedAssignEmployeeValue) {
-      const assignedEmployee =
-        resolvedEmployeeOptions.find((item) => item.value === normalizedAssignEmployeeValue) ?? {
-          value: normalizedAssignEmployeeValue,
-          label: normalizedAssignEmployeeValue,
-        }
+      const assignedEmployee = resolvedEmployeeOptions.find(
+        (item) => item.value === normalizedAssignEmployeeValue,
+      ) ?? {
+        value: normalizedAssignEmployeeValue,
+        label: normalizedAssignEmployeeValue,
+      }
       setEmployees([assignedEmployee])
       return
     }
@@ -778,7 +784,7 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
                         type="text"
                         aria-label={resolvedAttachButtonTitle}
                         disabled={!canEdit}
-                        icon={<IconFont type="icon-dip-attachment" className={styles.actionIcon} />}
+                        icon={<IconFont type="icon-attachment" className={styles.actionIcon} />}
                       />
                     </Upload>
                   </Tooltip>
@@ -856,4 +862,3 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
 }
 
 export default AiPromptInput
-

@@ -144,13 +144,13 @@ const DHSetting = () => {
             onClick={handleBack}
             className="flex items-center justify-center w-8 h-8 rounded-md text-[--dip-text-color]"
           >
-            <IconFont type="icon-dip-left" />
+            <IconFont type="icon-left" />
           </button>
           <div className="flex items-center gap-3">
             {uiMode === 'create' ? (
               <>
                 <IconFont
-                  type="icon-dip-duixianglei"
+                  type="icon-object-class"
                   className="flex-shrink-0 flex items-center justify-center rounded w-6 h-6 bg-[rgb(var(--dip-primary-color-rgb-space)/10%)] text-[var(--dip-primary-color)]"
                 />
                 <span className="font-medium text-[--dip-text-color]">新建数字员工</span>
@@ -183,11 +183,7 @@ const DHSetting = () => {
             </Button>
           ) : (
             <>
-              {uiMode === 'edit' && (
-                <Button onClick={handleCancelEdit}>
-                  取消
-                </Button>
-              )}
+              {uiMode === 'edit' && <Button onClick={handleCancelEdit}>取消</Button>}
               <Button type="primary" loading={publishing} onClick={() => void handlePublish()}>
                 发布
               </Button>

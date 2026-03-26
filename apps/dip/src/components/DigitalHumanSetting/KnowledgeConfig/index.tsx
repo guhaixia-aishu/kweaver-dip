@@ -73,7 +73,7 @@ const KnowledgeConfig = ({ readonly }: KnowledgeConfigProps) => {
                   e.stopPropagation()
                   deleteBkn(record.url)
                 }}
-                icon={<IconFont type="icon-dip-trash" />}
+                icon={<IconFont type="icon-trash" />}
               />
             </Tooltip>
           </Flex>
@@ -96,7 +96,7 @@ const KnowledgeConfig = ({ readonly }: KnowledgeConfigProps) => {
           <div className="flex items-end gap-x-3">
             <Button
               type="primary"
-              icon={<IconFont type="icon-dip-add" />}
+              icon={<IconFont type="icon-add" />}
               onClick={handleSelectKnowledge}
             >
               选择知识
@@ -118,7 +118,7 @@ const KnowledgeConfig = ({ readonly }: KnowledgeConfigProps) => {
             <Empty type="empty" title="暂无知识">
               {readonly ? undefined : (
                 <Button
-                  icon={<IconFont type="icon-dip-add" />}
+                  icon={<IconFont type="icon-add" />}
                   type="primary"
                   onClick={handleSelectKnowledge}
                 >

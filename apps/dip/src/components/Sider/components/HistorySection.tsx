@@ -95,7 +95,7 @@ export const HistorySection = ({
                     }}
                     aria-label="删除历史会话"
                   >
-                    <IconFont type="icon-dip-trash" />
+                    <IconFont type="icon-trash" />
                   </button>
                 </button>
               )

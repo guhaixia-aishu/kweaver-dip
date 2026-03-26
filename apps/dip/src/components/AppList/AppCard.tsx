@@ -85,7 +85,7 @@ const AppCard: React.FC<AppCardProps> = ({
                   }}
                 >
                   <span className="text-xs">立即使用</span>
-                  <IconFont type="icon-dip-arrow-up" rotate={90} className="text-xs" />
+                  <IconFont type="icon-arrowup" rotate={90} className="text-xs" />
                 </Button>
               )}
             </div>
@@ -143,7 +143,7 @@ const AppCard: React.FC<AppCardProps> = ({
                     : 'opacity-0 invisible group-hover:opacity-100 group-hover:visible',
                 )}
               >
-                <IconFont type="icon-dip-gengduo" />
+                <IconFont type="icon-more" />
               </button>
             </Dropdown>
           )}

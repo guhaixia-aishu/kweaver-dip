@@ -133,7 +133,7 @@ export const Knowledge = Node.create<KnowledgeOptions>({
           {
             id: this.name,
             name: this.options.dictionary.name,
-            icon: renderIconFont({ type: 'icon-yewuzhishiwangluo' }),
+            icon: renderIconFont({ type: 'icon-graph' }),
             keywords: 'knowledge,card,zs,network,zswl',
             action: (editor: any) =>
               editor.chain().insertContent({ type: this.name }).focus().run(),
