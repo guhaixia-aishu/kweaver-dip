@@ -4,12 +4,6 @@ metadata:
   name: {{ .Chart.Name }}-config
   namespace: {{ .Values.namespace }}
 data:
-  OPENCLAW_GATEWAY_AUTH_MODE: {{ .Values.openclaw.authMode | quote }}
-  OPENCLAW_GATEWAY_BIND: {{ .Values.openclaw.bind | quote }}
-  OPENCLAW_STATE_DIR: {{ .Values.openclaw.stateDir | quote }}
-  OPENCLAW_CONFIG_PATH: {{ .Values.openclaw.configPath | quote }}
-  OPENCLAW_WORKSPACE_DIR: {{ .Values.openclaw.workspaceDir | quote }}
-  OPENCLAW_GATEWAY_PORT: {{ .Values.openclaw.port | quote }}
   NODE_ENV: {{ .Values.studio.nodeEnv | quote }}
   PORT: {{ .Values.studio.port | quote }}
   OAUTH_MOCK_USER_ID: {{ .Values.studio.oauthMockUserId | quote }}

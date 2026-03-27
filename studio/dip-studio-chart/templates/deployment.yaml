@@ -17,59 +17,13 @@ spec:
       labels:
         {{- toYaml .Values.labels.pod | nindent 8 }}
     spec:
+      {{- if .Values.persistence.workspace.enabled }}
       volumes:
-        - name: openclaw-state
-          persistentVolumeClaim:
-            claimName: {{ .Chart.Name }}-state
         - name: openclaw-workspace
           persistentVolumeClaim:
             claimName: {{ .Chart.Name }}-workspace
+      {{- end }}
       containers:
-        - name: openclaw-gateway
-          image: "{{ .Values.image.openclaw.registry }}/{{ .Values.image.openclaw.repository }}:{{ .Values.image.openclaw.tag }}"
-          imagePullPolicy: {{ .Values.image.openclaw.pullPolicy }}
-          ports:
-            - containerPort: {{ .Values.openclaw.port }}
-              name: openclaw-ws
-              protocol: TCP
-          env:
-            - name: OPENCLAW_GATEWAY_AUTH_MODE
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ .Chart.Name }}-config
-                  key: OPENCLAW_GATEWAY_AUTH_MODE
-            - name: OPENCLAW_GATEWAY_BIND
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ .Chart.Name }}-config
-                  key: OPENCLAW_GATEWAY_BIND
-            - name: OPENCLAW_STATE_DIR
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ .Chart.Name }}-config
-                  key: OPENCLAW_STATE_DIR
-            - name: OPENCLAW_CONFIG_PATH
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ .Chart.Name }}-config
-                  key: OPENCLAW_CONFIG_PATH
-            - name: OPENCLAW_WORKSPACE_DIR
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ .Chart.Name }}-config
-                  key: OPENCLAW_WORKSPACE_DIR
-            - name: OPENCLAW_GATEWAY_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Chart.Name }}-secret
-                  key: OPENCLAW_GATEWAY_TOKEN
-          resources:
-            {{- toYaml .Values.resources.openclaw | nindent 12 }}
-          volumeMounts:
-            - name: openclaw-state
-              mountPath: /data/openclaw/state
-            - name: openclaw-workspace
-              mountPath: /data/openclaw/workspace
         - name: dip-studio
           image: "{{ .Values.image.studio.registry }}/{{ .Values.image.studio.repository }}:{{ .Values.image.studio.tag }}"
           imagePullPolicy: {{ .Values.image.studio.pullPolicy }}
@@ -135,9 +89,11 @@ spec:
                   key: OPENCLAW_GATEWAY_TOKEN
           resources:
             {{- toYaml .Values.resources.studio | nindent 12 }}
+          {{- if .Values.persistence.workspace.enabled }}
           volumeMounts:
             - name: openclaw-workspace
               mountPath: /data/openclaw/workspace
+          {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

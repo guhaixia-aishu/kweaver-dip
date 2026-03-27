@@ -1,20 +1,3 @@
-{{- if .Values.persistence.state.enabled }}
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: {{ .Chart.Name }}-state
-  namespace: {{ .Values.namespace }}
-spec:
-  accessModes:
-    {{- toYaml .Values.persistence.state.accessModes | nindent 4 }}
-  resources:
-    requests:
-      storage: {{ .Values.persistence.state.size }}
-  {{- if .Values.persistence.state.storageClassName }}
-  storageClassName: {{ .Values.persistence.state.storageClassName | quote }}
-  {{- end }}
----
-{{- end }}
 {{- if .Values.persistence.workspace.enabled }}
 apiVersion: v1
 kind: PersistentVolumeClaim
