@@ -82,4 +82,5 @@ export interface DipChatKitProps {
   employeeOptions?: AiPromptMentionOption[]
   defaultEmployeeValue?: string
   inputPlaceholder?: string
+  onSessionKeyReady?: (sessionKey: string) => void
 }

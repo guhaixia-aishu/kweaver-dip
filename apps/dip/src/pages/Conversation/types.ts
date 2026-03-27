@@ -2,6 +2,7 @@
 
 export interface ConversationRouteState {
   submitData?: AiPromptSubmitPayload
+  submitToken?: string
 }
 
 export interface ConversationLocationState {

@@ -1,5 +1,5 @@
-﻿import { VerticalAlignBottomOutlined } from '@ant-design/icons'
-import { Button, Skeleton, message, Tooltip } from 'antd'
+import { VerticalAlignBottomOutlined } from '@ant-design/icons'
+import { Button, message, Skeleton, Tooltip } from 'antd'
 import clsx from 'clsx'
 import isEmpty from 'lodash/isEmpty'
 import isString from 'lodash/isString'
@@ -13,13 +13,13 @@ import {
 } from '../../apis'
 import type { DipChatKitResponseStreamChunk } from '../../apis/types'
 import { useDipChatKitStore } from '../../store'
-import { isAsyncIterable, normalizeStreamChunk } from '../../utils'
 import type { DipChatKitAnswerEvent, DipChatKitPreviewPayload } from '../../types'
+import { isAsyncIterable, normalizeStreamChunk } from '../../utils'
 import AiPromptInput from '../AiPromptInput'
 import type { AiPromptSubmitPayload } from '../AiPromptInput/types'
-import ConversationTurn from './ConversationTurn'
 import ScrollContainer from '../ScrollContainer'
 import type { ScrollContainerRef } from '../ScrollContainer/types'
+import ConversationTurn from './ConversationTurn'
 import styles from './index.module.less'
 import type { ChatContentAreaProps } from './types'
 import { buildRegeneratePayload, mapSessionMessagesToTurns } from './utils'
@@ -30,6 +30,7 @@ const ChatContentArea: React.FC<ChatContentAreaProps> = ({
   employeeOptions,
   defaultEmployeeValue,
   inputPlaceholder,
+  onSessionKeyReady,
 }) => {
   const [inputValue, setInputValue] = useState('')
   const [sessionMessagesLoading, setSessionMessagesLoading] = useState(false)
@@ -243,10 +244,7 @@ const ChatContentArea: React.FC<ChatContentAreaProps> = ({
 
       return {
         sessionKey,
-        stream: createDigitalHumanResponseSSE(
-          { input: payload.content },
-          { sessionKey, signal },
-        ),
+        stream: createDigitalHumanResponseSSE({ input: payload.content }, { sessionKey, signal }),
       }
     },
     [ensureSessionKey, fixedSessionKey, resolveEmployeeId],
@@ -306,6 +304,7 @@ const ChatContentArea: React.FC<ChatContentAreaProps> = ({
       try {
         const { sessionKey, stream } = await runBuiltInSend(payload, abortController.signal)
         setTurnSessionKey(turnId, sessionKey)
+        onSessionKeyReady?.(sessionKey)
         await consumeSendResult(turnId, stream)
       } catch (error) {
         if (abortController.signal.aborted || isAbortError(error)) {
@@ -316,9 +315,7 @@ const ChatContentArea: React.FC<ChatContentAreaProps> = ({
         const errorMessage =
           error instanceof Error
             ? error.message
-            : (intl
-                .get('dipChatKit.answerGenerateFailed')
-                .d('回答生成失败，请稍后重试') as string)
+            : (intl.get('dipChatKit.answerGenerateFailed').d('回答生成失败，请稍后重试') as string)
         failAnswerStream(turnId, errorMessage)
         message.error(errorMessage)
       } finally {
@@ -332,6 +329,7 @@ const ChatContentArea: React.FC<ChatContentAreaProps> = ({
       runBuiltInSend,
       setTurnSessionKey,
       startAnswerStream,
+      onSessionKeyReady,
     ],
   )
   const runSendFlowRef = useRef(runSendFlow)
@@ -422,12 +420,7 @@ const ChatContentArea: React.FC<ChatContentAreaProps> = ({
         request.abort()
       }
     }
-  }, [
-    abortAllStreaming,
-    clearScheduledScroll,
-    scheduleScrollToBottom,
-    sessionId,
-  ])
+  }, [abortAllStreaming, clearScheduledScroll, scheduleScrollToBottom, sessionId])
 
   useEffect(() => {
     return () => {
@@ -493,9 +486,7 @@ const ChatContentArea: React.FC<ChatContentAreaProps> = ({
   const handleRegenerateAnswer = useCallback((turnId: string) => {
     const targetTurn = messageTurnsRef.current.find((item) => item.id === turnId)
     if (!targetTurn) {
-      message.error(
-        intl.get('dipChatKit.targetQuestionNotFound').d('未找到可重新生成的问题'),
-      )
+      message.error(intl.get('dipChatKit.targetQuestionNotFound').d('未找到可重新生成的问题'))
       return
     }
 
@@ -614,14 +605,13 @@ const ChatContentArea: React.FC<ChatContentAreaProps> = ({
               defaultEmployeeValue={defaultEmployeeValue}
               loading={streamLoading}
               placeholder={
-                inputPlaceholder || (intl.get('dipChatKit.inputPlaceholder').d('发送消息...') as string)
+                inputPlaceholder ||
+                (intl.get('dipChatKit.inputPlaceholder').d('发送消息...') as string)
               }
             />
           </div>
           <div className={styles.inputDisclaimer}>
-            {intl
-              .get('dipChatKit.inputDisclaimer')
-              .d('数字员工可能会犯错，请核查重要业务信息')}
+            {intl.get('dipChatKit.inputDisclaimer').d('数字员工可能会犯错，请核查重要业务信息')}
           </div>
         </div>
       </div>
@@ -630,5 +620,3 @@ const ChatContentArea: React.FC<ChatContentAreaProps> = ({
 }
 
 export default ChatContentArea
-
-

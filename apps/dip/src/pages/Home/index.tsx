@@ -13,9 +13,11 @@ const Home = () => {
   const navigate = useNavigate()
 
   const handleSubmit = (data: AiPromptSubmitPayload) => {
+    const submitToken = `submit_${Date.now()}_${Math.random().toString(16).slice(2, 10)}`
     navigate(`/studio/conversation?employee=${data.employees[0].value}`, {
       state: {
         submitData: data,
+        submitToken,
       },
     })
   }

@@ -1,8 +1,8 @@
-import { Splitter, message } from 'antd'
-import { XProvider } from '@ant-design/x'
 import type { XProviderProps } from '@ant-design/x'
+import { XProvider } from '@ant-design/x'
 import enUSX from '@ant-design/x/locale/en_US'
 import zhCN from '@ant-design/x/locale/zh_CN'
+import { message, Splitter } from 'antd'
 import enUS from 'antd/locale/en_US'
 import zhCNAntd from 'antd/locale/zh_CN'
 import zhTW from 'antd/locale/zh_TW'
@@ -91,6 +91,7 @@ const DipChatKitInner: React.FC<Omit<DipChatKitProps, 'initialSubmitPayload' | '
   employeeOptions,
   defaultEmployeeValue,
   inputPlaceholder,
+  onSessionKeyReady,
 }) => {
   const {
     dipChatKitStore: { messageTurns, preview, chatPanelSize },
@@ -152,9 +153,7 @@ const DipChatKitInner: React.FC<Omit<DipChatKitProps, 'initialSubmitPayload' | '
         if (disposed) return
         digitalHumanNameCacheRef.current[digitalHumanAgentId] = digitalHumanAgentId
         setDigitalHumanName(digitalHumanAgentId)
-        message.error(
-          intl.get('dipChatKit.loadDigitalHumanDetailFailed').d('加载数字员工信息失败'),
-        )
+        message.error(intl.get('dipChatKit.loadDigitalHumanDetailFailed').d('加载数字员工信息失败'))
       })
 
     return () => {
@@ -164,7 +163,9 @@ const DipChatKitInner: React.FC<Omit<DipChatKitProps, 'initialSubmitPayload' | '
 
   return (
     <div className={clsx('DipChatKit', styles.root, className)} style={style}>
-      {showHeader && <DipChatHeader title={conversationTitle} digitalHumanName={digitalHumanName} />}
+      {showHeader && (
+        <DipChatHeader title={conversationTitle} digitalHumanName={digitalHumanName} />
+      )}
       <div className={styles.body}>
         <Splitter
           className={clsx(styles.bodySplitter, !previewVisible && styles.bodySplitterPreviewHidden)}
@@ -189,6 +190,7 @@ const DipChatKitInner: React.FC<Omit<DipChatKitProps, 'initialSubmitPayload' | '
                 employeeOptions={employeeOptions}
                 defaultEmployeeValue={defaultEmployeeValue}
                 inputPlaceholder={inputPlaceholder}
+                onSessionKeyReady={onSessionKeyReady}
               />
             </div>
           </Splitter.Panel>
@@ -200,7 +202,11 @@ const DipChatKitInner: React.FC<Omit<DipChatKitProps, 'initialSubmitPayload' | '
                 previewVisible ? styles.rightPanelVisible : styles.rightPanelHidden,
               )}
             >
-              <RightSideArea visible={previewVisible} payload={preview.payload} onClose={closePreview} />
+              <RightSideArea
+                visible={previewVisible}
+                payload={preview.payload}
+                onClose={closePreview}
+              />
             </div>
           </Splitter.Panel>
         </Splitter>

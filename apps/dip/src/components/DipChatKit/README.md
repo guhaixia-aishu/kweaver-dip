@@ -22,6 +22,7 @@ import DipChatKit from '@/components/DipChatKit'
 | `employeeOptions` | `AiPromptMentionOption[]` | `[]` | 输入区员工候选项。传入后使用外部数据；不传时组件内部调用 `getDigitalHumanList` 拉取。 |
 | `defaultEmployeeValue` | `string` | `-` | 默认选中的员工 ID。优先匹配此值；未匹配时会回退到员工列表第一项。 |
 | `inputPlaceholder` | `string` | `'发送消息...'` | 输入框占位文案。 |
+| `onSessionKeyReady` | `(sessionKey: string) => void` | `-` | 当内置发送链路拿到有效 `sessionKey`（创建会话或使用既有会话）后回调。适用于外部把 `sessionKey` 同步到 URL 或埋点。 |
 ## `initialSubmitPayload` 结构
 
 ```ts
@@ -82,4 +83,15 @@ interface AiPromptSubmitPayload {
 
 ```tsx
 <DipChatKit locale="en_us" />
+```
+
+### 7. 监听会话 key（写入 URL 示例）
+
+```tsx
+<DipChatKit
+  onSessionKeyReady={(sessionKey) => {
+    // 外部可将 sessionKey 同步到查询参数
+    console.log(sessionKey)
+  }}
+/>
 ```
