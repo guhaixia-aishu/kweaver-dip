@@ -54,9 +54,23 @@ export async function mockInitializeGuide(
 ): Promise<GuideInitializeResponse> {
   await wait(MOCK_DELAY_MS)
 
+  const openclawAddress = body.openclaw_address?.trim()
+  const openclawToken = body.openclaw_token?.trim()
+  const kweaverBaseUrl = body.kweaver_base_url?.trim()
+  const kweaverToken = body.kweaver_token?.trim()
+
   // 简单校验：避免用户误点导致“看起来成功但其实没做事”
-  if (!body.openclaw_token || body.openclaw_token.trim().length === 0) {
+  if (!openclawAddress) {
+    throw new Error('Mock 初始化失败：openclaw_address 不能为空')
+  }
+
+  if (!openclawToken) {
     throw new Error('Mock 初始化失败：gateway token 不能为空')
+  }
+
+  // 与文档约束保持一致：填写 KWeaver 地址后，Token 必填
+  if (kweaverBaseUrl && !kweaverToken) {
+    throw new Error('Mock 初始化失败：填写 kweaver_base_url 后，kweaver_token 为必填')
   }
 
   const workspaceDir = '~/.openclaw-dev'

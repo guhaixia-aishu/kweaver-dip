@@ -39,6 +39,8 @@ export interface OpenClawDetectedConfig {
 export interface GuideInitializeRequest {
   openclaw_address: string
   openclaw_token: string
+  kweaver_base_url?: string
+  kweaver_token?: string
 }
 
 /** 初始化成功响应（GuideInitializeResponse） */

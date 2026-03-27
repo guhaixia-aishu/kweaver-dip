@@ -252,3 +252,14 @@
     transform: translateX(116px);
   }
 }
+
+.form {
+  :global(input:-webkit-autofill),
+  :global(input:-webkit-autofill:hover),
+  :global(input:-webkit-autofill:focus),
+  :global(input:-webkit-autofill:active) {
+    box-shadow: 0 0 0 1000px #fff inset;
+    color: #000;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+}

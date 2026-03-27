@@ -75,10 +75,16 @@ const InitialConfiguration = () => {
   }, [step, initResult, navigate])
 
   const getInitializeRequest = (values: GuideInitializeRequest): GuideInitializeRequest => {
-    // 后端初始化引导接口要求 openclaw_address + openclaw_token
+    const openclawAddress = values.openclaw_address.trim()
+    const openclawToken = values.openclaw_token.trim()
+    const kweaverBaseUrl = values.kweaver_base_url?.trim()
+    const kweaverToken = values.kweaver_token?.trim()
+
     return {
-      openclaw_address: values.openclaw_address,
-      openclaw_token: values.openclaw_token,
+      openclaw_address: openclawAddress,
+      openclaw_token: openclawToken,
+      ...(kweaverBaseUrl ? { kweaver_base_url: kweaverBaseUrl } : {}),
+      ...(kweaverBaseUrl && kweaverToken ? { kweaver_token: kweaverToken } : {}),
     }
   }
 
@@ -142,7 +148,7 @@ const InitialConfiguration = () => {
     <div className="h-full relative min-h-0">
       <ScrollBarContainer className="p-6 h-full min-h-0">
         <div className="min-h-full w-full flex flex-col items-center justify-center">
-          <div className="w-[706px] h-[380px] max-h-[500px] bg-[#F8FBFF] rounded-2xl py-8 px-10">
+          <div className="w-[706px] max-w-full min-h-[380px] bg-[#F8FBFF] rounded-2xl py-8 px-10">
             {stepContent}
           </div>
           <div className="w-full max-w-[180px] flex-shrink-0 mt-6">
