@@ -197,6 +197,7 @@ GitHub：https://github.com/kweaver-ai/web
 | -- | -- | -- |
 | [\].name | string | 技能名称 |
 | [\].description | string | 技能描述，可选 |
+| [\].built_in | boolean | 是否为 DIP 数字员工内置技能（`archive-protocol`、`schedule-plan`、`kweaver-core`） |
 
 #### 业务知识网络转发
 
@@ -248,6 +249,7 @@ GitHub：https://github.com/kweaver-ai/web
 | -- | -- | -- |
 | [\].name | string | 技能名称 |
 | [\].description | string | 技能描述，可选 |
+| [\].built_in | boolean | 是否为 DIP 数字员工内置技能（`archive-protocol`、`schedule-plan`、`kweaver-core`） |
 
 #### 获取计划任务列表
 
@@ -381,7 +383,7 @@ GitHub：https://github.com/kweaver-ai/web
 | name | string | 是 | 数字员工名称 |
 | creature | string | 否 | 数字员工岗位/角色 |
 | soul | string | 否 | `SOUL.md` 内容 |
-| skills | string[] | 否 | 技能名称列表 |
+| skills | string[] | 否 | 额外技能名称；服务端始终先绑定 `archive-protocol`、`schedule-plan`、`kweaver-core`，再与本字段合并（去重）。响应中 `skills` 为完整绑定 id 列表（含内置三项） |
 
 响应：`201 application/json`
 

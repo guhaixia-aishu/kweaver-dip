@@ -33,8 +33,36 @@ describe("DefaultAgentSkillsLogic", () => {
     );
 
     await expect(logic.listEnabledSkills()).resolves.toEqual([
-      { name: "planner", description: "plan tasks" },
-      { name: "coder", description: "write code" }
+      { name: "planner", description: "plan tasks", built_in: false },
+      { name: "coder", description: "write code", built_in: false }
+    ]);
+  });
+
+  it("listEnabledSkills sets built_in true for default digital-human slugs", async () => {
+    const logic = new DefaultAgentSkillsLogic(
+      {
+        listAvailableSkills: vi.fn(),
+        getAgentSkills: vi.fn(),
+        updateAgentSkills: vi.fn()
+      },
+      {
+        listAgents: vi.fn(),
+        createAgent: vi.fn(),
+        deleteAgent: vi.fn(),
+        getAgentFile: vi.fn(),
+        setAgentFile: vi.fn(),
+        getConfig: vi.fn(),
+        patchConfig: vi.fn(),
+        getSkillStatuses: vi.fn().mockResolvedValue([
+          { skillKey: "archive-protocol", description: "arch", enabled: true },
+          { skillKey: "planner", description: "plan", enabled: true }
+        ])
+      } as never
+    );
+
+    await expect(logic.listEnabledSkills()).resolves.toEqual([
+      { name: "archive-protocol", description: "arch", built_in: true },
+      { name: "planner", description: "plan", built_in: false }
     ]);
   });
 
@@ -69,11 +97,54 @@ describe("DefaultAgentSkillsLogic", () => {
     await expect(logic.listDigitalHumanSkills("agent-1")).resolves.toEqual([
       {
         name: "writer",
-        description: "write docs"
+        description: "write docs",
+        built_in: false
       }
     ]);
     expect(getSkillStatuses).toHaveBeenCalledOnce();
     expect(getAgentSkills).toHaveBeenCalledWith("agent-1");
+  });
+
+  it("listDigitalHumanSkills marks built-in slugs with built_in true", async () => {
+    const getSkillStatuses = vi.fn().mockResolvedValue([
+      { skillKey: "archive-protocol", description: "arch", enabled: true },
+      { skillKey: "schedule-plan", description: "plan", enabled: true },
+      { skillKey: "kweaver-core", description: "kw", enabled: true },
+      { skillKey: "extra", description: "x", enabled: true }
+    ]);
+    const getAgentSkills = vi.fn().mockResolvedValue({
+      agentId: "agent-1",
+      skills: [
+        "archive-protocol",
+        "schedule-plan",
+        "kweaver-core",
+        "extra"
+      ]
+    });
+    const logic = new DefaultAgentSkillsLogic(
+      {
+        listAvailableSkills: vi.fn(),
+        getAgentSkills,
+        updateAgentSkills: vi.fn()
+      },
+      {
+        listAgents: vi.fn(),
+        createAgent: vi.fn(),
+        deleteAgent: vi.fn(),
+        getAgentFile: vi.fn(),
+        setAgentFile: vi.fn(),
+        getConfig: vi.fn(),
+        patchConfig: vi.fn(),
+        getSkillStatuses
+      } as never
+    );
+
+    await expect(logic.listDigitalHumanSkills("agent-1")).resolves.toEqual([
+      { name: "archive-protocol", description: "arch", built_in: true },
+      { name: "schedule-plan", description: "plan", built_in: true },
+      { name: "kweaver-core", description: "kw", built_in: true },
+      { name: "extra", description: "x", built_in: false }
+    ]);
   });
 
   it("delegates listAvailableSkills to the client", async () => {
@@ -169,12 +240,29 @@ describe("DefaultAgentSkillsLogic", () => {
     ).toEqual([
       {
         name: "writer",
-        description: "write docs"
+        description: "write docs",
+        built_in: false
       },
       {
         name: "coder",
-        description: "write code"
+        description: "write code",
+        built_in: false
       }
+    ]);
+  });
+
+  it("filterAgentSkillEntries sets built_in for built-in slugs", () => {
+    expect(
+      filterAgentSkillEntries(
+        [
+          { skillKey: "archive-protocol", description: "a", enabled: true },
+          { skillKey: "extra", description: "e", enabled: true }
+        ],
+        ["archive-protocol", "extra"]
+      )
+    ).toEqual([
+      { name: "archive-protocol", description: "a", built_in: true },
+      { name: "extra", description: "e", built_in: false }
     ]);
   });
 });

@@ -5,7 +5,6 @@ import { join } from "node:path";
 
 import type { OpenClawAgentsAdapter } from "../adapters/openclaw-agents-adapter";
 import { HttpError } from "../errors/http-error";
-import type { AgentSkillsLogic } from "./agent-skills";
 import type {
   ChannelConfig,
   CreateDigitalHumanRequest,
@@ -17,7 +16,8 @@ import type {
   UpdateDigitalHumanRequest,
   UpdateDigitalHumanResult
 } from "../types/digital-human";
-import type { OpenClawAgentsListResult } from "../types/openclaw";
+import { mergeCreateDigitalHumanSkills } from "../utils/skills";
+import type { AgentSkillsLogic } from "./agent-skills";
 import {
   buildTemplate,
   mergeFilesToTemplate,
@@ -237,9 +237,8 @@ export class DefaultDigitalHumanLogic implements DigitalHumanLogic {
 
     await this.writeTemplateViaOpenClawFilesRpc(uuid, template);
 
-    if (request.skills && request.skills.length > 0) {
-      await this.agentSkillsLogic.updateAgentSkills(uuid, request.skills);
-    }
+    const skills = mergeCreateDigitalHumanSkills(request.skills);
+    await this.agentSkillsLogic.updateAgentSkills(uuid, skills);
 
     if (request.channel) {
       try {
@@ -254,7 +253,7 @@ export class DefaultDigitalHumanLogic implements DigitalHumanLogic {
       name: request.name,
       creature: request.creature,
       soul: request.soul,
-      skills: request.skills,
+      skills,
       bkn: request.bkn,
       channel:
         request.channel !== undefined

@@ -99,8 +99,8 @@ describe("createSkillsRouter", () => {
   it("returns available skills on success", async () => {
     const { createSkillsRouter } = await importRouterWithLogicMock({
       listEnabledSkills: async () => [
-        { name: "planner", description: "plan tasks" },
-        { name: "writer", description: "write docs" }
+        { name: "planner", description: "plan tasks", built_in: false },
+        { name: "writer", description: "write docs", built_in: false }
       ]
     });
     const router = createSkillsRouter() as Router;
@@ -112,8 +112,8 @@ describe("createSkillsRouter", () => {
 
     expect(response.status).toHaveBeenCalledWith(200);
     expect(response.json).toHaveBeenCalledWith([
-      { name: "planner", description: "plan tasks" },
-      { name: "writer", description: "write docs" }
+      { name: "planner", description: "plan tasks", built_in: false },
+      { name: "writer", description: "write docs", built_in: false }
     ]);
     expect(next).not.toHaveBeenCalled();
   });
@@ -131,7 +131,7 @@ describe("createSkillsRouter", () => {
     const { createSkillsRouter } = await importRouterWithLogicMock({
       listEnabledSkills: async () => [],
       listDigitalHumanSkills: async (id) => [
-        { name: `${id}-planner`, description: "plan tasks" }
+        { name: `${id}-planner`, description: "plan tasks", built_in: false }
       ]
     });
     const router = createSkillsRouter() as Router;
@@ -147,7 +147,7 @@ describe("createSkillsRouter", () => {
 
     expect(response.status).toHaveBeenCalledWith(200);
     expect(response.json).toHaveBeenCalledWith([
-      { name: "a1-planner", description: "plan tasks" }
+      { name: "a1-planner", description: "plan tasks", built_in: false }
     ]);
     expect(next).not.toHaveBeenCalled();
   });

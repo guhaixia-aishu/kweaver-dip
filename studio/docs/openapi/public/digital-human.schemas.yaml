@@ -78,6 +78,8 @@ components:
             $ref: '#/components/schemas/BknEntry'
         skills:
           type: array
+          description: |
+            当前绑定的技能 id 列表（含内置默认 `archive-protocol`、`schedule-plan`、`kweaver-core` 等）；无绑定时省略。
           items:
             type: string
         channel:
@@ -106,7 +108,9 @@ components:
           title: SOUL.md 正文
         skills:
           type: array
-          title: 技能目录名列表（软链到中央技能仓）
+          title: 额外技能目录名列表
+          description: |
+            与默认技能合并后写入 agent。服务端始终先绑定 `archive-protocol`、`schedule-plan`、`kweaver-core`，再追加本数组中的名称（去重）。
           items:
             type: string
         bkn:
@@ -120,7 +124,9 @@ components:
 
     CreateDigitalHumanResponse:
       summary: 创建数字员工响应
-      description: 与请求字段对应；若请求中传了 `channel`，响应会带上 `type`（省略时规范为 `feishu`）
+      description: |
+        与请求字段对应；`skills` 为合并默认技能与请求中额外技能后的**完整**绑定列表（含 `archive-protocol`、`schedule-plan`、`kweaver-core`）。
+        若请求中传了 `channel`，响应会带上 `type`（省略时规范为 `feishu`）
       type: object
       properties:
         id:
@@ -134,6 +140,7 @@ components:
           type: string
         skills:
           type: array
+          description: 当前绑定的完整技能 id 列表（含内置默认）。
           items:
             type: string
         bkn:
@@ -172,6 +179,8 @@ components:
 
     UpdateDigitalHumanResponse:
       summary: 更新数字员工响应
+      description: |
+        `skills` 为当前完整绑定列表（含内置默认）；与创建响应语义一致。
       type: object
       properties:
         id:
@@ -184,6 +193,7 @@ components:
           type: string
         skills:
           type: array
+          description: 当前绑定的完整技能 id 列表（含内置默认）。
           items:
             type: string
         bkn:

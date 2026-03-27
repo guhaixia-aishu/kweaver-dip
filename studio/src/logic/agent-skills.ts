@@ -10,6 +10,7 @@ import type {
   UpdateAgentSkillsResult
 } from "../types/agent-skills";
 import type { OpenClawSkillStatusEntry } from "../types/openclaw";
+import { isDefaultDigitalHumanSkillSlug } from "../utils/skills";
 
 /**
  * Application logic used to query and update agent skill bindings.
@@ -75,10 +76,14 @@ export class DefaultAgentSkillsLogic implements AgentSkillsLogic {
   public async listEnabledSkills(): Promise<DigitalHumanSkillList> {
     const globalEntries = await this.getAvailableSkillEntries();
 
-    return globalEntries.map((entry) => ({
-      name: getSkillEntryName(entry) ?? entry.skillKey,
-      description: getSkillEntryDescription(entry)
-    }));
+    return globalEntries.map((entry) => {
+      const name = getSkillEntryName(entry) ?? entry.skillKey;
+      return {
+        name,
+        description: getSkillEntryDescription(entry),
+        built_in: isDefaultDigitalHumanSkillSlug(name)
+      };
+    });
   }
 
   /**
@@ -210,7 +215,8 @@ export function filterAgentSkillEntries(
 
     return [{
       name,
-      description: getSkillEntryDescription(entry)
+      description: getSkillEntryDescription(entry),
+      built_in: isDefaultDigitalHumanSkillSlug(name)
     }];
   });
 }

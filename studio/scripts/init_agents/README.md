@@ -94,7 +94,7 @@ studio/built-in/<agent-name>/
 
 插件同步使用 `fs.cpSync(..., { dereference: true })`，以便将 `dip/skills/contextloader` 等符号链接展开为实际文件复制到 OpenClaw 状态目录。
 
-此外会校准 **`skills.entries.contextloader`**：不存在则新建（`enabled: true` + `env`）；已存在则只**补全缺失的 `env` 键**，从不覆盖 `openclaw.json` 里已有键。`env` 默认值如何生成见 **「环境变量」→ contextloader**。
+脚本**不会**写入或修改 `openclaw.json` 中的 `skills.entries.contextloader`；该项如需使用请自行配置。
 
 ## 鉴权同步规则
 
@@ -136,11 +136,11 @@ node studio/scripts/init_agents/index.mjs
 
 ## 环境变量
 
-脚本在**本次进程**中读取的环境变量分两类：一类决定路径与要读写的文件；另一类仅在写入 `skills.entries.contextloader.env` 时使用（与 contextloader 技能在运行时使用同名变量，便于与 `studio/.env` 等对齐）。
+脚本在**本次进程**中主要使用决定路径与要读写的文件的环境变量（见下表 `OPENCLAW_*` 等）。可选加载 **`studio/.env`** 以便与本地开发习惯一致。
 
 ### `.env` 文件
 
-可以。把上表中的变量写进 **`studio/.env`**（与后端服务共用同一文件即可），然后在 `studio` 目录执行 `npm run init:agents`，或在任意目录执行 `npm --prefix studio run init:agents`；脚本会按**文件路径**定位 `studio/.env`（与当前工作目录无关），在读取 `OPENCLAW_*` / `APP_USER_ID` 等之前先加载。
+可以。把上表中的变量写进 **`studio/.env`**（与后端服务共用同一文件即可），然后在 `studio` 目录执行 `npm run init:agents`，或在任意目录执行 `npm --prefix studio run init:agents`；脚本会按**文件路径**定位 `studio/.env`（与当前工作目录无关），在读取 `OPENCLAW_*` 等之前先加载。
 
 - `.env` 由脚本**内置的简单解析**加载（`KEY=value`、`export KEY=value`、支持单行引号包裹）；仅当文件**存在**时才加载，并打印 `[配置] 已从 .env 加载: <路径>`。
 - **已在环境中的变量不被覆盖**（与在 shell 里先 `export` 再执行效果一致：shell 里的值优先）。
@@ -154,17 +154,6 @@ node studio/scripts/init_agents/index.mjs
 | `OPENCLAW_BUILT_IN_DIR` | 内置智能体定义（`metadata.json`、`SOUL.md`、`IDENTITY.md`） | 脚本文件上两级目录下的 `built-in`（本仓库布局下即 `studio/built-in`） |
 | `OPENCLAW_WORKSPACE_DIR` | 各 agent workspace 根；实际目录为 `<该目录>/<agent-id>` | 与 `OPENCLAW_STATE_DIR` 相同 |
 | `OPENCLAW_EXTENSIONS_DIR` | 要复制并注册到 `plugins.entries` 的扩展源码目录 | 脚本文件上两级目录下的 `extensions`（本仓库布局下即 `studio/extensions`） |
-
-### contextloader（写入 `openclaw.json` 的 `skills.entries.contextloader.env`）
-
-仅在**补全缺失键**时使用（已有键不会被覆盖）：
-
-| 变量 | 写入的 JSON 键 | 未设置或仅空白时 |
-| --- | --- | --- |
-| `APP_USER_ID` | `APP_USER_ID` | `<REPLACE_WITH_APP_USER_ID>` |
-| `CONTEXT_LOADER_BASE_URL` | `CONTEXT_LOADER_BASE_URL` | `<REPLACE_WITH_CONTEXT_LOADER_BASE_URL>` |
-
-脚本若检测到上述变量之一非空，会打印一行日志标明「默认值来自环境变量」。
 
 ### 执行示例
 
@@ -181,15 +170,6 @@ OPENCLAW_STATE_DIR=/data/openclaw \
 OPENCLAW_BUILT_IN_DIR=/path/to/dip-studio/studio/built-in \
 OPENCLAW_WORKSPACE_DIR=/data/openclaw/workspace \
 OPENCLAW_EXTENSIONS_DIR=/path/to/dip-studio/studio/extensions \
-npm --prefix studio run init:agents
-```
-
-同时为 contextloader 写入真实 `env`（可与上一段组合）：
-
-```bash
-APP_USER_ID=my-app \
-CONTEXT_LOADER_BASE_URL=http://agent-retrieval:30779 \
-OPENCLAW_STATE_DIR=/data/openclaw \
 npm --prefix studio run init:agents
 ```
 

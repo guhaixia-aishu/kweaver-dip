@@ -1,7 +1,7 @@
 ---
 name: archive-protocol
 version: "1.0.1"
-description: 全局归档协议。只要任务需要写入任何文件（含 PLAN.md、报告、JSON 等归档物），必须按本技能执行 sessionKey→ARCHIVE_ID、TIMESTAMP、双轨路径（根段须为 archives/）、回读校验与状态回执；WebUI 的 archive_grid 必须用 Markdown 中语言标识为 json 的围栏代码块输出。
+description: 全局归档协议。只要任务需要写入任何文件（含 PLAN.md、报告、JSON 等归档物），必须按本技能执行 Session→ARCHIVE_ID、TIMESTAMP、双轨路径（根段须为 archives/）、回读校验与状态回执；WebUI 的 archive_grid 必须用 Markdown 中语言标识为 json 的围栏代码块输出。
 metadata:
   {
     "openclaw": {}
@@ -27,20 +27,21 @@ metadata:
 
 ## 【ARCHIVE_ID 规则】
 
-`ARCHIVE_ID` 的唯一来源是 `session_status` 工具返回结果中的 `sessionKey`。
+`ARCHIVE_ID` 的唯一来源是 `session_status` 工具返回结果中的 `Session`。
 
 必须执行：
 
-1. 调用 `session_status`
-2. 读取 `sessionKey`
-3. 使用 `:` 作为分隔符切分 `sessionKey`
+1. 调用 `session_status`, 并且不允许传递任何参数
+2. 读取 `Session`
+3. 使用 `:` 作为分隔符切分 `Session`
 4. 取切分结果的最后一段作为 `ARCHIVE_ID`
 
 禁止：
 
 - 禁止从其他来源生成或推断 `ARCHIVE_ID`
-- 禁止在 `sessionKey` 为空、缺失或无法切分时伪造 `ARCHIVE_ID`
-- 若失败，立即中止归档并返回：`ARCHIVE_STATUS: BLOCKED` / `ARCHIVE_REASON: invalid sessionKey`
+- 禁止在 `Session` 为空、缺失或无法切分时伪造 `ARCHIVE_ID`
+- 若`session_status`工具调用失败，立即重试，不允许捏造`ARCHIVE_ID`
+- 若持续失败，立即中止归档并返回：`ARCHIVE_STATUS: BLOCKED` / `ARCHIVE_REASON: invalid Session`
 
 ## 【TIMESTAMP 规则】
 

@@ -659,7 +659,125 @@ describe("DefaultDigitalHumanLogic lifecycle (filesystem + adapter)", () => {
         content: expect.stringContaining("Hi") as string
       })
     );
-    expect(updateAgentSkills).toHaveBeenCalledWith(result.id, ["sk1"]);
+    expect(updateAgentSkills).toHaveBeenCalledWith(result.id, [
+      "archive-protocol",
+      "schedule-plan",
+      "kweaver-core",
+      "sk1"
+    ]);
+    expect(result.skills).toEqual(["sk1"]);
+  });
+
+  it("createDigitalHuman applies default skills when request omits skills", async () => {
+    vi.spyOn(globalThis.crypto, "randomUUID").mockReturnValue(
+      "dddddddd-dddd-dddd-dddd-dddddddddddd"
+    );
+
+    const updateAgentSkills = vi.fn().mockResolvedValue({
+      success: true,
+      agentId: "",
+      skills: []
+    });
+    const logic = new DefaultDigitalHumanLogic({
+      openClawAgentsAdapter: {
+        listAgents: vi.fn(),
+        createAgent: vi.fn().mockResolvedValue({ ok: true }),
+        deleteAgent: vi.fn(),
+        getAgentFile: vi.fn(),
+        setAgentFile: vi.fn().mockResolvedValue({ ok: true }),
+        listAgentFiles: vi.fn().mockResolvedValue({ agentId: "", files: [] }),
+        getConfig: vi.fn(),
+        patchConfig: vi.fn()
+      } as never,
+      agentSkillsLogic: stubAgentSkills({ updateAgentSkills })
+    });
+
+    const result = await logic.createDigitalHuman({ name: "NoSkills" });
+
+    expect(updateAgentSkills).toHaveBeenCalledWith(result.id, [
+      "archive-protocol",
+      "schedule-plan",
+      "kweaver-core"
+    ]);
+    expect(result.skills).toBeUndefined();
+  });
+
+  it("createDigitalHuman deduplicates when request repeats default skill names", async () => {
+    const updateAgentSkills = vi.fn().mockResolvedValue({
+      success: true,
+      agentId: "",
+      skills: []
+    });
+    const logic = new DefaultDigitalHumanLogic({
+      openClawAgentsAdapter: {
+        listAgents: vi.fn(),
+        createAgent: vi.fn().mockResolvedValue({ ok: true }),
+        deleteAgent: vi.fn(),
+        getAgentFile: vi.fn(),
+        setAgentFile: vi.fn().mockResolvedValue({ ok: true }),
+        listAgentFiles: vi.fn().mockResolvedValue({ agentId: "", files: [] }),
+        getConfig: vi.fn(),
+        patchConfig: vi.fn()
+      } as never,
+      agentSkillsLogic: stubAgentSkills({ updateAgentSkills })
+    });
+
+    const result = await logic.createDigitalHuman({
+      name: "Dup",
+      skills: ["archive-protocol", "other"]
+    });
+
+    expect(updateAgentSkills).toHaveBeenCalledWith(result.id, [
+      "archive-protocol",
+      "schedule-plan",
+      "kweaver-core",
+      "other"
+    ]);
+    expect(result.skills).toEqual(["other"]);
+  });
+
+  it("getDigitalHuman omits default slugs from skills in the response", async () => {
+    const id = "a1b2c3d4-e5f6-7890-abcd-ef1234567891";
+    const ws = resolveDefaultWorkspace(id);
+    mkdirSync(ws, { recursive: true });
+    writeFileSync(
+      join(ws, "IDENTITY.md"),
+      "- Name: Alice\n- Creature: QA\n",
+      "utf8"
+    );
+    writeFileSync(join(ws, "SOUL.md"), "Soul text\n", "utf8");
+
+    const adapter = {
+      listAgents: vi.fn(),
+      createAgent: vi.fn(),
+      deleteAgent: vi.fn(),
+      getAgentFile: vi.fn().mockImplementation(async ({ name }: { name: string }) => ({
+        file: { content: readFileSync(join(ws, name), "utf8") }
+      })),
+      setAgentFile: vi.fn(),
+      getConfig: vi.fn(),
+      patchConfig: vi.fn()
+    };
+
+    const logic = new DefaultDigitalHumanLogic({
+      openClawAgentsAdapter: adapter as never,
+      agentSkillsLogic: stubAgentSkills({
+        getAgentSkills: vi.fn().mockResolvedValue({
+          agentId: id,
+          skills: [
+            "archive-protocol",
+            "schedule-plan",
+            "kweaver-core",
+            "extra-skill"
+          ]
+        })
+      })
+    });
+
+    await expect(logic.getDigitalHuman(id)).resolves.toMatchObject({
+      id,
+      skills: ["extra-skill"]
+    });
   });
 
   it("updateDigitalHuman merges patch and writes files via gateway RPC", async () => {

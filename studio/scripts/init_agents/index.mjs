@@ -74,28 +74,6 @@ const WORKSPACE_ROOT = path.resolve(
   process.env.OPENCLAW_WORKSPACE_DIR || STATE_DIR
 );
 
-/** OpenClaw `skills.entries` key for the Context Loader skill bundled with `dip`. */
-const CONTEXTLOADER_SKILL_KEY = "contextloader";
-
-const CONTEXTLOADER_FALLBACK_APP_USER_ID = "<REPLACE_WITH_APP_USER_ID>";
-const CONTEXTLOADER_FALLBACK_BASE_URL = "<REPLACE_WITH_CONTEXT_LOADER_BASE_URL>";
-
-/**
- * Default `skills.entries.contextloader.env` values: same names as the skill uses.
- * Reads `APP_USER_ID` and `CONTEXT_LOADER_BASE_URL` from the process environment
- * when the script runs; falls back to visible placeholders if unset or blank.
- *
- * @returns Env key/value map for openclaw.json.
- */
-function resolveContextLoaderEnvFromProcess() {
-  const appUserId = process.env.APP_USER_ID?.trim();
-  const baseUrl = process.env.CONTEXT_LOADER_BASE_URL?.trim();
-  return {
-    APP_USER_ID: appUserId || CONTEXTLOADER_FALLBACK_APP_USER_ID,
-    CONTEXT_LOADER_BASE_URL: baseUrl || CONTEXTLOADER_FALLBACK_BASE_URL
-  };
-}
-
 function readJsonFile(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
@@ -181,64 +159,6 @@ function upsertAgentConfig(agentConfigs, newAgent) {
   console.log(`[新增] 在配置文件中注册 ${newAgent.id}`);
 }
 
-/**
- * Ensures `skills.entries.contextloader.env` exists for OpenClaw.
- * New or missing keys use values from `resolveContextLoaderEnvFromProcess()` (env at script run, else `<REPLACE_WITH_…>`).
- * Does not overwrite keys already present in openclaw.json.
- *
- * @param cfg Parsed openclaw.json root object (mutated).
- */
-function ensureContextLoaderPlaceholderEnv(cfg) {
-  const envDefaults = resolveContextLoaderEnvFromProcess();
-  const fromEnv = [];
-  if (process.env.APP_USER_ID?.trim()) fromEnv.push("APP_USER_ID");
-  if (process.env.CONTEXT_LOADER_BASE_URL?.trim()) fromEnv.push("CONTEXT_LOADER_BASE_URL");
-  if (fromEnv.length > 0) {
-    console.log(`[配置] contextloader env 默认值来自环境变量: ${fromEnv.join(", ")}`);
-  }
-
-  cfg.skills = cfg.skills || {};
-  cfg.skills.entries = cfg.skills.entries || {};
-  const entries = cfg.skills.entries;
-  const existing = entries[CONTEXTLOADER_SKILL_KEY];
-
-  if (!existing || typeof existing !== "object") {
-    entries[CONTEXTLOADER_SKILL_KEY] = {
-      enabled: true,
-      env: { ...envDefaults }
-    };
-    console.log(
-      `[配置] 已新增 skills.entries.${CONTEXTLOADER_SKILL_KEY}（enabled + env 默认值）`
-    );
-    return;
-  }
-
-  if (existing.enabled === undefined) {
-    existing.enabled = true;
-  }
-
-  if (!existing.env || typeof existing.env !== "object") {
-    existing.env = { ...envDefaults };
-    console.log(
-      `[配置] 已为 skills.entries.${CONTEXTLOADER_SKILL_KEY} 写入 env 默认值`
-    );
-    return;
-  }
-
-  let added = false;
-  for (const [key, value] of Object.entries(envDefaults)) {
-    if (!Object.prototype.hasOwnProperty.call(existing.env, key)) {
-      existing.env[key] = value;
-      added = true;
-    }
-  }
-  if (added) {
-    console.log(
-      `[配置] 已补全 skills.entries.${CONTEXTLOADER_SKILL_KEY}.env 缺失键（来自当前环境或占位符）`
-    );
-  }
-}
-
 async function initOpenClawConfig(builtInAgents) {
   console.log("🛠️ 开始校准 openclaw.json 中的 Agent 配置...");
   const configPath = path.join(STATE_DIR, "openclaw.json");
@@ -282,8 +202,6 @@ async function initOpenClawConfig(builtInAgents) {
     cfg.plugins.entries[pluginName] = { enabled: true };
     console.log(`[配置] 开启插件 ${pluginName}`);
   }
-
-  ensureContextLoaderPlaceholderEnv(cfg);
 
   fs.writeFileSync(configPath, JSON.stringify(cfg, null, 2), "utf8");
   console.log(`✅ openclaw.json 成功写入 ${builtInAgents.length} 个内置 Agent 的配置保障！\n`);

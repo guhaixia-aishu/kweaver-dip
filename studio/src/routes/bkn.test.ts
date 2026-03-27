@@ -254,6 +254,30 @@ describe("writeProxyResponse", () => {
     expect(response.send).toHaveBeenCalledWith("{\"ok\":true}");
   });
 
+  it("does not forward content-encoding or transfer-encoding (decoded body)", () => {
+    const response = createResponseDouble();
+
+    writeProxyResponse(response, {
+      status: 200,
+      headers: new Headers({
+        "content-type": "application/json",
+        "content-encoding": "gzip",
+        "transfer-encoding": "chunked"
+      }),
+      body: "{}"
+    });
+
+    expect(response.setHeader).toHaveBeenCalledWith(
+      "content-type",
+      "application/json"
+    );
+    expect(response.setHeader).not.toHaveBeenCalledWith("content-encoding", "gzip");
+    expect(response.setHeader).not.toHaveBeenCalledWith(
+      "transfer-encoding",
+      "chunked"
+    );
+  });
+
   it("ends the response for empty bodies", () => {
     const response = createResponseDouble();
 

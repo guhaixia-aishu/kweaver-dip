@@ -36,6 +36,12 @@ export interface DigitalHumanSkill {
    * Human-readable description.
    */
   description?: string;
+
+  /**
+   * Whether this skill is a DIP built-in default for digital humans
+   * (`archive-protocol`, `schedule-plan`, `kweaver-core`).
+   */
+  built_in: boolean;
 }
 
 /**
@@ -53,9 +59,14 @@ export interface DigitalHumanAgentSkill {
   description?: string;
 
   /**
+   * Whether this skill is a DIP built-in default for digital humans
+   * (`archive-protocol`, `schedule-plan`, `kweaver-core`).
+   */
+  built_in: boolean;
+
+  /**
    * Whether the target digital human currently enables this skill.
-   * This field is used internally by the backend merge logic and is not
-   * exposed by the public API schema for `/digital-human/{id}/skills`.
+   * Optional; omitted when not used by the merge implementation.
    */
   enabled?: boolean;
 }
@@ -167,7 +178,9 @@ export interface CreateDigitalHumanRequest {
   soul?: string;
 
   /**
-   * Skill names to bind to the agent.
+   * Extra skill names to bind to the agent.
+   * The server always merges `archive-protocol`, `schedule-plan`, and
+   * `kweaver-core` first; duplicates are omitted.
    */
   skills?: string[];
 
@@ -209,7 +222,7 @@ export interface CreateDigitalHumanResult {
   soul?: string;
 
   /**
-   * Skill names currently bound to the agent.
+   * Skill names bound to the agent (includes built-in defaults merged at create time).
    */
   skills?: string[];
 
@@ -254,7 +267,7 @@ export interface DigitalHumanDetail {
   bkn?: BknEntry[];
 
   /**
-   * Skill names currently configured on the agent.
+   * Skill names currently configured on the agent (includes built-in defaults when bound).
    */
   skills?: string[];
 
@@ -308,6 +321,7 @@ export interface UpdateDigitalHumanResult {
   name: string;
   creature?: string;
   soul?: string;
+  /** Skill ids currently on the agent (includes built-in defaults when bound). */
   skills?: string[];
   bkn?: BknEntry[];
   channel?: ChannelConfig;

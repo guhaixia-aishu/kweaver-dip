@@ -106,6 +106,18 @@ export function readRequiredKnId(value: string | undefined): string {
 }
 
 /**
+ * Header names that must not be forwarded when the upstream body was read with `fetch().text()`
+ * (already decoded). Forwarding `Content-Encoding` would make the browser try to decode plain JSON
+ * as gzip and fail with `ERR_CONTENT_DECODING_FAILED`.
+ */
+const hopByHopOrEncodingHeaders = new Set([
+  "content-encoding",
+  "content-length",
+  "transfer-encoding",
+  "connection"
+]);
+
+/**
  * Writes one proxied upstream response to Express.
  *
  * @param response Express response object.
@@ -116,7 +128,7 @@ export function writeProxyResponse(
   upstreamResponse: BknProxyResponse
 ): void {
   upstreamResponse.headers.forEach((value, key) => {
-    if (key.toLowerCase() === "content-length") {
+    if (hopByHopOrEncodingHeaders.has(key.toLowerCase())) {
       return;
     }
 

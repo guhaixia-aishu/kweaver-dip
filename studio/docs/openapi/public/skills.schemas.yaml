@@ -10,8 +10,14 @@ components:
         description:
           type: string
           title: 技能描述
+        built_in:
+          type: boolean
+          title: 是否为 DIP 数字员工内置技能
+          description: |
+            为 `true` 表示属于内置 trio：`archive-protocol`、`schedule-plan`、`kweaver-core`。
       required:
         - name
+        - built_in
 
     DigitalHumanAgentSkill:
       summary: 数字员工技能状态
@@ -23,8 +29,14 @@ components:
         description:
           type: string
           title: 技能描述
+        built_in:
+          type: boolean
+          title: 是否为 DIP 数字员工内置技能
+          description: |
+            为 `true` 表示属于内置 trio：`archive-protocol`、`schedule-plan`、`kweaver-core`。
       required:
         - name
+        - built_in
 
     DigitalHumanSkillList:
       summary: 技能列表
@@ -34,6 +46,8 @@ components:
 
     DigitalHumanAgentSkillList:
       summary: 数字员工技能列表
+      description: |
+        全局可用技能中该 agent 已启用的条目；`built_in` 标识是否为 DIP 内置技能。
       type: array
       items:
         $ref: '#/components/schemas/DigitalHumanAgentSkill'
