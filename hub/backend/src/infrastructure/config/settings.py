@@ -126,14 +126,18 @@ class Settings(BaseSettings):
         description="User Management 请求超时时间（秒）"
     )
 
-    # Deploy Manager 服务配置
-    deploy_manager_url: str = Field(
-        default="http://deploy-manager:9703",
-        description="Deploy Manager 服务地址"
+    # 外部访问地址配置（替代从 deploy-management 服务动态获取）
+    access_address_host: str = Field(
+        default="127.0.0.1",
+        description="外部访问主机地址"
     )
-    deploy_manager_timeout: int = Field(
-        default=60,
-        description="Deploy Manager 请求超时时间（秒）"
+    access_address_port: str = Field(
+        default="443",
+        description="外部访问端口"
+    )
+    access_address_scheme: str = Field(
+        default="https",
+        description="外部访问协议（http/https）"
     )
 
     # Session Cookie 配置

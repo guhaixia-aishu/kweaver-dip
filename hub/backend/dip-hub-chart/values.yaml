@@ -32,6 +32,12 @@ ports:
   name: server-port
   containerPort: 8000
 
+accessAddress:
+  host: 10.4.175.152
+  port: 443
+  scheme: https
+  path: /
+
 # 修改service的名字、端口，nodePort是对外的端口。
 service:
   name: dip-hub

@@ -81,9 +81,10 @@ data:
   DIP_HUB_USER_MANAGEMENT_URL: "http://{{ index .depServices "user-management" "privateHost" }}:{{ index .depServices "user-management" "privatePort" }}"
   DIP_HUB_USER_MANAGEMENT_TIMEOUT: "60"
   
-  # Deploy Manager 服务配置
-  DIP_HUB_DEPLOY_MANAGER_URL: "http://{{ index .depServices "deploy-management" "host" }}:{{ index .depServices "deploy-management" "port" }}"
-  DIP_HUB_DEPLOY_MANAGER_TIMEOUT: "60"
+  # 外部访问地址配置（替代 deploy-management 服务）
+  DIP_HUB_ACCESS_ADDRESS_HOST: {{ .accessAddress.host | quote }}
+  DIP_HUB_ACCESS_ADDRESS_PORT: "{{ .accessAddress.port }}"
+  DIP_HUB_ACCESS_ADDRESS_SCHEME: {{ .accessAddress.scheme | quote }}
   
   # Session Cookie 配置（使用 session-chart 的默认值）
   DIP_HUB_COOKIE_DOMAIN: {{ .depServices.cookie.domain | quote }}
