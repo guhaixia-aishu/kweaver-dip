@@ -126,7 +126,7 @@ class LoginService:
 
     async def get_host_url(self) -> str:
         """
-        获取主机 URL（与 session 服务一致：https://host:port）。
+        获取主机 URL（scheme://host:port）。
         
         使用 parse_host 处理 IPv6 地址。
 
@@ -134,8 +134,7 @@ class LoginService:
             str: 主机 URL
         """
         host_res = await self._deploy_manager_port.get_host()
-        # 与 session 服务一致：使用 https://ParseHost(host):port 格式
-        return f"https://{parse_host(host_res.host)}:{host_res.port}"
+        return f"{host_res.scheme}://{parse_host(host_res.host)}:{host_res.port}"
 
     async def do_login(self, code: str, state: str, session_id: str) -> SessionInfo:
         """
@@ -160,9 +159,9 @@ class LoginService:
         if session_info.state != state:
             raise ValueError("State 不匹配")
 
-        # 获取主机信息（与 session 服务一致：accessUrl = https://host:port）
+        # 获取主机信息
         host_res = await self._deploy_manager_port.get_host()
-        access_url = f"https://{parse_host(host_res.host)}:{host_res.port}"
+        access_url = f"{host_res.scheme}://{parse_host(host_res.host)}:{host_res.port}"
 
         # 将授权码转换为 Token（与 session 服务一致：传入 access_url 而不是 redirect_uri）
         code2token_res = await self._oauth2_port.code2token(code, access_url)
