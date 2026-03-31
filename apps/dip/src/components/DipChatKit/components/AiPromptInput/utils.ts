@@ -195,6 +195,53 @@ export const getTextAreaCaretPosition = (
   }
 }
 
+export const getContentEditableTextBeforeCursor = (editableElement: HTMLElement): string => {
+  const selection = window.getSelection()
+  if (!(selection && selection.rangeCount > 0)) return ''
+
+  const range = selection.getRangeAt(0)
+  if (!editableElement.contains(range.startContainer)) return ''
+
+  const clonedRange = range.cloneRange()
+  clonedRange.selectNodeContents(editableElement)
+  clonedRange.setEnd(range.startContainer, range.startOffset)
+
+  const fragment = clonedRange.cloneContents()
+  fragment.querySelectorAll('[data-slot-key]').forEach((node) => {
+    node.remove()
+  })
+
+  return (fragment.textContent || '').replace(/\u200b/g, '')
+}
+
+export const getContentEditableCaretPosition = (
+  editableElement: HTMLElement,
+  containerElement: HTMLElement,
+): CursorAnchorPosition => {
+  const selection = window.getSelection()
+  const fallback = {
+    left: 8,
+    top: 8,
+  }
+  if (!(selection && selection.rangeCount > 0)) return fallback
+
+  const range = selection.getRangeAt(0)
+  if (!editableElement.contains(range.startContainer)) return fallback
+
+  const caretRange = range.cloneRange()
+  caretRange.collapse(true)
+
+  const caretRect = caretRange.getClientRects()[0]
+  const editableRect = editableElement.getBoundingClientRect()
+  const targetRect = caretRect ?? editableRect
+  const containerRect = containerElement.getBoundingClientRect()
+
+  return {
+    left: Math.max(targetRect.left - containerRect.left, 8),
+    top: Math.max(targetRect.bottom - containerRect.top, 8),
+  }
+}
+
 export const parseTriggerQueryBeforeCursor = (
   value: string,
   cursorIndex: number,
@@ -212,12 +259,6 @@ export const parseTriggerQueryBeforeCursor = (
 
     const index = beforeCursor.lastIndexOf(character)
     if (index < 0) continue
-
-    const isStart = index === 0
-    const prevChar = beforeCursor.charAt(index - 1)
-    if (!(isStart || /\s/.test(prevChar))) {
-      continue
-    }
 
     const query = beforeCursor.slice(index + character.length)
     if (/\s/.test(query)) {
@@ -248,10 +289,10 @@ export const filterMentionOptionsByQuery = (
   })
 }
 
-export const canStartTriggerAtCursor = (value: string, cursorIndex: number): boolean => {
-  if (cursorIndex <= 0) return true
-  return /\s/.test(value.charAt(cursorIndex - 1))
-}
+export const canStartTriggerAtCursor = (
+  _value: string,
+  _cursorIndex: number,
+): boolean => true
 
 export const getAttachmentFileKey = (file: File): string => {
   return `${file.name}_${file.size}_${file.lastModified}`

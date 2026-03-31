@@ -36,7 +36,7 @@ interface AiPromptSubmitPayload {
 ## 内置默认行为
 
 1. 根据当前选中的员工 ID（`payload.employees[0]?.value`，或 `defaultEmployeeValue`）创建会话 key：`POST /api/dip-studio/v1/chat/session`。
-2. 使用会话 key 发起流式回答：`POST /api/dip-studio/v1/chat/responses`，请求头携带 `x-openclaw-session-key`。
+2. 使用会话 key 发起流式回答：`POST /api/dip-studio/v1/chat/agent`，请求头携带 `x-openclaw-session-key`。
 3. SSE 分片会实时追加到当前回答中。
 4. 点击输入区加载按钮可触发停止（通过 `AbortSignal` 中断流）。
 

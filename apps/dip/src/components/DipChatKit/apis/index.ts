@@ -389,7 +389,7 @@ export async function* createDigitalHumanResponseSSE(
   }
 
   try {
-    const response = await fetch(buildFullRequestUrl(`${BASE}/chat/responses`), {
+    const response = await fetch(buildFullRequestUrl(`${BASE}/chat/agent`), {
       method: 'POST',
       headers: {
         ...getCommonHttpHeaders(),

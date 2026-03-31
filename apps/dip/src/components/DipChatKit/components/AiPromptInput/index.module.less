@@ -66,29 +66,23 @@
   pointer-events: auto;
 }
 
-.mentionTags {
-  min-width: 0;
-  overflow: hidden;
-  user-select: none;
-  margin-left: 12px;
-}
-
-.mentionTag {
+.employeeSlotTag {
   margin-inline-end: 0;
+  user-select: none;
 }
 
-.mentionTagContent {
+.employeeSlotTagContent {
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
 
-.mentionTagAvatar {
+.employeeSlotTagAvatar {
   display: inline-flex;
   flex-shrink: 0;
 }
 
-.mentionTagLabel {
+.employeeSlotTagLabel {
   line-height: 1;
 }
 
@@ -124,6 +118,14 @@
     .dip-dropdown-menu-item {
       padding: 10px 16px;
       overflow: hidden;
+    }
+
+    .dip-dropdown-menu-item-selected {
+      background: #eff6ff;
+
+      .dip-dropdown-menu-title-content {
+        color: #1d4ed8;
+      }
     }
 
     .dip-dropdown-menu-title-content {

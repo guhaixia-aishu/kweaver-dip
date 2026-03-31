@@ -17,7 +17,7 @@ import {
 import clsx from 'clsx'
 import uniq from 'lodash/uniq'
 import type React from 'react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import intl from 'react-intl-universal'
 import { getDigitalHumanList } from '../../apis'
 import IconFont from '@/components/IconFont'
@@ -29,12 +29,12 @@ import type {
   AiPromptMentionOption,
   AiPromptSubmitPayload,
   CursorAnchorPosition,
-  MentionTriggerSource,
 } from './types'
 import {
-  canStartTriggerAtCursor,
   filterMentionOptionsByQuery,
   getAttachmentFileKey,
+  getContentEditableCaretPosition,
+  getContentEditableTextBeforeCursor,
   getRawUploadFile,
   getTextAreaCaretPosition,
   mergeAttachmentFiles,
@@ -53,6 +53,21 @@ const mentionAvatarColors = [
 
 const getInitial = (label: string) => label.trim().charAt(0) || ''
 const uploadValidateMessageKey = 'ai-prompt-upload-validate'
+const employeeSlotKey = 'ai_prompt_input_employee_slot'
+
+type SenderSlotItem = NonNullable<SenderProps['slotConfig']>[number]
+const emptySenderSlotConfig: NonNullable<SenderProps['slotConfig']> = []
+
+type CaretSnapshot =
+  | {
+      type: 'textarea'
+      start: number
+      end: number
+    }
+  | {
+      type: 'contentEditable'
+      range: Range
+    }
 
 const AiPromptInput: React.FC<AiPromptInputProps> = ({
   value,
@@ -79,9 +94,12 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
   const senderRef = useRef<GetRef<typeof Sender>>(null)
   const cardRef = useRef<HTMLDivElement | null>(null)
   const rafRef = useRef<number | null>(null)
+  const keyboardOpenRafRef = useRef<number | null>(null)
+  const caretSnapshotRef = useRef<CaretSnapshot | null>(null)
   const isMentionMenuMouseDownRef = useRef(false)
-  const [open, setOpen] = useState(false)
-  const [triggerSource, setTriggerSource] = useState<MentionTriggerSource | null>(null)
+  const latestTextValueRef = useRef(defaultValue)
+  const [buttonMentionOpen, setButtonMentionOpen] = useState(false)
+  const [keyboardMentionOpen, setKeyboardMentionOpen] = useState(false)
   const [activeKeyboardCharacter, setActiveKeyboardCharacter] = useState<string | null>(null)
   const [mentionQuery, setMentionQuery] = useState('')
   const [cursorAnchor, setCursorAnchor] = useState<CursorAnchorPosition>({ left: 0, top: 0 })
@@ -113,6 +131,7 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
   useEffect(() => {
     if (value !== undefined) {
       setInnerValue(value)
+      latestTextValueRef.current = value
     }
   }, [value])
 
@@ -184,9 +203,19 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
   }, [resolvedEmployeeOptions])
 
   const keyboardTriggerItems = useMemo(() => {
-    if (!(showEmployeeSelector && Array.isArray(triggerCharacter))) return []
-    return triggerCharacter.filter((item) => item.character)
-  }, [showEmployeeSelector, triggerCharacter])
+    const items = Array.isArray(triggerCharacter)
+      ? triggerCharacter.filter((item) => item.character)
+      : []
+
+    if (showEmployeeSelector) {
+      items.push({
+        character: '@',
+        options: resolvedEmployeeOptions,
+      })
+    }
+
+    return items
+  }, [resolvedEmployeeOptions, showEmployeeSelector, triggerCharacter])
 
   const keyboardTriggerCharacters = useMemo(() => {
     return keyboardTriggerItems.map((item) => item.character)
@@ -202,9 +231,7 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
   }, [activeKeyboardCharacter, keyboardTriggerOptionMap])
 
   const keyboardResizeTarget =
-    open &&
-    triggerSource === 'keyboard' &&
-    senderRef.current?.inputElement instanceof HTMLTextAreaElement
+    keyboardMentionOpen && senderRef.current?.inputElement instanceof HTMLElement
       ? senderRef.current.inputElement
       : null
 
@@ -215,6 +242,69 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
   const keyboardMentionOptionMap = useMemo(() => {
     return new Map(keyboardMentionOptions.map((item) => [item.value, item]))
   }, [keyboardMentionOptions])
+
+  const selectedEmployee = employees[0]
+  const selectedEmployeeKey = selectedEmployee?.value ?? ''
+
+  const createEmployeeSlotItem = useCallback((item: AiPromptMentionOption): SenderSlotItem => {
+    const color = mentionAvatarColors[0]
+    return {
+      type: 'custom',
+      key: employeeSlotKey,
+      props: {
+        defaultValue: item.value,
+        employeeValue: item.value,
+      },
+      formatResult: () => '',
+      customRender: () => {
+        return (
+          <Tag className={styles.employeeSlotTag}>
+            <span className={styles.employeeSlotTagContent}>
+              <span className={styles.employeeSlotTagAvatar}>
+                {item.avatar ?? (
+                  <Avatar
+                    size={18}
+                    style={{
+                      backgroundColor: color.bg,
+                      color: color.fg,
+                      fontSize: 11,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {getInitial(item.label)}
+                  </Avatar>
+                )}
+              </span>
+              <span className={styles.employeeSlotTagLabel}>{item.label}</span>
+            </span>
+          </Tag>
+        )
+      },
+    }
+  }, [])
+
+  const rebuildSenderContent = useCallback((nextContent: string, nextEmployee?: AiPromptMentionOption) => {
+    const senderInstance = senderRef.current
+    if (!senderInstance) return
+
+    latestTextValueRef.current = nextContent
+
+    const insertItems: SenderSlotItem[] = []
+    if (showEmployeeSelector && nextEmployee) {
+      insertItems.push(createEmployeeSlotItem(nextEmployee))
+    }
+    if (nextContent) {
+      insertItems.push({
+        type: 'text',
+        value: nextContent,
+      })
+    }
+
+    senderInstance.clear?.()
+    if (insertItems.length) {
+      senderInstance.insert?.(insertItems, 'start', undefined, true)
+    }
+  }, [createEmployeeSlotItem, showEmployeeSelector])
 
   const buildSuggestionItems = (
     options: AiPromptMentionOption[],
@@ -264,22 +354,39 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
     }
   }
 
+  const clearKeyboardOpenRaf = () => {
+    if (keyboardOpenRafRef.current !== null) {
+      cancelAnimationFrame(keyboardOpenRafRef.current)
+      keyboardOpenRafRef.current = null
+    }
+  }
+
+  const getCursorAnchorPosition = (): CursorAnchorPosition | null => {
+    const inputElement = senderRef.current?.inputElement
+    if (!(inputElement instanceof HTMLElement && cardRef.current)) return null
+
+    if (inputElement instanceof HTMLTextAreaElement) {
+      const cursorIndex = inputElement.selectionStart ?? inputElement.value.length
+      const caretPosition = getTextAreaCaretPosition(inputElement, cursorIndex)
+      const textAreaRect = inputElement.getBoundingClientRect()
+      const cardRect = cardRef.current.getBoundingClientRect()
+
+      const left = textAreaRect.left - cardRect.left + caretPosition.left
+      const top = textAreaRect.top - cardRect.top + caretPosition.top
+
+      return {
+        left: Math.max(left, 8),
+        top: Math.max(top, 8),
+      }
+    }
+
+    return getContentEditableCaretPosition(inputElement, cardRef.current)
+  }
+
   const updateCursorAnchorPosition = () => {
-    const textAreaElement = senderRef.current?.inputElement
-    if (!(textAreaElement instanceof HTMLTextAreaElement && cardRef.current)) return
-
-    const cursorIndex = textAreaElement.selectionStart ?? textAreaElement.value.length
-    const caretPosition = getTextAreaCaretPosition(textAreaElement, cursorIndex)
-    const textAreaRect = textAreaElement.getBoundingClientRect()
-    const cardRect = cardRef.current.getBoundingClientRect()
-
-    const left = textAreaRect.left - cardRect.left + caretPosition.left
-    const top = textAreaRect.top - cardRect.top + caretPosition.top
-
-    setCursorAnchor({
-      left: Math.max(left, 8),
-      top: Math.max(top, 8),
-    })
+    const nextPosition = getCursorAnchorPosition()
+    if (!nextPosition) return
+    setCursorAnchor(nextPosition)
   }
 
   const scheduleCursorAnchorPosition = () => {
@@ -290,34 +397,114 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
     })
   }
 
-  const openMentionPanel = (source: MentionTriggerSource, character?: string) => {
+  const openMentionPanel = () => {
     if (!(canEdit && showEmployeeSelector)) return
+    if (!buttonSuggestionItems.length) return
+    captureCaretSnapshot()
+    clearKeyboardOpenRaf()
+    setActiveKeyboardCharacter(null)
+    setMentionQuery('')
+    setKeyboardMentionOpen(false)
+    setButtonMentionOpen(true)
+  }
 
-    if (source === 'keyboard') {
-      if (!character) return
-      const triggerOptions = keyboardTriggerOptionMap.get(character) ?? []
-      if (!triggerOptions.length) return
-      setTriggerSource(source)
-      setActiveKeyboardCharacter(character)
-      setMentionQuery('')
+  const closeKeyboardMentionPanel = () => {
+    clearKeyboardOpenRaf()
+    setKeyboardMentionOpen(false)
+    setActiveKeyboardCharacter(null)
+    setMentionQuery('')
+  }
+
+  const openKeyboardMentionPanel = () => {
+    clearKeyboardOpenRaf()
+    updateCursorAnchorPosition()
+
+    if (keyboardMentionOpen) {
       scheduleCursorAnchorPosition()
-    } else {
-      if (!buttonSuggestionItems.length) return
-      setTriggerSource(source)
-      setActiveKeyboardCharacter(null)
-      setMentionQuery('')
+      return
     }
 
-    setOpen(true)
-    senderRef.current?.focus?.()
+    setButtonMentionOpen(false)
+    keyboardOpenRafRef.current = requestAnimationFrame(() => {
+      keyboardOpenRafRef.current = null
+      setKeyboardMentionOpen(true)
+    })
   }
 
   const closeMentionPanel = () => {
-    setOpen(false)
-    setTriggerSource(null)
-    setActiveKeyboardCharacter(null)
-    setMentionQuery('')
+    setButtonMentionOpen(false)
+    closeKeyboardMentionPanel()
     isMentionMenuMouseDownRef.current = false
+  }
+
+  const captureCaretSnapshot = () => {
+    caretSnapshotRef.current = null
+    const inputElement = senderRef.current?.inputElement
+    if (!(inputElement instanceof HTMLElement)) {
+      return
+    }
+
+    if (inputElement instanceof HTMLTextAreaElement) {
+      const nextStart = inputElement.selectionStart ?? inputElement.value.length
+      const nextEnd = inputElement.selectionEnd ?? nextStart
+      caretSnapshotRef.current = {
+        type: 'textarea',
+        start: nextStart,
+        end: nextEnd,
+      }
+      return
+    }
+
+    const selection = window.getSelection()
+    if (!(selection && selection.rangeCount > 0)) return
+
+    const range = selection.getRangeAt(0)
+    if (!inputElement.contains(range.startContainer)) return
+
+    caretSnapshotRef.current = {
+      type: 'contentEditable',
+      range: range.cloneRange(),
+    }
+  }
+
+  const restoreCaretSnapshot = () => {
+    const snapshot = caretSnapshotRef.current
+    caretSnapshotRef.current = null
+    const inputElement = senderRef.current?.inputElement
+    if (!(snapshot && inputElement instanceof HTMLElement)) {
+      senderRef.current?.focus?.()
+      return
+    }
+
+    senderRef.current?.focus?.()
+    requestAnimationFrame(() => {
+      if (!(senderRef.current?.inputElement instanceof HTMLElement)) return
+
+      if (snapshot.type === 'textarea' && inputElement instanceof HTMLTextAreaElement) {
+        const textLength = inputElement.value.length
+        const start = Math.min(snapshot.start, textLength)
+        const end = Math.min(snapshot.end, textLength)
+        inputElement.setSelectionRange(start, end)
+        return
+      }
+
+      if (snapshot.type === 'contentEditable') {
+        if (
+          !(
+            snapshot.range.startContainer.isConnected &&
+            snapshot.range.endContainer.isConnected &&
+            inputElement.contains(snapshot.range.startContainer) &&
+            inputElement.contains(snapshot.range.endContainer)
+          )
+        ) {
+          return
+        }
+        const selection = window.getSelection()
+        if (!selection) return
+        selection.removeAllRanges()
+        selection.addRange(snapshot.range)
+      }
+    })
   }
 
   const handleFileChange = (fileList: File[]) => {
@@ -386,63 +573,100 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
 
     if (value === undefined) {
       setInnerValue('')
+      latestTextValueRef.current = ''
     } else {
       onChange?.('')
     }
 
     clearAttachments()
-    senderRef.current?.clear?.()
+    rebuildSenderContent('', selectedEmployee)
     closeMentionPanel()
   }
 
-  const handleMentionSelect = (option: AiPromptMentionOption) => {
+  const removeLastTriggerText = (content: string, triggerText: string): string => {
+    if (!triggerText) return content
+    const index = content.lastIndexOf(triggerText)
+    if (index < 0) return content
+    return `${content.slice(0, index)}${content.slice(index + triggerText.length)}`
+  }
+
+  const handleMentionSelect = (
+    option: AiPromptMentionOption,
+    source: 'button' | 'keyboard',
+  ) => {
     if (!canEdit) return
 
-    onEmployeeSelect?.(option)
+    const isEmployeeSelection = buttonMentionOptionMap.has(option.value)
 
-    if (triggerSource === 'button') {
-      setEmployees([option])
-
+    if (!isEmployeeSelection) {
+      const mentionCharacter = activeKeyboardCharacter ?? '@'
+      senderRef.current?.insert?.(
+        [
+          {
+            type: 'tag',
+            key: `mention_${option.value}_${Date.now()}`,
+            props: {
+              label: `${mentionCharacter}${option.label}`,
+              value: option.value,
+            },
+            formatResult: (text) => `${mentionCharacter}${text}`,
+          },
+        ],
+        'cursor',
+        `${mentionCharacter}${mentionQuery}`,
+      )
       closeMentionPanel()
       senderRef.current?.focus?.()
       return
     }
 
+    onEmployeeSelect?.(option)
+
+    if (source === 'keyboard') {
+      const mentionCharacter = activeKeyboardCharacter ?? '@'
+      const replaceText = `${mentionCharacter}${mentionQuery}`
+      const currentContent = senderRef.current?.getValue?.().value ?? latestTextValueRef.current
+      const nextContent = removeLastTriggerText(currentContent, replaceText)
+      setEmployees([option])
+      rebuildSenderContent(nextContent, option)
+      closeMentionPanel()
+      senderRef.current?.focus?.()
+      return
+    }
+
+    const currentContent = senderRef.current?.getValue?.().value ?? latestTextValueRef.current
     setEmployees([option])
-
-    const mentionCharacter = triggerSource === 'keyboard' ? (activeKeyboardCharacter ?? '@') : '@'
-    const replaceTriggerCharacter = triggerSource === 'keyboard' ? mentionCharacter : undefined
-
-    senderRef.current?.insert?.(
-      [
-        {
-          type: 'tag',
-          key: `mention_${option.value}_${Date.now()}`,
-          props: {
-            label: `${mentionCharacter}${option.label}`,
-            value: option.value,
-          },
-          formatResult: (text) => `${mentionCharacter}${text}`,
-        },
-      ],
-      'cursor',
-      replaceTriggerCharacter,
-    )
+    rebuildSenderContent(currentContent, option)
 
     closeMentionPanel()
     senderRef.current?.focus?.()
   }
 
-  const handleMentionRemove = (employeeValue: string) => {
-    setEmployees((prev) => prev.filter((item) => item.value !== employeeValue))
+  const handleButtonMentionMenuClick: MenuProps['onClick'] = ({ key }) => {
+    const clickedKey = String(key)
+    if (clickedKey === selectedEmployeeKey) {
+      closeMentionPanel()
+      restoreCaretSnapshot()
+      return
+    }
+
+    const option = buttonMentionOptionMap.get(clickedKey)
+    if (!option) return
+    handleMentionSelect(option, 'button')
   }
 
-  const handleMentionMenuClick: MenuProps['onClick'] = ({ key }) => {
-    const mentionOptionMap =
-      triggerSource === 'keyboard' ? keyboardMentionOptionMap : buttonMentionOptionMap
-    const option = mentionOptionMap.get(String(key))
+  const handleKeyboardMentionMenuClick: MenuProps['onClick'] = ({ key }) => {
+    const clickedKey = String(key)
+    const isKeyboardEmployeeMenu = showEmployeeSelector && activeKeyboardCharacter === '@'
+    if (isKeyboardEmployeeMenu && clickedKey === selectedEmployeeKey) {
+      closeMentionPanel()
+      restoreCaretSnapshot()
+      return
+    }
+
+    const option = keyboardMentionOptionMap.get(clickedKey)
     if (!option) return
-    handleMentionSelect(option)
+    handleMentionSelect(option, 'keyboard')
   }
 
   const handleButtonDropdownOpenChange = (nextOpen: boolean) => {
@@ -452,31 +676,53 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
     }
 
     if (nextOpen) {
-      setTriggerSource('button')
-      setOpen(true)
+      clearKeyboardOpenRaf()
+      setKeyboardMentionOpen(false)
+      setButtonMentionOpen(true)
+      setActiveKeyboardCharacter(null)
+      setMentionQuery('')
       return
     }
 
-    closeMentionPanel()
+    setButtonMentionOpen(false)
+    setActiveKeyboardCharacter(null)
+    setMentionQuery('')
   }
 
   const handleKeyboardDropdownOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
-      closeMentionPanel()
+      closeKeyboardMentionPanel()
+    }
+  }
+
+  const resolveEmployeeFromSlotConfig = (
+    slotConfig?: Readonly<SenderSlotItem[]>,
+  ): AiPromptMentionOption | undefined => {
+    const slot = slotConfig?.find((item) => item.key === employeeSlotKey)
+    if (!slot || !('props' in slot)) return undefined
+
+    const employeeValue =
+      (slot.props as { employeeValue?: string } | undefined)?.employeeValue?.trim() ?? ''
+    if (!employeeValue) return undefined
+
+    return buttonMentionOptionMap.get(employeeValue) ?? {
+      value: employeeValue,
+      label: employeeValue,
     }
   }
 
   useEffect(() => {
     return () => {
       clearAnchorRaf()
+      clearKeyboardOpenRaf()
     }
   }, [])
 
   useEffect(() => {
-    if (!(open && triggerSource === 'keyboard')) return
+    if (!keyboardMentionOpen) return
 
-    const textAreaElement = senderRef.current?.inputElement
-    if (!(textAreaElement instanceof HTMLTextAreaElement)) return
+    const inputElement = senderRef.current?.inputElement
+    if (!(inputElement instanceof HTMLElement)) return
 
     scheduleCursorAnchorPosition()
 
@@ -488,14 +734,20 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
       updateCursorAnchorPosition()
     }
 
-    textAreaElement.addEventListener('scroll', onScroll)
+    const onSelectionChange = () => {
+      updateCursorAnchorPosition()
+    }
+
+    inputElement.addEventListener('scroll', onScroll)
+    document.addEventListener('selectionchange', onSelectionChange)
     window.addEventListener('resize', onWindowResize)
 
     return () => {
-      textAreaElement.removeEventListener('scroll', onScroll)
+      inputElement.removeEventListener('scroll', onScroll)
+      document.removeEventListener('selectionchange', onSelectionChange)
       window.removeEventListener('resize', onWindowResize)
     }
-  }, [open, triggerSource])
+  }, [keyboardMentionOpen])
 
   useResizeObserver({
     target: keyboardResizeTarget,
@@ -506,24 +758,57 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
   })
 
   useEffect(() => {
-    if (!(open && triggerSource === 'keyboard')) return
+    if (!keyboardMentionOpen) return
     if (!keyboardSuggestionItems.length) {
-      closeMentionPanel()
+      closeKeyboardMentionPanel()
     }
-  }, [keyboardSuggestionItems.length, open, triggerSource])
+  }, [keyboardMentionOpen, keyboardSuggestionItems.length])
 
   useEffect(() => {
-    if (triggerSource === 'keyboard' && !keyboardTriggerCharacters.length) {
-      closeMentionPanel()
+    if (keyboardMentionOpen && !keyboardTriggerCharacters.length) {
+      closeKeyboardMentionPanel()
     }
-  }, [keyboardTriggerCharacters.length, triggerSource])
+  }, [keyboardMentionOpen, keyboardTriggerCharacters.length])
 
   useEffect(() => {
-    if (!(open && !showEmployeeSelector)) return
+    if (showEmployeeSelector || !(buttonMentionOpen || keyboardMentionOpen)) return
     closeMentionPanel()
-  }, [open, showEmployeeSelector])
+  }, [buttonMentionOpen, keyboardMentionOpen, showEmployeeSelector])
+
+  useEffect(() => {
+    if (!showEmployeeSelector) return
+
+    const senderInstance = senderRef.current
+    if (!senderInstance) return
+
+    const senderValue = senderInstance.getValue?.()
+    const currentContent = senderValue?.value ?? latestTextValueRef.current
+    const currentEmployeeSlot = senderValue?.slotConfig?.find((item) => item.key === employeeSlotKey)
+    const currentEmployeeValue = String(
+      currentEmployeeSlot && 'props' in currentEmployeeSlot
+        ? (currentEmployeeSlot.props as { employeeValue?: string } | undefined)?.employeeValue ?? ''
+        : '',
+    )
+    const nextEmployeeValue = selectedEmployee?.value ?? ''
+
+    if (currentEmployeeValue === nextEmployeeValue) return
+
+    rebuildSenderContent(currentContent, selectedEmployee)
+  }, [rebuildSenderContent, selectedEmployee, showEmployeeSelector])
+
+  useEffect(() => {
+    if (!(showEmployeeSelector && value !== undefined)) return
+
+    const senderContent = senderRef.current?.getValue?.().value ?? ''
+    if (senderContent === value) return
+
+    rebuildSenderContent(value, selectedEmployee)
+  }, [rebuildSenderContent, selectedEmployee, showEmployeeSelector, value])
 
   const markMentionMenuMouseDown = () => {
+    if (!buttonMentionOpen) {
+      captureCaretSnapshot()
+    }
     isMentionMenuMouseDownRef.current = true
   }
 
@@ -548,12 +833,21 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
 
   const buttonMentionMenu = {
     items: buttonSuggestionItems,
-    onClick: handleMentionMenuClick,
+    selectable: true,
+    selectedKeys: selectedEmployeeKey ? [selectedEmployeeKey] : [],
+    onClick: handleButtonMentionMenuClick,
   }
+
+  const keyboardSelectedKeys =
+    showEmployeeSelector && activeKeyboardCharacter === '@' && selectedEmployeeKey
+      ? [selectedEmployeeKey]
+      : []
 
   const keyboardMentionMenu = {
     items: keyboardSuggestionItems,
-    onClick: handleMentionMenuClick,
+    selectable: true,
+    selectedKeys: keyboardSelectedKeys,
+    onClick: handleKeyboardMentionMenuClick,
   }
 
   const senderHeader = (
@@ -609,9 +903,8 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
     </Sender.Header>
   )
 
-  const isButtonMentionOpen = open && triggerSource === 'button' && buttonSuggestionItems.length > 0
-  const isKeyboardMentionOpen =
-    open && triggerSource === 'keyboard' && keyboardSuggestionItems.length > 0
+  const isButtonMentionOpen = buttonMentionOpen && buttonSuggestionItems.length > 0
+  const isKeyboardMentionOpen = keyboardMentionOpen && keyboardSuggestionItems.length > 0
 
   return (
     <div className={clsx('AiPromptInput', styles.root, className)}>
@@ -619,6 +912,7 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
         <Dropdown
           trigger={[]}
           placement="bottomLeft"
+          destroyOnHidden
           open={isKeyboardMentionOpen}
           onOpenChange={handleKeyboardDropdownOpenChange}
           menu={keyboardMentionMenu}
@@ -636,6 +930,7 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
         <Sender
           ref={senderRef}
           value={mergedValue}
+          slotConfig={showEmployeeSelector ? emptySenderSlotConfig : undefined}
           loading={loading}
           disabled={!canEdit}
           placeholder={placeholder}
@@ -648,49 +943,62 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
             handleFileChange(Array.from(files))
             senderRef.current?.focus?.()
           }}
-          onChange={(nextValue) => {
+          onChange={(nextValue, _event, slotConfigFromSender) => {
+            latestTextValueRef.current = nextValue
             if (value === undefined) {
               setInnerValue(nextValue)
             }
             onChange?.(nextValue)
 
-            if (triggerSource === 'keyboard') {
-              if (!keyboardTriggerCharacters.length) {
-                closeMentionPanel()
-                return
+            if (showEmployeeSelector) {
+              const effectiveSlotConfig =
+                slotConfigFromSender ?? senderRef.current?.getValue?.().slotConfig
+
+              if (effectiveSlotConfig !== undefined) {
+                const employeeFromSlot = resolveEmployeeFromSlotConfig(effectiveSlotConfig)
+                setEmployees((prev) => {
+                  const prevValue = prev[0]?.value ?? ''
+                  const nextEmployeeValue = employeeFromSlot?.value ?? ''
+                  if (prevValue === nextEmployeeValue) return prev
+                  return employeeFromSlot ? [employeeFromSlot] : []
+                })
               }
-
-              const textAreaElement = senderRef.current?.inputElement
-              const cursorIndex =
-                textAreaElement instanceof HTMLTextAreaElement
-                  ? (textAreaElement.selectionStart ?? nextValue.length)
-                  : nextValue.length
-
-              const triggerMatch = parseTriggerQueryBeforeCursor(
-                nextValue,
-                cursorIndex,
-                keyboardTriggerCharacters,
-              )
-              if (triggerMatch === null) {
-                closeMentionPanel()
-                return
-              }
-
-              const triggerOptions = keyboardTriggerOptionMap.get(triggerMatch.character) ?? []
-              if (!triggerOptions.length) {
-                closeMentionPanel()
-                return
-              }
-
-              setActiveKeyboardCharacter(triggerMatch.character)
-              setMentionQuery(triggerMatch.query)
-
-              if (!open) {
-                setOpen(true)
-              }
-
-              scheduleCursorAnchorPosition()
             }
+
+            if (!keyboardTriggerCharacters.length) {
+              closeKeyboardMentionPanel()
+              return
+            }
+
+            const inputElement = senderRef.current?.inputElement
+            let valueBeforeCursor = nextValue
+            if (inputElement instanceof HTMLTextAreaElement) {
+              const cursorIndex = inputElement.selectionStart ?? nextValue.length
+              valueBeforeCursor = nextValue.slice(0, cursorIndex)
+            } else if (inputElement instanceof HTMLElement) {
+              const textBeforeCursor = getContentEditableTextBeforeCursor(inputElement)
+              valueBeforeCursor = textBeforeCursor
+            }
+
+            const triggerMatch = parseTriggerQueryBeforeCursor(
+              valueBeforeCursor,
+              valueBeforeCursor.length,
+              keyboardTriggerCharacters,
+            )
+            if (triggerMatch === null) {
+              closeKeyboardMentionPanel()
+              return
+            }
+
+            const triggerOptions = keyboardTriggerOptionMap.get(triggerMatch.character) ?? []
+            if (!triggerOptions.length) {
+              closeKeyboardMentionPanel()
+              return
+            }
+
+            setActiveKeyboardCharacter(triggerMatch.character)
+            setMentionQuery(triggerMatch.query)
+            openKeyboardMentionPanel()
           }}
           onSubmit={handleSubmit}
           onCancel={() => {
@@ -698,41 +1006,27 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
           }}
           onBlur={() => {
             if (isMentionMenuMouseDownRef.current) return
-            if (open) {
+            if (
+              buttonMentionOpen ||
+              keyboardMentionOpen ||
+              keyboardOpenRafRef.current !== null
+            ) {
               closeMentionPanel()
             }
           }}
           onKeyDown={(event) => {
-            if (keyboardTriggerCharacters.length) {
-              const keyboardCharacter = keyboardTriggerCharacters.find(
-                (character) => character === event.key,
-              )
-              if (keyboardCharacter) {
-                const triggerOptions = keyboardTriggerOptionMap.get(keyboardCharacter) ?? []
-                if (triggerOptions.length) {
-                  const textAreaElement = senderRef.current?.inputElement
-                  const cursorIndex =
-                    textAreaElement instanceof HTMLTextAreaElement
-                      ? (textAreaElement.selectionStart ?? textAreaElement.value.length)
-                      : mergedValue.length
-                  const currentValue =
-                    textAreaElement instanceof HTMLTextAreaElement
-                      ? textAreaElement.value
-                      : mergedValue
-
-                  if (canStartTriggerAtCursor(currentValue, cursorIndex)) {
-                    openMentionPanel('keyboard', keyboardCharacter)
-                  }
-                }
-                return
-              }
-            }
-
-            if (open && triggerSource === 'keyboard') {
+            if (keyboardMentionOpen) {
               scheduleCursorAnchorPosition()
             }
 
-            if (event.key === 'Escape' && open) {
+            if (
+              event.key === 'Escape' &&
+              (
+                buttonMentionOpen ||
+                keyboardMentionOpen ||
+                keyboardOpenRafRef.current !== null
+              )
+            ) {
               closeMentionPanel()
             }
           }}
@@ -748,8 +1042,9 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
                 <Flex align="center" className={styles.leftActions}>
                   {showEmployeeSelector && (
                     <Dropdown
-                      trigger={["click"]}
+                      trigger={['click']}
                       placement="topLeft"
+                      destroyOnHidden
                       open={isButtonMentionOpen}
                       onOpenChange={handleButtonDropdownOpenChange}
                       menu={buttonMentionMenu}
@@ -760,10 +1055,9 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
                           <Button
                             type="text"
                             aria-label={resolvedEmployeeButtonLabel}
-                            disabled={
-                              !(canEdit && buttonSuggestionItems.length)
-                            }
-                            onClick={() => openMentionPanel("button")}
+                            disabled={!(canEdit && buttonSuggestionItems.length)}
+                            onMouseDownCapture={captureCaretSnapshot}
+                            onClick={openMentionPanel}
                             icon={
                               <IconFont
                                 type="icon-at"
@@ -783,11 +1077,11 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
                       beforeUpload={() => false}
                       disabled={!canEdit}
                       onChange={({ file }) => {
-                        const rawFile = getRawUploadFile(file);
+                        const rawFile = getRawUploadFile(file)
                         if (rawFile) {
-                          handleFileChange([rawFile]);
+                          handleFileChange([rawFile])
                         }
-                        senderRef.current?.focus?.();
+                        senderRef.current?.focus?.()
                       }}
                     >
                       <Button
@@ -803,50 +1097,6 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
                       />
                     </Upload>
                   </Tooltip>
-
-                  {showEmployeeSelector && !!employees.length && (
-                    <Flex align="center" gap={8} className={styles.mentionTags}>
-                      {employees.map((item, index) => (
-                        <Tag
-                          key={`${item.value}_${index}`}
-                          closable
-                          className={styles.mentionTag}
-                          onClose={(event) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            handleMentionRemove(item.value);
-                          }}
-                        >
-                          <span className={styles.mentionTagContent}>
-                            <span className={styles.mentionTagAvatar}>
-                              {item.avatar ?? (
-                                <Avatar
-                                  size={18}
-                                  style={{
-                                    backgroundColor:
-                                      mentionAvatarColors[
-                                        index % mentionAvatarColors.length
-                                      ].bg,
-                                    color:
-                                      mentionAvatarColors[
-                                        index % mentionAvatarColors.length
-                                      ].fg,
-                                    fontSize: 11,
-                                    flexShrink: 0,
-                                  }}
-                                >
-                                  {getInitial(item.label)}
-                                </Avatar>
-                              )}
-                            </span>
-                            <span className={styles.mentionTagLabel}>
-                              {item.label}
-                            </span>
-                          </span>
-                        </Tag>
-                      ))}
-                    </Flex>
-                  )}
                 </Flex>
 
                 {loading ? (
@@ -879,7 +1129,7 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
                   </Tooltip>
                 )}
               </Flex>
-            );
+            )
           }}
         />
       </div>
