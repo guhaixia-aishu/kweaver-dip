@@ -1,11 +1,12 @@
 import { lazy, useEffect, useRef } from 'react'
 import type { RouteObject } from 'react-router-dom'
 import { createBrowserRouter, useNavigate } from 'react-router-dom'
-import { useUserInfoStore } from '@/stores'
 import { getGuideStatus } from '@/apis/dip-studio/guide'
+import { useUserInfoStore } from '@/stores'
 import { BASE_PATH } from '@/utils/config'
 import { ProtectedRoute } from './ProtectedRoute'
 import { routeConfigs } from './routes'
+import { resolveDefaultMicroAppPath } from './utils'
 
 const Login = lazy(() => import('../pages/Login'))
 const LoginSuccess = lazy(() => import('../pages/Login/LoginSuccess'))
@@ -25,6 +26,7 @@ const LoginFailed = lazy(() => import('../pages/Login/LoginFailed'))
 const DefaultIndexRedirect = () => {
   const navigate = useNavigate()
   const isAdmin = useUserInfoStore((s) => s.isAdmin)
+  const modules = useUserInfoStore((s) => s.modules)
   const hasNavigatedRef = useRef(false)
 
   useEffect(() => {
@@ -32,18 +34,11 @@ const DefaultIndexRedirect = () => {
       return
     }
 
-    // TODO: 暂时不使用默认微应用路由
-    // resolveDefaultMicroAppPath().then((targetPath) => {
-    //   if (hasNavigatedRef.current) {
-    //     return
-    //   }
-    //   hasNavigatedRef.current = true
-    //   navigate(targetPath, { replace: true })
-    // })
-
     void (async () => {
+      const hasStudio = modules.includes('studio')
+      const hasStore = modules.includes('store')
       try {
-        if (isAdmin) {
+        if (isAdmin && hasStudio) {
           const guideStatus = await getGuideStatus()
           hasNavigatedRef.current = true
           if (guideStatus.ready) {
@@ -59,14 +54,24 @@ const DefaultIndexRedirect = () => {
         }
 
         hasNavigatedRef.current = true
+        if (hasStore && !hasStudio) {
+          const targetPath = await resolveDefaultMicroAppPath()
+          navigate(targetPath, { replace: true })
+          return
+        }
         navigate('/home', { replace: true })
       } catch {
         // 若初始化状态接口失败，避免阻塞管理员进入系统
         hasNavigatedRef.current = true
+        if (hasStore && !hasStudio) {
+          const targetPath = await resolveDefaultMicroAppPath()
+          navigate(targetPath, { replace: true })
+          return
+        }
         navigate(isAdmin ? '/digital-human/management' : '/home', { replace: true })
       }
     })()
-  }, [navigate, isAdmin])
+  }, [navigate, isAdmin, modules])
 
   // const { userInfo } = useUserInfoStore()
 
@@ -147,9 +152,8 @@ export const router = createBrowserRouter(
           element: <MicroAppContainer />,
           handle: {
             layout: {
-              hasSider: false,
               hasHeader: true,
-              siderType: 'home',
+              siderMode: 'none',
               headerType: 'micro-app',
             },
           },
@@ -159,9 +163,8 @@ export const router = createBrowserRouter(
           element: <MicroAppContainer />,
           handle: {
             layout: {
-              hasSider: true,
               hasHeader: false,
-              siderType: 'home',
+              siderMode: 'none',
               headerType: 'micro-app',
             },
           },

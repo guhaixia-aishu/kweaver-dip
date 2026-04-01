@@ -1,12 +1,11 @@
 import { Layout } from 'antd'
 import clsx from 'classnames'
 import { useEffect, useState } from 'react'
-import type { SiderType } from '@/routes/types'
+import type { RouteModule, SiderType } from '@/routes/types'
 import { useUserInfoStore } from '@/stores/userInfoStore'
 import AdminSider from './AdminSider'
 import HomeSider from './HomeSider'
 import styles from './index.module.less'
-import StoreSider from './StoreSider'
 
 const { Sider: AntdSider } = Layout
 
@@ -17,15 +16,17 @@ interface SiderProps {
   onCollapse: (collapsed: boolean) => void
   /** 顶部偏移量 */
   topOffset?: number
-  /** 侧边栏类型 */
-  type?: SiderType
+  /** 侧边栏布局形态 */
+  layout?: SiderType
+  /** 当前路由归属模块（应用壳下用于区分 Studio 侧栏 / Store 侧栏） */
+  routeModule?: RouteModule
 }
 
 /**
  * 侧边栏主组件
- * 根据 type 选择渲染 HomeSider（home/studio）或 StoreSider（store）
+ * layout=entry：首页入口壳；layout=app + module：模块内应用壳
  */
-const Sider = ({ collapsed, onCollapse, topOffset = 0, type = 'home' }: SiderProps) => {
+const Sider = ({ collapsed, onCollapse, topOffset = 0, layout = 'entry' }: SiderProps) => {
   const isAdmin = useUserInfoStore((s) => s.isAdmin)
   const [transitionEnabled, setTransitionEnabled] = useState(false)
   useEffect(() => {
@@ -55,14 +56,10 @@ const Sider = ({ collapsed, onCollapse, topOffset = 0, type = 'home' }: SiderPro
         bottom: 0,
       }}
     >
-      {type === 'home' || type === 'studio' ? (
-        isAdmin ? (
-          <AdminSider collapsed={collapsed} onCollapse={onCollapse} siderType={type} />
-        ) : (
-          <HomeSider collapsed={collapsed} onCollapse={onCollapse} siderType={type} />
-        )
+      {isAdmin ? (
+        <AdminSider collapsed={collapsed} onCollapse={onCollapse} layout={layout} />
       ) : (
-        <StoreSider collapsed={collapsed} onCollapse={onCollapse} />
+        <HomeSider collapsed={collapsed} onCollapse={onCollapse} layout={layout} />
       )}
     </AntdSider>
   )

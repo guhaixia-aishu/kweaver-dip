@@ -1,20 +1,21 @@
-import type { MenuProps } from 'antd'
-import { Menu, Modal, message, Tooltip } from 'antd'
+import { Modal, message, Tooltip } from 'antd'
 import clsx from 'classnames'
 import { useCallback, useEffect, useMemo } from 'react'
 import { createSearchParams, useLocation, useNavigate } from 'react-router-dom'
-import { routeConfigs } from '@/routes/routes'
-import type { RouteConfig, SiderType } from '@/routes/types'
-import { getRouteByPath, getRouteSidebarMode, isRouteVisibleForRoles } from '@/routes/utils'
+import dipFavicon from '@/assets/favicons/dip.png'
+import ChatIcon from '@/assets/images/sider/chat.svg?react'
+import type { SiderType } from '@/routes/types'
+import { getRouteByPath } from '@/routes/utils'
 import { useLanguageStore } from '@/stores/languageStore'
 import { useOEMConfigStore } from '@/stores/oemConfigStore'
 import { useUserHistoryStore } from '@/stores/userHistoryStore'
+import { useUserInfoStore } from '@/stores/userInfoStore'
 import { useUserWorkPlanStore } from '@/stores/userWorkPlanStore'
-import IconFont from '../../IconFont'
-import { ExternalLinksMenu } from '../components/ExternalLinksMenu'
-import { MaskIcon } from '../components/GradientMaskIcon'
+import { ExternalLinksSection } from '../components/ExternalLinksMenu'
 import { HistorySection } from '../components/HistorySection'
-import { UserMenuItem } from '../components/UserMenuItem'
+import { SiderFooterUser } from '../components/SiderFooterUser'
+import { StoreMenuSection } from '../components/StoreMenuSection'
+import { StudioMenuSection } from '../components/StudioMenuSection'
 import { WorkPlanSection } from '../components/WorkPlanSection'
 
 interface HomeSiderProps {
@@ -22,10 +23,8 @@ interface HomeSiderProps {
   collapsed: boolean
   /** 折叠状态改变回调 */
   onCollapse: (collapsed: boolean) => void
-  /**
-   * 与布局一致：`home` 展示 Logo + 外链；`studio`（DIP Studio）不展示
-   */
-  siderType?: SiderType
+  /** 侧边栏布局形态 */
+  layout?: SiderType
 }
 
 /**
@@ -34,8 +33,8 @@ interface HomeSiderProps {
  * - 负责渲染：Logo + 折叠按钮 + 用户信息
  * - 显示路由菜单项、钉住的应用、外部链接等
  */
-const HomeSider = ({ collapsed, onCollapse, siderType = 'home' }: HomeSiderProps) => {
-  const isHomeSider = siderType === 'home'
+const HomeSider = ({ collapsed, onCollapse, layout = 'entry' }: HomeSiderProps) => {
+  const isHomeSider = layout === 'entry'
   const navigate = useNavigate()
   const location = useLocation()
   const [, messageContextHolder] = message.useMessage()
@@ -63,8 +62,11 @@ const HomeSider = ({ collapsed, onCollapse, siderType = 'home' }: HomeSiderProps
   const { language } = useLanguageStore()
   const { getOEMResourceConfig } = useOEMConfigStore()
   const oemResourceConfig = getOEMResourceConfig(language)
+  const modules = useUserInfoStore((s) => s.modules)
   // TODO: 角色信息需要从其他地方获取，暂时使用空数组
   const roleIds = useMemo(() => new Set<string>([]), [])
+  const hasStudio = modules.includes('studio')
+  const hasStore = modules.includes('store')
 
   /** 新建会话 */
   const handleCreateSession = () => {
@@ -102,11 +104,13 @@ const HomeSider = ({ collapsed, onCollapse, siderType = 'home' }: HomeSiderProps
   const hasHistoryMore = historyTotal > 5
 
   useEffect(() => {
+    if (!hasStudio) return
     void fetchPlans()
-  }, [fetchPlans])
+  }, [fetchPlans, hasStudio])
   useEffect(() => {
+    if (!hasStudio) return
     void fetchSessions()
-  }, [fetchSessions])
+  }, [fetchSessions, hasStudio])
 
   useEffect(() => {
     const match = location.pathname.match(/^\/history\/([^/]+)$/)
@@ -119,6 +123,7 @@ const HomeSider = ({ collapsed, onCollapse, siderType = 'home' }: HomeSiderProps
   }, [location.pathname, setSelectedPlanId])
 
   useEffect(() => {
+    if (!hasStudio) return
     const handleWindowFocus = () => {
       void refreshPlansOnFocus()
       void refreshSessionsOnFocus()
@@ -135,89 +140,13 @@ const HomeSider = ({ collapsed, onCollapse, siderType = 'home' }: HomeSiderProps
       window.removeEventListener('focus', handleWindowFocus)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, [refreshPlansOnFocus, refreshSessionsOnFocus])
-
-  /** 菜单项 */
-  const menuItems = useMemo<MenuProps['items']>(() => {
-    const hasKey = (route: RouteConfig): route is RouteConfig & { key: string } => {
-      return Boolean(route.key)
-    }
-
-    const visibleSidebarRoutes = routeConfigs
-      .filter((route) => getRouteSidebarMode(route) === 'menu' && route.key)
-      .filter((route) => isRouteVisibleForRoles(route, roleIds))
-      .filter((route) => route.handle?.layout?.siderType === 'studio')
-      .filter(hasKey)
-
-    const items: MenuProps['items'] = []
-
-    // 第一组：普通数字员工路由，按 group 分组展示
-    const groupMap = new Map<string, NonNullable<MenuProps['items']>>()
-    const groupedRouteOrder: string[] = []
-
-    visibleSidebarRoutes.forEach((route) => {
-      if (!route.key) return
-
-      const item: Exclude<MenuProps['items'], undefined>[number] = {
-        key: route.key,
-        label: route.label || route.key,
-        icon: route.iconUrl ? (
-          <MaskIcon
-            url={route.iconUrl}
-            className="w-4 h-4"
-            background={
-              selectedKey === route.key
-                ? 'linear-gradient(210deg, #1C4DFA 0%, #3FA9F5 100%)'
-                : '#333333'
-            }
-          />
-        ) : null,
-        onClick: () => {
-          if (route.path) {
-            navigate(`/${route.path}`)
-          }
-        },
-      }
-
-      if (!route.group) {
-        // 无 group 的路由直接平铺
-        items.push(item)
-        return
-      }
-
-      if (!groupMap.has(route.group)) {
-        groupMap.set(route.group, [])
-        groupedRouteOrder.push(route.group)
-      }
-      const groupChildren = groupMap.get(route.group)
-      if (groupChildren) {
-        groupChildren.push(item)
-      }
-    })
-
-    groupedRouteOrder.forEach((groupName) => {
-      const children = groupMap.get(groupName)
-      if (!children || children.length === 0) return
-
-      // 分组标题作为一个普通、不可点击的菜单项，后面紧跟该分组下的子项，整体平铺展示
-      items.push({
-        key: `group-${groupName}`,
-        label: groupName,
-        type: 'group',
-      })
-
-      children.forEach((child) => {
-        items.push(child)
-      })
-    })
-
-    return items
-  }, [roleIds, selectedKey, navigate])
+  }, [refreshPlansOnFocus, refreshSessionsOnFocus, hasStudio])
 
   // 获取 OEM logo，如果获取不到则使用默认 logo
   const logoUrl = useMemo(() => {
     return oemResourceConfig?.['logo.png']
   }, [oemResourceConfig])
+  const logoIconUrl = dipFavicon
 
   return (
     <div className="flex flex-col h-full px-0 pt-4 pb-1 overflow-hidden">
@@ -231,129 +160,112 @@ const HomeSider = ({ collapsed, onCollapse, siderType = 'home' }: HomeSiderProps
             collapsed ? 'justify-center pl-1.5 pr-1.5' : 'justify-between pl-3 pr-2',
           )}
         >
-          <img src={logoUrl} alt="logo" className={clsx('h-8 w-auto', collapsed && 'hidden')} />
+          {collapsed ? (
+            <img src={logoIconUrl} alt="logo" className={clsx('h-6 w-auto')} />
+          ) : (
+            <img src={logoUrl} alt="logo" className={clsx('h-8 w-auto')} />
+          )}
         </div>
       ) : null}
 
-      {/* 新建会话按钮 */}
-      <div className={clsx('flex items-center pb-3 px-1.5')}>
-        <Tooltip title={collapsed ? '会话' : ''} placement="right">
-          <button
-            type="button"
-            onClick={handleCreateSession}
-            className={clsx(
-              `w-full h-8 flex justify-center items-center gap-x-2 rounded`,
-              isSessionRouteActive
-                ? 'bg-[--dip-primary-color] text-white'
-                : collapsed
-                  ? 'text-[--dip-text-color] hover:bg-[--dip-hover-bg-color-6]'
-                  : 'bg-[#EBF4FF] text-[--dip-primary-color]',
-            )}
-          >
-            <IconFont type="icon-add" />
-            {collapsed ? '' : '会话'}
-          </button>
-        </Tooltip>
-      </div>
+      {hasStudio ? (
+        <div className={clsx('flex items-center px-1.5', collapsed ? 'h-9 my-1' : 'pb-3')}>
+          <Tooltip title={collapsed ? '会话' : ''} placement="right">
+            <button
+              type="button"
+              onClick={handleCreateSession}
+              className={clsx(
+                `w-full h-9 flex justify-center items-center gap-x-2 rounded`,
+                isSessionRouteActive
+                  ? 'bg-[--dip-primary-color] text-white'
+                  : collapsed
+                    ? 'text-[--dip-text-color] hover:bg-[--dip-hover-bg-color-6]'
+                    : 'bg-[#EBF4FF] text-[--dip-primary-color]',
+              )}
+            >
+              <ChatIcon className="w-4 h-4" />
+              {collapsed ? '' : '会话'}
+            </button>
+          </Tooltip>
+        </div>
+      ) : null}
 
       {/* 菜单内容 */}
       <div className="flex-1 flex flex-col dip-hideScrollbar">
         <div className="flex-1">
-          <Menu
-            mode="inline"
-            selectedKeys={[selectedKey]}
-            items={menuItems}
-            inlineCollapsed={collapsed}
-            selectable
-          />
+          {hasStudio ? (
+            <>
+              <StudioMenuSection
+                collapsed={collapsed}
+                selectedKey={selectedKey}
+                roleIds={roleIds}
+                navigate={navigate}
+                allowedKeys={['digital-human-management']}
+              />
 
-          {!collapsed && topPlans.length > 0 ? (
-            <WorkPlanSection
-              plans={topPlans}
-              hasMore={hasPlanMore}
-              total={plans.length}
-              selectedPlanId={selectedPlanId}
-              onMore={() => navigate('/work-plan')}
-              onOpenPlanDetail={(planId, agentId, sessionId) => {
-                setSelectedPlanId(planId)
-                handleOpenPlanDetail(planId, agentId, sessionId)
-              }}
-              onPausePlan={pausePlan}
-              onResumePlan={resumePlan}
-              onDeletePlan={deletePlan}
-            />
+              {!collapsed && topPlans.length > 0 ? (
+                <WorkPlanSection
+                  plans={topPlans}
+                  hasMore={hasPlanMore}
+                  total={plans.length}
+                  selectedPlanId={selectedPlanId}
+                  onMore={() => navigate('/work-plan')}
+                  onOpenPlanDetail={(planId, agentId, sessionId) => {
+                    setSelectedPlanId(planId)
+                    handleOpenPlanDetail(planId, agentId, sessionId)
+                  }}
+                  onPausePlan={pausePlan}
+                  onResumePlan={resumePlan}
+                  onDeletePlan={deletePlan}
+                />
+              ) : null}
+
+              {!collapsed && topHistorySessions.length > 0 ? (
+                <HistorySection
+                  sessions={topHistorySessions}
+                  hasMore={hasHistoryMore}
+                  total={historySessions.length}
+                  selectedSessionKey={selectedSessionKey}
+                  onMore={() => navigate('/history')}
+                  onOpenHistoryDetail={(sessionKey) => {
+                    setSelectedSessionKey(sessionKey)
+                    navigate(`/history/${sessionKey}`)
+                  }}
+                  onDeleteHistory={(session) => {
+                    modal.confirm({
+                      title: '确认删除',
+                      content: '删除后将无法恢复，是否继续？',
+                      okText: '确定',
+                      okType: 'primary',
+                      okButtonProps: { danger: true },
+                      cancelText: '取消',
+                      onOk: async () => {
+                        await deleteHistorySession(session.key)
+                      },
+                    })
+                  }}
+                />
+              ) : null}
+            </>
           ) : null}
 
-          {!collapsed && topHistorySessions.length > 0 ? (
-            <HistorySection
-              sessions={topHistorySessions}
-              hasMore={hasHistoryMore}
-              total={historySessions.length}
-              selectedSessionKey={selectedSessionKey}
-              onMore={() => navigate('/history')}
-              onOpenHistoryDetail={(sessionKey) => {
-                setSelectedSessionKey(sessionKey)
-                navigate(`/history/${sessionKey}`)
-              }}
-              onDeleteHistory={(session) => {
-                modal.confirm({
-                  title: '确认删除',
-                  content: '删除后将无法恢复，是否继续？',
-                  okText: '确定',
-                  okType: 'primary',
-                  okButtonProps: { danger: true },
-                  cancelText: '取消',
-                  onOk: async () => {
-                    await deleteHistorySession(session.key)
-                  },
-                })
-              }}
+          {hasStore ? (
+            <StoreMenuSection
+              collapsed={collapsed}
+              selectedKey={selectedKey}
+              roleIds={roleIds}
+              navigate={navigate}
             />
           ) : null}
         </div>
-        <ExternalLinksMenu collapsed={collapsed} roleIds={roleIds} />
+        <ExternalLinksSection collapsed={collapsed} roleIds={roleIds} />
       </div>
 
       {collapsed ? null : (
         <div className="mx-3 my-2 h-px shrink-0 bg-[var(--dip-border-color)]" aria-hidden />
       )}
 
-      {/* 用户 + 收缩：样式与上方 Menu 项一致（40px 行、边距与 hover） */}
-      {collapsed ? (
-        <div className="dip-sider-footer-stack shrink-0">
-          <div className="dip-sider-footer-row">
-            <Tooltip title="展开" placement="right">
-              <span className="flex min-w-0 flex-1">
-                <button
-                  type="button"
-                  className="flex h-10 min-h-10 w-full min-w-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-[var(--dip-text-color)]"
-                  onClick={() => onCollapse(false)}
-                >
-                  <IconFont type="icon-sidebar" className="text-base leading-none" />
-                </button>
-              </span>
-            </Tooltip>
-          </div>
-          <div className="dip-sider-footer-row">
-            <UserMenuItem collapsed={collapsed} />
-          </div>
-        </div>
-      ) : (
-        <div className="dip-sider-footer-row dip-sider-footer-row-horizontal shrink-0">
-          <div className="min-w-0 flex-1">
-            <UserMenuItem collapsed={collapsed} />
-          </div>
-          <Tooltip title="收起" placement="right">
-            <button
-              type="button"
-              className="flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-[var(--dip-text-color)] hover:text-[var(--dip-primary-color)]"
-              onClick={() => onCollapse(true)}
-            >
-              <IconFont type="icon-sidebar" className="text-base leading-none" />
-            </button>
-          </Tooltip>
-        </div>
-      )}
+      <SiderFooterUser collapsed={collapsed} onCollapse={onCollapse} />
     </div>
   )
 }

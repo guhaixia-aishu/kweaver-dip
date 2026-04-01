@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 import applicationsUrl from '@/assets/images/sider/applications.svg'
 import appStoreUrl from '@/assets/images/sider/appStore.svg'
+import chatUrl from '@/assets/images/sider/chat.svg'
 import digitalHumanUrl from '@/assets/images/sider/digitalHuman.svg'
 import dipStudioUrl from '@/assets/images/sider/dipStudio.svg'
 import type { RouteConfig } from './types'
@@ -28,15 +29,15 @@ export const routeConfigs: RouteConfig[] = [
     path: 'home',
     key: 'home',
     label: '首页',
-    iconUrl: dipStudioUrl,
+    iconUrl: chatUrl,
     requiredRoleIds: [],
     element: <Home />,
     sidebarMode: 'menu',
     handle: {
       layout: {
-        hasSider: true,
         hasHeader: false,
-        siderType: 'home',
+        siderMode: 'entry',
+        module: 'studio',
         headerType: 'home',
       },
     },
@@ -53,9 +54,9 @@ export const routeConfigs: RouteConfig[] = [
     sidebarMode: 'menu',
     handle: {
       layout: {
-        hasSider: true,
         hasHeader: true,
-        siderType: 'store',
+        siderMode: 'app',
+        module: 'store',
         headerType: 'store',
       },
     },
@@ -70,9 +71,9 @@ export const routeConfigs: RouteConfig[] = [
     sidebarMode: 'menu',
     handle: {
       layout: {
-        hasSider: true,
         hasHeader: true,
-        siderType: 'store',
+        siderMode: 'app',
+        module: 'store',
         headerType: 'store',
       },
     },
@@ -88,9 +89,9 @@ export const routeConfigs: RouteConfig[] = [
     sidebarMode: 'menu',
     handle: {
       layout: {
-        hasSider: true,
         hasHeader: true,
-        siderType: 'studio',
+        siderMode: 'app',
+        module: 'studio',
         headerType: 'studio',
       },
     },
@@ -99,15 +100,15 @@ export const routeConfigs: RouteConfig[] = [
     path: 'studio/conversation',
     key: 'studio-conversation',
     label: '会话',
-    iconUrl: dipStudioUrl,
+    iconUrl: chatUrl,
     requiredRoleIds: [],
     element: <Conversation />,
     sidebarMode: 'entry-only',
     handle: {
       layout: {
-        hasSider: true,
         hasHeader: true,
-        siderType: 'studio',
+        siderMode: 'app',
+        module: 'studio',
         headerType: 'studio',
       },
     },
@@ -121,9 +122,9 @@ export const routeConfigs: RouteConfig[] = [
     sidebarMode: 'hidden',
     handle: {
       layout: {
-        hasSider: true,
         hasHeader: true,
-        siderType: 'studio',
+        siderMode: 'app',
+        module: 'studio',
         headerType: 'studio',
       },
     },
@@ -136,9 +137,9 @@ export const routeConfigs: RouteConfig[] = [
     sidebarMode: 'hidden',
     handle: {
       layout: {
-        hasSider: true,
         hasHeader: true,
-        siderType: 'studio',
+        siderMode: 'app',
+        module: 'studio',
         headerType: 'studio',
       },
     },
@@ -152,9 +153,9 @@ export const routeConfigs: RouteConfig[] = [
     sidebarMode: 'hidden',
     handle: {
       layout: {
-        hasSider: true,
         hasHeader: true,
-        siderType: 'studio',
+        siderMode: 'app',
+        module: 'studio',
         headerType: 'studio',
       },
     },
@@ -167,9 +168,9 @@ export const routeConfigs: RouteConfig[] = [
     sidebarMode: 'hidden',
     handle: {
       layout: {
-        hasSider: true,
         hasHeader: true,
-        siderType: 'studio',
+        siderMode: 'app',
+        module: 'studio',
         headerType: 'studio',
       },
     },
@@ -182,9 +183,9 @@ export const routeConfigs: RouteConfig[] = [
     sidebarMode: 'hidden',
     handle: {
       layout: {
-        hasSider: true,
         hasHeader: true,
-        siderType: 'studio',
+        siderMode: 'app',
+        module: 'studio',
         headerType: 'studio',
       },
     },
@@ -243,9 +244,9 @@ export const routeConfigs: RouteConfig[] = [
     sidebarMode: 'hidden',
     handle: {
       layout: {
-        hasSider: true,
         hasHeader: true,
-        siderType: 'studio',
+        siderMode: 'app',
+        module: 'studio',
         headerType: 'studio',
       },
     },
@@ -258,9 +259,9 @@ export const routeConfigs: RouteConfig[] = [
     sidebarMode: 'hidden',
     handle: {
       layout: {
-        hasSider: true,
         hasHeader: true,
-        siderType: 'studio',
+        siderMode: 'app',
+        module: 'studio',
         headerType: 'studio',
       },
     },
@@ -273,9 +274,9 @@ export const routeConfigs: RouteConfig[] = [
     sidebarMode: 'hidden',
     handle: {
       layout: {
-        hasSider: false,
         hasHeader: true,
-        siderType: 'studio',
+        siderMode: 'none',
+        module: 'studio',
         headerType: 'studio',
       },
     },

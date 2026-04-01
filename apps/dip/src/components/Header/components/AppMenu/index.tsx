@@ -1,21 +1,16 @@
 import type { MenuProps } from 'antd'
 import { Dropdown } from 'antd'
 import { useMemo } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import AppIcon from '@/components/AppIcon'
 import IconFont from '@/components/IconFont'
 import { usePreferenceStore } from '@/stores'
-import { useMicroAppStore } from '@/stores/microAppStore'
 /**
  * 导航菜单图标按钮组件
  */
 export const AppMenu = () => {
   const navigate = useNavigate()
-  const { appKey } = useParams<{ appKey: string }>()
-  const appKeyParam = useMemo(() => (appKey ?? '').trim(), [appKey])
   const { fetchPinnedMicroApps, loading, pinnedMicroApps, wenshuAppInfo } = usePreferenceStore()
-  const { setAppSource } = useMicroAppStore()
-  const appSourceMap = useMicroAppStore((state) => state.appSourceMap)
   // 处理点击按钮触发加载
   const handleButtonClick = () => {
     if (loading) return
@@ -25,8 +20,6 @@ export const AppMenu = () => {
   const handleMenuClick: MenuProps['onClick'] = ({ key }) => {
     const app = [wenshuAppInfo, ...pinnedMicroApps].find((item) => item && item.key === key)
     if (app?.key) {
-      const type = (appKeyParam ? appSourceMap[appKeyParam] : null) || 'home'
-      setAppSource(app.key, type)
       // 以新标签页形式打开应用
       navigate(`/application/${encodeURIComponent(app.key)}`)
     }

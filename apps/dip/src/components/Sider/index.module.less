@@ -29,7 +29,7 @@
         color: var(--dip-primary-color);
 
         &::before {
-          content: '';
+          content: "";
           position: absolute;
           left: -4px;
           top: 10px;
@@ -70,6 +70,72 @@
       color: var(--dip-text-color-65);
     }
 
+    /* SubMenu：与顶层 .dip-menu-item 同一套尺寸与边距，避免分组「缩进一块」观感 */
+    .dip-menu-submenu {
+      padding: 0;
+
+      .dip-menu-sub.dip-menu-inline {
+        background-color: transparent;
+      }
+
+      .dip-menu-submenu-inner {
+        padding: 0;
+      }
+    }
+
+    .dip-menu-submenu-title {
+      font-weight: inherit;
+      height: 40px;
+      line-height: 40px;
+      margin-inline: 6px !important;
+      width: calc(100% - 12px);
+      padding-inline: 10px !important;
+      border-radius: 4px;
+
+      &:hover {
+        background-color: var(--dip-hover-bg-color);
+      }
+    }
+
+    /* 一级 SubMenu 收起时，若二级有选中项，父级与 .dip-menu-item-selected 同套高亮 */
+    .dip-menu-submenu.dip-menu-submenu-selected:not(.dip-menu-submenu-open) > .dip-menu-submenu-title {
+      position: relative;
+      background-color: #f1f7fe;
+      color: var(--dip-primary-color);
+
+      &::before {
+        content: "";
+        position: absolute;
+        left: -4px;
+        top: 10px;
+        bottom: 10px;
+        width: 2px;
+        background: linear-gradient(180deg, #3fa9f5 0%, #126ee3 100%);
+        border-radius: 2px;
+      }
+
+      &:hover {
+        background-color: #f1f7fe;
+      }
+    }
+
+    .dip-menu-submenu .dip-menu-item {
+      margin-inline: 6px !important;
+      width: calc(100% - 12px);
+      padding-inline: 10px !important;
+    }
+
+    .dip-menu-submenu-arrow {
+      right: 10px;
+
+      &::before,
+      &::after {
+        width: 5px !important;
+        height: 1px !important;
+        border-radius: 0.5px !important;
+      }
+    }
+
     /* 底部用户区：与上方 .dip-menu-item 同一套尺寸与 hover */
     .dip-sider-footer-row {
       display: flex;
@@ -107,8 +173,22 @@
 .collapsed {
   :global {
     .dip-menu-item {
+      height: 36px;
+      line-height: 36px;
       padding-inline: calc(50% - 14px) !important;
       margin-inline: 6px !important;
+    }
+
+    .dip-menu-submenu-title {
+      height: 36px;
+      line-height: 36px;
+      padding-inline: calc(50% - 14px) !important;
+      margin-inline: 6px !important;
+    }
+
+    .dip-menu-submenu.dip-menu-submenu-selected:not(.dip-menu-submenu-open) > .dip-menu-submenu-title::before {
+      top: 8px;
+      bottom: 8px;
     }
 
     .dip-menu-item-group {

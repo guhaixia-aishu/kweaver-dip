@@ -1,10 +1,7 @@
 import type { MenuProps } from 'antd'
 import { Menu } from 'antd'
 import { useMemo } from 'react'
-import SidebarAiStoreIcon from '@/assets/images/sider/aiStore.svg?react'
 import SidebarSystemIcon from '@/assets/images/sider/proton.svg?react'
-import { getFirstVisibleRouteBySiderType } from '@/routes/utils'
-import { getFullPath } from '@/utils/config'
 import { getAccessToken, getRefreshToken } from '@/utils/http/token-config'
 import IconFont from '../../IconFont'
 
@@ -16,16 +13,12 @@ export interface ExternalLinksMenuProps {
 }
 
 /**
- * 侧栏底部外链：AI Store、业务知识网络 SSO、系统工作台
+ * 侧栏底部外链：业务知识网络 SSO、系统工作台
  */
-export const ExternalLinksMenu = ({ collapsed, roleIds }: ExternalLinksMenuProps) => {
+export const ExternalLinksSection = ({ collapsed, roleIds }: ExternalLinksMenuProps) => {
   const items = useMemo<MenuProps['items']>(() => {
-    const firstStoreRoute = getFirstVisibleRouteBySiderType('store', roleIds || new Set())
     const baseOrigin = window.location.origin
     const getExternalUrl = (path: string) => `${baseOrigin}${path}`
-
-    const storePath = `/${firstStoreRoute?.path || 'store/my-app'}`
-    const storeHref = getFullPath(storePath)
 
     const redirectUrl = '/studio/home'
     const token = getAccessToken()
@@ -53,21 +46,6 @@ export const ExternalLinksMenu = ({ collapsed, roleIds }: ExternalLinksMenuProps
     const ssoUrl = `${baseOrigin}/interface/studioweb/internalSSO?${ssoSearchParams.toString()}`
 
     return [
-      {
-        key: 'ai-store',
-        title: 'AI Store',
-        label: (
-          <a
-            href={storeHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 justify-between"
-          >
-            <span>AI Store</span> <IconFont type="icon-right" />
-          </a>
-        ),
-        icon: <SidebarAiStoreIcon />,
-      },
       {
         key: 'data-platform',
         title: '全局业务知识网络',
@@ -115,3 +93,5 @@ export const ExternalLinksMenu = ({ collapsed, roleIds }: ExternalLinksMenuProps
     </div>
   )
 }
+
+export const ExternalLinksMenu = ExternalLinksSection

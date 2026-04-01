@@ -1,32 +1,33 @@
-import type { MenuProps } from 'antd'
-import { Menu, message, Tooltip } from 'antd'
+import { message } from 'antd'
 import clsx from 'classnames'
 import { useCallback, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { routeConfigs } from '@/routes/routes'
 import type { SiderType } from '@/routes/types'
 import { getRouteByPath } from '@/routes/utils'
 import { useLanguageStore } from '@/stores/languageStore'
 import { useOEMConfigStore } from '@/stores/oemConfigStore'
-import IconFont from '../../IconFont'
-import { ExternalLinksMenu } from '../components/ExternalLinksMenu'
-import { MaskIcon } from '../components/GradientMaskIcon'
-import { UserMenuItem } from '../components/UserMenuItem'
+import { useUserInfoStore } from '@/stores/userInfoStore'
+import { ExternalLinksSection } from '../components/ExternalLinksMenu'
+import { SiderFooterUser } from '../components/SiderFooterUser'
+import { StoreMenuSection } from '../components/StoreMenuSection'
+import { StudioMenuSection } from '../components/StudioMenuSection'
 
 interface AdminSiderProps {
   collapsed: boolean
   onCollapse: (collapsed: boolean) => void
-  siderType?: SiderType
+  layout?: SiderType
 }
-
-const AdminSider = ({ collapsed, onCollapse, siderType = 'home' }: AdminSiderProps) => {
-  const isHomeSider = siderType === 'home'
+const AdminSider = ({ collapsed, onCollapse, layout = 'entry' }: AdminSiderProps) => {
+  const isHomeSider = layout === 'entry'
   const navigate = useNavigate()
   const location = useLocation()
   const [, messageContextHolder] = message.useMessage()
   const { language } = useLanguageStore()
   const { getOEMResourceConfig } = useOEMConfigStore()
   const oemResourceConfig = getOEMResourceConfig(language)
+  const modules = useUserInfoStore((s) => s.modules)
+  const hasStudio = modules.includes('studio')
+  const hasStore = modules.includes('store')
 
   const selectedKey = useCallback(() => {
     const pathname = location.pathname
@@ -34,34 +35,6 @@ const AdminSider = ({ collapsed, onCollapse, siderType = 'home' }: AdminSiderPro
     const route = getRouteByPath(pathname)
     return route?.key || 'home'
   }, [location.pathname])()
-
-  const menuItems = useMemo<MenuProps['items']>(() => {
-    const adminRoute = routeConfigs.find((route) => route.key === 'digital-human-management')
-    if (!adminRoute?.key) return []
-
-    return [
-      {
-        key: adminRoute.key,
-        label: adminRoute.label || adminRoute.key,
-        icon: adminRoute.iconUrl ? (
-          <MaskIcon
-            url={adminRoute.iconUrl}
-            className="w-4 h-4"
-            background={
-              selectedKey === adminRoute.key
-                ? 'linear-gradient(210deg, #1C4DFA 0%, #3FA9F5 100%)'
-                : '#333333'
-            }
-          />
-        ) : null,
-        onClick: () => {
-          if (adminRoute.path) {
-            navigate(`/${adminRoute.path}`)
-          }
-        },
-      },
-    ]
-  }, [selectedKey, navigate])
 
   const logoUrl = useMemo(() => {
     return oemResourceConfig?.['logo.png']
@@ -81,58 +54,35 @@ const AdminSider = ({ collapsed, onCollapse, siderType = 'home' }: AdminSiderPro
         </div>
       ) : null}
 
+      {/* 菜单内容 */}
       <div className="flex-1 flex flex-col dip-hideScrollbar">
         <div className="flex-1">
-          <Menu
-            mode="inline"
-            selectedKeys={[selectedKey]}
-            items={menuItems}
-            inlineCollapsed={collapsed}
-            selectable
-          />
+          {hasStudio ? (
+            <StudioMenuSection
+              collapsed={collapsed}
+              selectedKey={selectedKey}
+              roleIds={new Set<string>([])}
+              navigate={navigate}
+              allowedKeys={['digital-human-management']}
+            />
+          ) : null}
+          {hasStore ? (
+            <StoreMenuSection
+              collapsed={collapsed}
+              selectedKey={selectedKey}
+              roleIds={new Set<string>([])}
+              navigate={navigate}
+            />
+          ) : null}
         </div>
-        <ExternalLinksMenu collapsed={collapsed} />
+        <ExternalLinksSection collapsed={collapsed} roleIds={new Set<string>([])} />
       </div>
 
       {collapsed ? null : (
         <div className="mx-3 my-2 h-px shrink-0 bg-[var(--dip-border-color)]" aria-hidden />
       )}
 
-      {collapsed ? (
-        <div className="dip-sider-footer-stack shrink-0">
-          <div className="dip-sider-footer-row">
-            <Tooltip title="展开" placement="right">
-              <span className="flex min-w-0 flex-1">
-                <button
-                  type="button"
-                  className="flex h-10 min-h-10 w-full min-w-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-[var(--dip-text-color)]"
-                  onClick={() => onCollapse(false)}
-                >
-                  <IconFont type="icon-sidebar" className="text-base leading-none" />
-                </button>
-              </span>
-            </Tooltip>
-          </div>
-          <div className="dip-sider-footer-row">
-            <UserMenuItem collapsed={collapsed} />
-          </div>
-        </div>
-      ) : (
-        <div className="dip-sider-footer-row dip-sider-footer-row-horizontal shrink-0">
-          <div className="min-w-0 flex-1">
-            <UserMenuItem collapsed={collapsed} />
-          </div>
-          <Tooltip title="收起" placement="right">
-            <button
-              type="button"
-              className="flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-[var(--dip-text-color)] hover:text-[var(--dip-primary-color)]"
-              onClick={() => onCollapse(true)}
-            >
-              <IconFont type="icon-sidebar" className="text-base leading-none" />
-            </button>
-          </Tooltip>
-        </div>
-      )}
+      <SiderFooterUser collapsed={collapsed} onCollapse={onCollapse} />
     </div>
   )
 }

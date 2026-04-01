@@ -1,10 +1,10 @@
 import { useCallback, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import type { HeaderType, SiderType } from '@/routes/types'
+import type { HeaderType, RouteModule } from '@/routes/types'
 import {
   getBreadcrumbAncestorRoutes,
   getBreadcrumbLinkPathForRoute,
-  getFirstVisibleRouteBySiderType,
+  getFirstVisibleRouteByModule,
   getRouteByPath,
   shouldShowCurrentRouteInBreadcrumb,
 } from '@/routes/utils'
@@ -65,14 +65,18 @@ const BaseHeader = ({ headerType }: { headerType: HeaderType }) => {
   // 不同平台（store）各自的首路由，用于面包屑首页返回
   const roleIds = useMemo(() => new Set<string>([]), [])
   const homePath = useMemo(() => {
-    const firstRoute = getFirstVisibleRouteBySiderType(headerType as SiderType, roleIds)
+    if (headerType !== 'store' && headerType !== 'studio') {
+      return '/home'
+    }
+    const module = headerType as RouteModule
+    const firstRoute = getFirstVisibleRouteByModule(module, roleIds)
     if (!isAdmin && headerType === 'studio') {
       return '/home'
     }
     const path =
       firstRoute?.path ?? (headerType === 'store' ? 'store/my-app' : 'digital-human/management')
     return `/${path}`
-  }, [headerType, roleIds])
+  }, [headerType, roleIds, isAdmin])
 
   // 面包屑导航跳转
   const handleBreadcrumbNavigate = useCallback(

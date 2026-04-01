@@ -1,7 +1,17 @@
 import type { ReactNode } from 'react'
 
 export type HeaderType = 'store' | 'studio' | 'micro-app' | 'home' | 'initial-configuration'
-export type SiderType = 'store' | 'home' | 'studio'
+
+/** 侧边栏布局形态：入口壳（首页无顶栏）| 应用壳（模块内常有顶栏） */
+export type SiderType = 'entry' | 'app'
+
+/**
+ * 路由归属的功能模块（与 EnabledModule 同值域；语义为路由/菜单分类，非布局形态）
+ */
+export type RouteModule = 'studio' | 'store'
+
+/** 用户可访问的模块（权限） */
+export type EnabledModule = 'studio' | 'store'
 
 /**
  * 路由在侧栏 / 「按 sider 取首条可访问路由」中的参与方式
@@ -15,12 +25,12 @@ export const WENSHU_APP_KEY = 'cedb529407c345b1a27317baefa62800'
 
 /** 布局配置 */
 export interface LayoutConfig {
-  /** 是否展示侧边栏 */
-  hasSider?: boolean
   /** 是否展示顶栏 */
   hasHeader?: boolean
-  /** 侧边栏类型 */
-  siderType?: SiderType
+  /** 侧边栏模式：none 不展示，entry 入口壳，app 应用壳 */
+  siderMode?: 'none' | SiderType
+  /** 当前路由归属的功能模块（应用壳侧栏、首跳解析等） */
+  module?: RouteModule
   /** 顶栏类型 */
   headerType?: HeaderType
 }

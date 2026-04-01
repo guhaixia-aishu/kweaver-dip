@@ -1,7 +1,5 @@
 import { create } from 'zustand'
-import { createJSONStorage, persist } from 'zustand/middleware'
 import type { ApplicationBasicInfo } from '@/apis'
-import type { SiderType } from '@/routes/types'
 
 /**
  * 当前激活的微应用信息
@@ -15,64 +13,29 @@ export interface CurrentMicroAppInfo extends ApplicationBasicInfo {
 interface MicroAppStoreState {
   /** 当前激活的微应用信息 */
   currentMicroApp: CurrentMicroAppInfo | null
-  /**
-   * 当前微应用对应的「首页」路由（与 MicroAppContainer 中传入 MicroAppComponent 的 homeRoute 一致）
-   * 用于面包屑等组件的「首页」链接
-   */
+  /** 当前微应用对应的首页路由（用于面包屑首页链接） */
   homeRoute: string | null
-  /**
-   * 每个应用的来源 Sider 类型映射表
-   * key 为应用 appkey（ApplicationBasicInfo.key）, value 为 SiderType
-   * 用于支持跨应用切换时依然能正确记录每个应用的返回路径
-   */
-  appSourceMap: Record<string, SiderType>
   /** 设置当前激活的微应用 */
   setCurrentMicroApp: (info: CurrentMicroAppInfo | null) => void
   /** 设置当前微应用对应的首页路由 */
   setHomeRoute: (route: string | null) => void
-  /** 记录特定应用的来源类型 */
-  setAppSource: (appKey: string, type: SiderType) => void
   /** 清空当前微应用信息 */
   clearCurrentMicroApp: () => void
 }
 
-/**
- * 微应用信息 Store
- * 用于存储当前激活的微应用信息，方便主应用各组件使用
- */
-export const useMicroAppStore = create<MicroAppStoreState>()(
-  persist(
-    (set) => ({
-      currentMicroApp: null,
-      homeRoute: null,
-      appSourceMap: {},
+export const useMicroAppStore = create<MicroAppStoreState>((set) => ({
+  currentMicroApp: null,
+  homeRoute: null,
 
-      setCurrentMicroApp: (info) => {
-        set({ currentMicroApp: info })
-      },
+  setCurrentMicroApp: (info) => {
+    set({ currentMicroApp: info })
+  },
 
-      setHomeRoute: (route) => {
-        set({ homeRoute: route })
-      },
+  setHomeRoute: (route) => {
+    set({ homeRoute: route })
+  },
 
-      setAppSource: (appKey, type) => {
-        set((state) => ({
-          appSourceMap: {
-            ...state.appSourceMap,
-            [appKey]: type,
-          },
-        }))
-      },
-
-      clearCurrentMicroApp: () => {
-        set({ currentMicroApp: null, homeRoute: null })
-      },
-    }),
-    {
-      name: 'dip-micro-app-storage',
-      storage: createJSONStorage(() => sessionStorage),
-      // 仅持久化 appSourceMap，currentMicroApp 随页面销毁更安全
-      partialize: (state) => ({ appSourceMap: state.appSourceMap }),
-    },
-  ),
-)
+  clearCurrentMicroApp: () => {
+    set({ currentMicroApp: null, homeRoute: null })
+  },
+}))

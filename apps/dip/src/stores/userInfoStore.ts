@@ -1,6 +1,25 @@
 import { create } from 'zustand'
 import { getLogoutUrl, getUserInfo, type UserInfo } from '@/apis'
+import type { EnabledModule } from '@/routes/types'
 import { getAccessToken } from '@/utils/http/token-config'
+
+export type { EnabledModule } from '@/routes/types'
+
+const ALLOWED_MODULES: EnabledModule[] = ['studio', 'store']
+
+const parseModulesFromEnv = (): EnabledModule[] => {
+  const raw = import.meta.env.PUBLIC_ENABLED_MODULES as string | undefined
+  if (!raw) {
+    return ['studio', 'store']
+  }
+
+  const parsed = raw
+    .split(',')
+    .map((item) => item.trim().toLowerCase())
+    .filter((item): item is EnabledModule => ALLOWED_MODULES.includes(item as EnabledModule))
+
+  return parsed.length > 0 ? Array.from(new Set(parsed)) : ['studio', 'store']
+}
 
 /**
  * 用户信息 Store
@@ -13,8 +32,12 @@ interface UserInfoState {
   isLoading: boolean
   /** 是否是管理员 */
   isAdmin: boolean
+  /** 用户可访问模块 */
+  modules: EnabledModule[]
   /** 设置用户信息 */
   setUserInfo: (userInfo: UserInfo | null) => void
+  /** 设置模块列表 */
+  setModules: (modules: EnabledModule[]) => void
   /** 登出：清除用户信息、Cookie 并跳转到登出 URL */
   logout: () => void
   /** 从服务端获取用户信息 */
@@ -38,13 +61,20 @@ export const useUserInfoStore = create<UserInfoState>((set) => ({
     : null,
   isLoading: false,
   isAdmin: import.meta.env.PUBLIC_IS_ADMIN === 'true',
+  modules: parseModulesFromEnv(),
 
   setUserInfo: (userInfo: UserInfo | null) =>
     set({ userInfo, isAdmin: userInfo?.vision_name === 'admin' }),
+  setModules: (modules) => {
+    const normalized = modules.filter((item): item is EnabledModule =>
+      ALLOWED_MODULES.includes(item),
+    )
+    set({ modules: Array.from(new Set(normalized)) })
+  },
 
   logout: () => {
     // 清除本地状态
-    set({ userInfo: null })
+    set({ userInfo: null, modules: parseModulesFromEnv() })
     // 清除正在进行的请求
     fetchPromise = null
     currentToken = null
@@ -66,7 +96,7 @@ export const useUserInfoStore = create<UserInfoState>((set) => ({
       // 清除正在进行的请求
       fetchPromise = null
       currentToken = null
-      set({ userInfo: null, isLoading: false })
+      set({ userInfo: null, isLoading: false, modules: parseModulesFromEnv() })
       return
     }
 

@@ -1,7 +1,7 @@
 import { usePreferenceStore } from '@/stores'
 import { BASE_PATH } from '@/utils/config'
 import { routeConfigs } from './routes'
-import type { RouteConfig, RouteSidebarMode, SiderType } from './types'
+import type { RouteConfig, RouteModule, RouteSidebarMode } from './types'
 
 /** 缺省为 hidden，与未配置时的侧栏行为一致 */
 export const getRouteSidebarMode = (route: RouteConfig): RouteSidebarMode =>
@@ -156,27 +156,13 @@ export const getFirstVisibleSidebarRoute = (roleIds: Set<string>): RouteConfig |
 }
 
 /**
- * 根据 siderType 获取第一个有权限的路由
- * 用于在点击分类菜单（如 AI Store、DIP Studio）时跳转到该分类下的第一个可访问路由
- *
- * @param siderType 侧边栏类型：'store' | 'studio' | 'home'
- * @param roleIds 用户角色ID集合
- * @returns 配置数组中第一个满足：`sidebarMode` 为 menu 或 entry-only，且 siderType、权限匹配的路由
+ * 根据路由归属模块获取第一个有权限的路由
+ * 用于面包屑首页、分类首跳等
  */
-export const getFirstVisibleRouteBySiderType = (
-  siderType: SiderType,
+export const getFirstVisibleRouteByModule = (
+  module: RouteModule,
   roleIds: Set<string>,
 ): RouteConfig | undefined => {
-  // // home 类型固定返回 /application/1
-  // if (siderType === 'home') {
-  //   return {
-  //     path: 'application/1',
-  //     key: 'micro-app-1',
-  //     label: '问数',
-  //     sidebarMode: 'hidden',
-  //   }
-  // }
-
   return routeConfigs.find((route) => {
     if (!route.key) {
       return false
@@ -186,16 +172,26 @@ export const getFirstVisibleRouteBySiderType = (
       return false
     }
 
-    // 必须有权限访问
     const hasPermission = isRouteVisibleForRoles(route, roleIds)
     if (!hasPermission) {
       return false
     }
 
-    // 匹配 siderType（如果没有配置 siderType，默认属于 store）
-    const routeSiderType = route.handle?.layout?.siderType || 'store'
-    return routeSiderType === siderType
+    return route.handle?.layout?.module === module
   })
+}
+
+/**
+ * @deprecated 使用 getFirstVisibleRouteByModule；兼容旧调用（'home' 无模块匹配）
+ */
+export const getFirstVisibleRouteBySiderType = (
+  legacy: 'store' | 'home' | 'studio',
+  roleIds: Set<string>,
+): RouteConfig | undefined => {
+  if (legacy === 'home') {
+    return undefined
+  }
+  return getFirstVisibleRouteByModule(legacy, roleIds)
 }
 
 /**

@@ -1,10 +1,12 @@
 import { Layout } from 'antd'
 import type { ReactNode } from 'react'
-import { useMatches } from 'react-router-dom'
+import { useMatches, useParams } from 'react-router-dom'
 import bg from '@/assets/images/gradient-container-bg.png'
 import type { RouteHandle } from '@/routes/types'
+import { WENSHU_APP_KEY } from '@/routes/types'
 import { useGlobalLayoutStore } from '@/stores/globalLayoutStore'
 import { useMicroAppStore } from '@/stores/microAppStore'
+import { usePreferenceStore } from '@/stores/preferenceStore'
 import Header from '../../components/Header'
 import Sider from '../../components/Sider'
 
@@ -16,13 +18,14 @@ interface ContainerProps {
 
 const SIDER_WIDTH = 240
 const SIDER_COLLAPSED_WIDTH = 52
+const HEADER_HEIGHT = 52
 
 const Container = ({ children }: ContainerProps) => {
   const { collapsed, setCollapsed } = useGlobalLayoutStore()
   const matches = useMatches()
-  // const params = useParams()
+  const params = useParams()
   const { currentMicroApp } = useMicroAppStore()
-  // const { wenshuAppInfo } = usePreferenceStore()
+  const { wenshuAppInfo } = usePreferenceStore()
 
   // 当前是否处于微应用容器场景
   const isMicroApp = !!currentMicroApp
@@ -37,30 +40,23 @@ const Container = ({ children }: ContainerProps) => {
   // 特殊处理：问数应用没有导航头，有侧边栏
   // 1. 优先通过当前微应用的 key 判断（兼容直接刷新 /application/:appKey 的场景）
   // 2. 兼容通过 store 中缓存的 wenshuAppInfo.key 判断（兼容从首页/登录跳转的场景）
-  // const isWenshuByKey = currentMicroApp?.key === WENSHU_APP_KEY
-  // const isWenshuByStoreKey = wenshuAppInfo?.key === params?.appKey
-  // const isWenshuApp = isWenshuByKey || isWenshuByStoreKey
-  const isWenshuApp = false
+  const isWenshuByKey = currentMicroApp?.key === WENSHU_APP_KEY
+  const isWenshuByRoute = wenshuAppInfo?.key === params?.appKey
+  const isWenshuApp = isWenshuByKey || isWenshuByRoute
 
   // 布局决策：
-  // - headless 微应用：强制 { hasHeader: false, hasSider: false }
-  // - 问数应用：强制 { hasHeader: false, hasSider: true }
+  // - headless 微应用：强制 { hasHeader: false, siderMode: 'none' }
+  // - 问数应用：强制 { hasHeader: false, siderMode: 'entry' }
   // - 其他情况（主应用页面或普通微应用）：使用路由静态配置
-  const layoutConfig = microAppNoHeader
-    ? { ...routeLayoutConfig, hasHeader: false, hasSider: false }
-    : isWenshuApp
-      ? { ...routeLayoutConfig, hasSider: true, hasHeader: false }
+  const layoutConfig = isWenshuApp
+    ? { ...routeLayoutConfig, siderMode: 'entry' as const, hasHeader: false }
+    : microAppNoHeader
+      ? { ...routeLayoutConfig, hasHeader: false, siderMode: 'none' as const }
       : routeLayoutConfig
 
   // 默认值
-  const {
-    hasSider = false,
-    hasHeader = false,
-    siderType = 'home',
-    headerType = 'home',
-  } = layoutConfig || {}
-
-  const headerHeight = 52
+  const { hasHeader = false, siderMode = 'none', headerType = 'home' } = layoutConfig || {}
+  const hasSider = siderMode !== 'none'
 
   return (
     <Layout className="overflow-hidden">
@@ -69,7 +65,8 @@ const Container = ({ children }: ContainerProps) => {
 
       <Layout
         style={{
-          backgroundImage: siderType === 'store' ? `url(${bg})` : undefined,
+          // backgroundImage:
+          //   siderLayout === 'app' && routeModule === 'store' ? `url(${bg})` : undefined,
           backgroundColor: 'white',
         }}
         className="bg-no-repeat bg-cover"
@@ -97,15 +94,15 @@ const Container = ({ children }: ContainerProps) => {
               <Sider
                 collapsed={collapsed}
                 onCollapse={setCollapsed}
-                topOffset={hasHeader ? headerHeight : 0}
-                type={siderType}
+                topOffset={hasHeader ? HEADER_HEIGHT : 0}
+                layout={siderMode}
               />
             </div>
           )}
           <div
             style={{
               marginLeft: hasSider ? (collapsed ? SIDER_COLLAPSED_WIDTH : SIDER_WIDTH) : 0,
-              height: hasHeader ? `calc(100vh - ${headerHeight}px)` : '100vh',
+              height: hasHeader ? `calc(100vh - ${HEADER_HEIGHT}px)` : '100vh',
               transition: 'margin-left 0.2s',
             }}
             className="overflow-auto bg-transparent"

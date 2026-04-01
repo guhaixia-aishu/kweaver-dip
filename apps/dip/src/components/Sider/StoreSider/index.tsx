@@ -1,20 +1,10 @@
-import { MenuFoldOutlined, MenuUnfoldOutlined, PushpinOutlined } from '@ant-design/icons'
-import type { MenuProps } from 'antd'
-import { Menu, message, Popover, Tooltip } from 'antd'
+import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons'
+import { Tooltip } from 'antd'
 import clsx from 'clsx'
 import { useCallback, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import AppIcon from '@/components/AppIcon'
-import { routeConfigs } from '@/routes/routes'
-import type { RouteConfig } from '@/routes/types'
-import {
-  getFirstVisibleRouteBySiderType,
-  getRouteByPath,
-  getRouteSidebarMode,
-  isRouteVisibleForRoles,
-} from '@/routes/utils'
-import { useMicroAppStore, usePreferenceStore } from '@/stores'
-import { MaskIcon } from '../components/GradientMaskIcon'
+import { getFirstVisibleRouteByModule, getRouteByPath } from '@/routes/utils'
+import { StoreMenuSection } from '../components/StoreMenuSection'
 
 interface StoreSiderProps {
   /** 是否折叠 */
@@ -30,36 +20,12 @@ interface StoreSiderProps {
 const StoreSider = ({ collapsed, onCollapse }: StoreSiderProps) => {
   const navigate = useNavigate()
   const location = useLocation()
-  const [messageApi, messageContextHolder] = message.useMessage()
-  const { pinnedMicroApps, unpinMicroApp, wenshuAppInfo } = usePreferenceStore()
 
   // TODO: 角色信息需要从其他地方获取，暂时使用空数组
   const roleIds = useMemo(() => new Set<string>([]), [])
   const firstVisibleRoute = useMemo(
-    () => getFirstVisibleRouteBySiderType('store', roleIds),
+    () => getFirstVisibleRouteByModule('store', roleIds),
     [roleIds],
-  )
-
-  const { setAppSource } = useMicroAppStore()
-  const handleOpenApp = useCallback(
-    (appKey: string) => {
-      setAppSource(appKey, 'store')
-      navigate(`/application/${encodeURIComponent(appKey)}`)
-    },
-    [navigate, setAppSource],
-  )
-
-  const handleUnpin = useCallback(
-    async (appkey: string) => {
-      try {
-        await unpinMicroApp(appkey)
-        messageApi.success('已取消钉住')
-      } catch (error) {
-        console.error('Failed to unpin micro app:', error)
-        messageApi.error('取消钉住失败，请稍后重试')
-      }
-    },
-    [unpinMicroApp, messageApi],
   )
 
   // 根据当前路由确定选中的菜单项
@@ -81,126 +47,15 @@ const StoreSider = ({ collapsed, onCollapse }: StoreSiderProps) => {
 
   const selectedKey = getSelectedKey()
 
-  const menuItems = useMemo<MenuProps['items']>(() => {
-    const hasKey = (route: RouteConfig): route is RouteConfig & { key: string } => {
-      return Boolean(route.key)
-    }
-
-    const visibleSidebarRoutes = routeConfigs
-      .filter((route) => getRouteSidebarMode(route) === 'menu' && route.key)
-      .filter((route) => isRouteVisibleForRoles(route, roleIds))
-      .filter((route) => {
-        const routeSiderType = route.handle?.layout?.siderType || 'store'
-        return routeSiderType === 'store'
-      })
-      .filter(hasKey)
-
-    const items: MenuProps['items'] = []
-
-    // 1. MyApp (Only for store)
-    const myAppIndex = visibleSidebarRoutes.findIndex((r) => r.key === 'my-app')
-    if (myAppIndex !== -1) {
-      const myApp = visibleSidebarRoutes[myAppIndex]
-      items.push({
-        key: myApp.key,
-        label: myApp.label || myApp.key,
-        icon: myApp.iconUrl ? (
-          <MaskIcon
-            url={myApp.iconUrl}
-            className="w-4 h-4"
-            background={
-              selectedKey === myApp.key
-                ? 'linear-gradient(210deg, #1C4DFA 0%, #3FA9F5 100%)'
-                : '#333333'
-            }
-          />
-        ) : null,
-        onClick: () => {
-          // MyApp 点击时不再显式传递 type 参数，容器会从 Store 读取
-          navigate(`/${myApp.path}`)
-        },
-      })
-    }
-
-    // 2. 钉住的应用（显示在 MyApp 下面，排除问数，避免重复）
-    pinnedMicroApps
-      .filter((app) => app.key !== wenshuAppInfo?.key)
-      .forEach((app) => {
-        items.push({
-          key: `micro-app-${app.key}`,
-          label: (
-            <div className="w-full h-full flex justify-between items-center">
-              {app.name}
-              <Popover content="取消固定">
-                <PushpinOutlined
-                  className="w-6 h-6 text-base flex items-center justify-center rounded text-[var(--dip-warning-color)] pin-icon opacity-0 hover:bg-[rgba(0,0,0,0.04)]"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleUnpin(app.key)
-                  }}
-                />
-              </Popover>
-            </div>
-          ),
-          icon: <AppIcon icon={app.icon} name={app.name} size={16} shape="square" />,
-          onClick: () => handleOpenApp(app.key),
-        })
-      })
-
-    if (visibleSidebarRoutes.length > 1) {
-      items.push({ type: 'divider' })
-    }
-
-    // 3. Main Sidebar Items (excluding my-app)
-    visibleSidebarRoutes.forEach((route) => {
-      if (route.key === 'my-app') return
-
-      items.push({
-        key: route.key,
-        label: route.label || route.key,
-        icon: route.iconUrl ? (
-          <MaskIcon
-            url={route.iconUrl}
-            className="w-4 h-4"
-            background={
-              selectedKey === route.key
-                ? 'linear-gradient(210deg, #1C4DFA 0%, #3FA9F5 100%)'
-                : '#333333'
-            }
-          />
-        ) : null,
-        onClick: () => {
-          if (route.path) {
-            // 普通常规页面跳转，统一移除 URL 参数
-            navigate(`/${route.path}`)
-          }
-        },
-      })
-    })
-
-    return items
-  }, [
-    roleIds,
-    selectedKey,
-    navigate,
-    pinnedMicroApps,
-    wenshuAppInfo,
-    handleOpenApp,
-    handleUnpin,
-    firstVisibleRoute,
-  ])
-
   return (
     <div className="flex flex-col h-full px-0 pt-4 pb-2 overflow-hidden min-h-0">
-      {messageContextHolder}
       {/* 菜单内容：min-h-0 保证 flex 子项正确收缩，避免撑开导致底部块位移引发 CLS */}
       <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden dip-hideScrollbar">
-        <Menu
-          mode="inline"
-          selectedKeys={[selectedKey]}
-          items={menuItems}
-          inlineCollapsed={collapsed}
-          selectable={true}
+        <StoreMenuSection
+          collapsed={collapsed}
+          selectedKey={selectedKey}
+          roleIds={roleIds}
+          navigate={navigate}
         />
       </div>
 
