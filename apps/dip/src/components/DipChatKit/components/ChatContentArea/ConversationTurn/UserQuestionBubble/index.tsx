@@ -38,7 +38,7 @@ const UserQuestionBubble: React.FC<UserQuestionBubbleProps> = ({
             }}
           >
             <div className={styles.fileList}>
-              <Row gutter={[8, 8]}>
+              <Row gutter={[8, 8]} justify="end">
                 {attachments.map((attachment) => {
                   return (
                     <Col key={attachment.uid} span={fileColSpan}>
