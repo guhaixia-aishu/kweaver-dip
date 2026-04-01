@@ -1,10 +1,11 @@
 
 # KWeaver DIP (Data Intelligence Platform) releases list
-# Chart names correspond to the tgz files in docs/kweaver-dip/charts/
+# Legacy fallback list when no release manifest is available.
 declare -a DIP_PRERELEASES=(
     "dip-data-migrator"
 )
 
+# Legacy fallback list when no release manifest is available.
 declare -a DIP_RELEASES=(
     "anyfabric-frontend"
     "dip-frontend"
@@ -32,6 +33,7 @@ DIP_NAMESPACE="${DIP_NAMESPACE:-kweaver-ai}"
 # Default local DIP charts directory (relative to deploy root)
 DIP_LOCAL_CHARTS_DIR="${DIP_LOCAL_CHARTS_DIR:-}"
 DIP_VERSION_MANIFEST_FILE="${DIP_VERSION_MANIFEST_FILE:-}"
+DIP_CONFIRM_MISSING_OPENCLAW_PATHS="${DIP_CONFIRM_MISSING_OPENCLAW_PATHS:-false}"
 
 # Parse dip command arguments
 parse_dip_args() {
@@ -100,6 +102,10 @@ parse_dip_args() {
             --config)
                 CONFIG_YAML_PATH="$2"
                 shift 2
+                ;;
+            --confirm-missing-openclaw-paths)
+                DIP_CONFIRM_MISSING_OPENCLAW_PATHS="true"
+                shift
                 ;;
             *)
                 log_error "Unknown argument: $1"
@@ -250,6 +256,58 @@ _dip_resolve_release_version() {
     resolve_release_chart_version "${DIP_VERSION_MANIFEST_FILE:-}" "kweaver-dip" "${HELM_CHART_VERSION:-}" "${release_name}" "${HELM_CHART_VERSION:-}"
 }
 
+_dip_resolve_release_stage() {
+    local release_name="$1"
+
+    if [[ -n "${DIP_VERSION_MANIFEST_FILE:-}" ]]; then
+        get_release_manifest_release_stage "${DIP_VERSION_MANIFEST_FILE}" "kweaver-dip" "${HELM_CHART_VERSION:-}" "${release_name}"
+        return 0
+    fi
+
+    local prerelease_name
+    for prerelease_name in "${DIP_PRERELEASES[@]}"; do
+        if [[ "${prerelease_name}" == "${release_name}" ]]; then
+            echo "pre"
+            return 0
+        fi
+    done
+
+    echo "main"
+}
+
+_dip_release_names() {
+    if [[ -n "${DIP_VERSION_MANIFEST_FILE:-}" ]]; then
+        local -a manifest_release_names=()
+        mapfile -t manifest_release_names < <(get_release_manifest_release_names "${DIP_VERSION_MANIFEST_FILE}" "kweaver-dip" "${HELM_CHART_VERSION:-}")
+
+        local stage
+        local release_name
+        local release_stage
+        for stage in pre main post; do
+            for release_name in "${manifest_release_names[@]}"; do
+                release_stage="$(_dip_resolve_release_stage "${release_name}")" || return 1
+                if [[ "${release_stage}" == "${stage}" ]]; then
+                    printf '%s\n' "${release_name}"
+                fi
+            done
+        done
+        return 0
+    fi
+
+    printf '%s\n' "${DIP_PRERELEASES[@]}"
+    printf '%s\n' "${DIP_RELEASES[@]}"
+}
+
+_dip_release_names_reverse() {
+    local -a ordered_release_names=()
+    mapfile -t ordered_release_names < <(_dip_release_names)
+
+    local i
+    for ((i=${#ordered_release_names[@]}-1; i>=0; i--)); do
+        printf '%s\n' "${ordered_release_names[$i]}"
+    done
+}
+
 _dip_resolve_core_dependency_version() {
     if [[ -z "${DIP_VERSION_MANIFEST_FILE:-}" ]]; then
         echo "${HELM_CHART_VERSION:-}"
@@ -333,6 +391,75 @@ _dip_show_access_hints() {
     log_info "Access KWeaver studio: ${base_url}/studio"
 }
 
+_dip_confirm_missing_openclaw_paths() {
+    local -a missing_messages=("$@")
+
+    if [[ "${DIP_CONFIRM_MISSING_OPENCLAW_PATHS}" == "true" ]]; then
+        local message
+        for message in "${missing_messages[@]}"; do
+            log_warn "${message}"
+        done
+        log_warn "Continuing because --confirm-missing-openclaw-paths was provided."
+        return 0
+    fi
+
+    local message
+    for message in "${missing_messages[@]}"; do
+        log_warn "${message}"
+    done
+
+    if [[ ! -t 0 ]]; then
+        log_error "One or more dipStudio.openClaw paths do not exist. If you really want to continue, rerun with --confirm-missing-openclaw-paths."
+        return 1
+    fi
+
+    echo ""
+    read -r -p "One or more OpenClaw paths do not exist. Continue with these paths anyway? [y/N]: " confirm_answer
+    if [[ ! "${confirm_answer}" =~ ^[Yy]$ ]]; then
+        log_error "Installation cancelled. Update dipStudio.openClaw paths in ${CONFIG_YAML_PATH}, or rerun with --confirm-missing-openclaw-paths after confirming the paths are intentional."
+        return 1
+    fi
+
+    return 0
+}
+
+_dip_append_release_extra_helm_args() {
+    local release_name="$1"
+    local target_array_name="$2"
+    local -n target_args="${target_array_name}"
+
+    if [[ "${release_name}" != "dip-studio" ]]; then
+        return 0
+    fi
+
+    local config_host_path
+    local workspace_host_path
+    config_host_path="$(get_dip_studio_openclaw_field "configHostPath")"
+    workspace_host_path="$(get_dip_studio_openclaw_field "workspaceHostPath")"
+
+    if [[ -z "${config_host_path}" || -z "${workspace_host_path}" ]]; then
+        log_error "dip-studio requires dipStudio.openClaw.configHostPath and dipStudio.openClaw.workspaceHostPath in ${CONFIG_YAML_PATH}."
+        return 1
+    fi
+
+    local -a missing_messages=()
+    if [[ ! -e "${config_host_path}" ]]; then
+        missing_messages+=("Configured OpenClaw config path does not exist: ${config_host_path}")
+    fi
+    if [[ ! -e "${workspace_host_path}" ]]; then
+        missing_messages+=("Configured OpenClaw workspace path does not exist: ${workspace_host_path}")
+    fi
+
+    if [[ ${#missing_messages[@]} -gt 0 ]]; then
+        _dip_confirm_missing_openclaw_paths "${missing_messages[@]}" || return 1
+    fi
+
+    target_args+=(
+        "--set-string" "persistence.config.hostPath=${config_host_path}"
+        "--set-string" "persistence.workspace.hostPath=${workspace_host_path}"
+    )
+}
+
 init_dip_database() {
     local sql_dir
     sql_dir="$(resolve_versioned_sql_dir "kweaver-dip" "${HELM_CHART_VERSION:-}")"
@@ -404,25 +531,15 @@ install_dip() {
 
     local release_name
     local release_version
-
-    for release_name in "${DIP_PRERELEASES[@]}"; do
+    while IFS= read -r release_name; do
+        [[ -n "${release_name}" ]] || continue
         release_version="$(_dip_resolve_release_version "${release_name}")"
         if [[ "${use_local}" == "true" ]]; then
             _install_dip_release_local "${release_name}" "${charts_dir}" "${namespace}"
         else
             _install_dip_release_repo "${release_name}" "${namespace}" "${HELM_CHART_REPO_NAME}" "${release_version}"
         fi
-    done
-
-    # Install each release
-    for release_name in "${DIP_RELEASES[@]}"; do
-        release_version="$(_dip_resolve_release_version "${release_name}")"
-        if [[ "${use_local}" == "true" ]]; then
-            _install_dip_release_local "${release_name}" "${charts_dir}" "${namespace}"
-        else
-            _install_dip_release_repo "${release_name}" "${namespace}" "${HELM_CHART_REPO_NAME}" "${release_version}"
-        fi
-    done
+    done < <(_dip_release_names)
 
     log_info "KWeaver DIP services installation completed."
     _dip_show_access_hints
@@ -458,17 +575,12 @@ download_dip() {
     CORE_VERSION_MANIFEST_FILE="${original_core_manifest}"
 
     local release_name
-    for release_name in "${DIP_PRERELEASES[@]}"; do
+    while IFS= read -r release_name; do
+        [[ -n "${release_name}" ]] || continue
         local release_version
         release_version="$(_dip_resolve_release_version "${release_name}")"
         download_chart_to_cache "${charts_dir}" "${HELM_CHART_REPO_NAME}" "${release_name}" "${release_version}" "${FORCE_REFRESH_CHARTS:-false}"
-    done
-
-    for release_name in "${DIP_RELEASES[@]}"; do
-        local release_version
-        release_version="$(_dip_resolve_release_version "${release_name}")"
-        download_chart_to_cache "${charts_dir}" "${HELM_CHART_REPO_NAME}" "${release_name}" "${release_version}" "${FORCE_REFRESH_CHARTS:-false}"
-    done
+    done < <(_dip_release_names)
 
     CORE_LOCAL_CHARTS_DIR="${original_core_charts_dir}"
     ISF_LOCAL_CHARTS_DIR="${original_isf_charts_dir}"
@@ -516,6 +628,8 @@ _install_dip_release_local() {
         "--wait" "--timeout=600s"
     )
 
+    _dip_append_release_extra_helm_args "${release_name}" helm_args || return 1
+
     if helm "${helm_args[@]}"; then
         log_info "✓ ${release_name} installed successfully"
     else
@@ -559,6 +673,8 @@ _install_dip_release_repo() {
         "-f" "${CONFIG_YAML_PATH}"
     )
 
+    _dip_append_release_extra_helm_args "${release_name}" helm_args || return 1
+
     if [[ -n "${release_version}" ]]; then
         helm_args+=("--version" "${release_version}")
     fi
@@ -581,26 +697,17 @@ uninstall_dip() {
     namespace=$(grep "^namespace:" "${CONFIG_YAML_PATH}" 2>/dev/null | head -1 | awk '{print $2}' | tr -d "'\"")
     namespace="${namespace:-${DIP_NAMESPACE}}"
 
-    # Uninstall in reverse order
-    for ((i=${#DIP_RELEASES[@]}-1; i>=0; i--)); do
-        local release_name="${DIP_RELEASES[$i]}"
+    # Uninstall in reverse install order
+    local release_name
+    while IFS= read -r release_name; do
+        [[ -n "${release_name}" ]] || continue
         log_info "Uninstalling ${release_name}..."
         if helm uninstall "${release_name}" -n "${namespace}" 2>/dev/null; then
             log_info "✓ ${release_name} uninstalled successfully"
         else
             log_warn "⚠ ${release_name} not found or already uninstalled"
         fi
-    done
-
-    for ((i=${#DIP_PRERELEASES[@]}-1; i>=0; i--)); do
-        local release_name="${DIP_PRERELEASES[$i]}"
-        log_info "Uninstalling ${release_name}..."
-        if helm uninstall "${release_name}" -n "${namespace}" 2>/dev/null; then
-            log_info "✓ ${release_name} uninstalled successfully"
-        else
-            log_warn "⚠ ${release_name} not found or already uninstalled"
-        fi
-    done
+    done < <(_dip_release_names_reverse)
 
     log_info "KWeaver DIP services uninstallation completed."
 }
@@ -617,7 +724,8 @@ show_dip_status() {
     log_info ""
 
     local release_name
-    for release_name in "${DIP_PRERELEASES[@]}"; do
+    while IFS= read -r release_name; do
+        [[ -n "${release_name}" ]] || continue
         if helm status "${release_name}" -n "${namespace}" >/dev/null 2>&1; then
             local status
             status=$(helm status "${release_name}" -n "${namespace}" -o json 2>/dev/null | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
@@ -625,15 +733,5 @@ show_dip_status() {
         else
             log_info "  ✗ ${release_name}: not installed"
         fi
-    done
-
-    for release_name in "${DIP_RELEASES[@]}"; do
-        if helm status "${release_name}" -n "${namespace}" >/dev/null 2>&1; then
-            local status
-            status=$(helm status "${release_name}" -n "${namespace}" -o json 2>/dev/null | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
-            log_info "  ✓ ${release_name}: ${status}"
-        else
-            log_info "  ✗ ${release_name}: not installed"
-        fi
-    done
+    done < <(_dip_release_names)
 }

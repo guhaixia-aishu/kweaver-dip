@@ -92,6 +92,8 @@ The DIP application layer currently includes charts such as:
 
 Notes:
 
+- DIP release names are read from the release manifest `releases` block when a manifest is provided.
+- Each release can declare `stage: pre|main|post`. Missing `stage` defaults to `main`.
 - `kweaver-core` can still be installed on its own if you only want the Core capability set.
 - `isf` can also be installed on its own if you want to prepare the base platform first.
 - The current auto-installed data service set does **not** include MongoDB. If your environment needs MongoDB, configure it manually as an external dependency in the config file.
@@ -121,6 +123,9 @@ Notes:
 
 # Download a specific release version
 ./deploy.sh kweaver-dip download --version=0.4.0
+
+# Continue even if configured dipStudio OpenClaw paths do not exist
+./deploy.sh kweaver-dip install --confirm-missing-openclaw-paths
 
 # Show DIP status
 ./deploy.sh kweaver-dip status
@@ -234,6 +239,11 @@ accessAddress:
   scheme: https
   path: /
 
+dipStudio:
+  openClaw:
+    configHostPath: /Users/yannan/.openclaw/openclaw.json
+    workspaceHostPath: /Users/yannan/.openclaw/workspace
+
 depServices:
   rds:
     source_type: internal
@@ -252,6 +262,10 @@ depServices:
     protocol: https
     port: 9200
 ```
+
+`dipStudio.openClaw` is specific to `kweaver-dip`. When the `dip-studio` chart is installed, the deploy script maps those values to Helm `persistence.config.hostPath` and `persistence.workspace.hostPath`.
+
+If either configured OpenClaw path does not exist, the installer prints the missing path and asks whether you really want to continue. In non-interactive runs it fails by default; use `--confirm-missing-openclaw-paths` only when the missing path is intentional.
 
 If you want to use the repository-local example config instead, pass it explicitly:
 

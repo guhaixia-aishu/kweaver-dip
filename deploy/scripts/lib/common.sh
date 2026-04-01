@@ -477,6 +477,34 @@ get_release_manifest_release_names() {
     _manifest_list_release_names "${manifest_file}"
 }
 
+# Get one release's install stage from a release manifest.
+# Args: <manifest_file> <expected_product> <aggregate_version> <release_name>
+get_release_manifest_release_stage() {
+    local manifest_file="$1"
+    local expected_product="$2"
+    local aggregate_version="${3:-}"
+    local release_name="$4"
+
+    _manifest_validate_identity "${manifest_file}" "${expected_product}" "${aggregate_version}" || return 1
+
+    local value
+    value="$(_manifest_strip_quotes "$(_manifest_read_release_field "${manifest_file}" "${release_name}" "stage")")"
+    if [[ -z "${value}" ]]; then
+        echo "main"
+        return 0
+    fi
+
+    case "${value}" in
+        pre|main|post)
+            echo "${value}"
+            ;;
+        *)
+            _manifest_fail "Unsupported release stage in manifest for ${release_name}: ${value} (expected pre, main, or post)"
+            return 1
+            ;;
+    esac
+}
+
 # Get one dependency's aggregate version from a release manifest.
 # Args: <manifest_file> <dependency_product>
 get_release_manifest_dependency_version() {
@@ -1046,6 +1074,39 @@ get_access_address_base_url() {
         url="${url}:${port}"
     fi
     echo "${url}${path}"
+}
+
+get_dip_studio_openclaw_field() {
+    local field="$1"
+    local cfg="${CONFIG_YAML_PATH}"
+
+    if [[ ! -f "${cfg}" ]]; then
+        return 0
+    fi
+
+    awk -v key="${field}:" '
+        $1=="dipStudio:" {
+            in_dip_studio=1
+            in_openclaw=0
+            next
+        }
+        in_dip_studio && $1=="openClaw:" {
+            in_openclaw=1
+            next
+        }
+        in_dip_studio && in_openclaw && $1==key {
+            sub(/^[^:]+:[[:space:]]*/, "", $0)
+            print $0
+            exit
+        }
+        in_dip_studio && in_openclaw && $0 ~ /^  [^ ]/ {
+            in_openclaw=0
+        }
+        in_dip_studio && $0 ~ /^[^ ]/ {
+            in_dip_studio=0
+            in_openclaw=0
+        }
+    ' "${cfg}" 2>/dev/null | sed -e 's/^"//; s/"$//' -e "s/^'//; s/'$//" | tr -d '\r'
 }
 
 random_password() {
