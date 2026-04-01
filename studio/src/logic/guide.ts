@@ -166,6 +166,7 @@ export interface GuideLogicOptions {
     reconfigureConnection(url: string, token?: string): void;
     connect(): Promise<void>;
   };
+
 }
 
 /**

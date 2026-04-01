@@ -59,6 +59,8 @@ function findHandler(
 }
 
 type LogicMocks = Partial<{
+  listBuiltInDigitalHumans: () => Promise<unknown>;
+  createBuiltInDigitalHumans: (ids: string[], deps: unknown) => Promise<unknown>;
   listDigitalHumans: () => Promise<unknown>;
   getDigitalHuman: (id: string) => Promise<unknown>;
   createDigitalHuman: (body: unknown) => Promise<unknown>;
@@ -96,13 +98,95 @@ async function importRouterWithLogicMock(
         logic.deleteDigitalHuman ?? vi.fn().mockResolvedValue(undefined)
     }))
   }));
+  vi.doMock("../logic/built-in-digital-human", () => ({
+    DefaultBuiltInDigitalHumanLogic: vi.fn().mockImplementation(() => ({
+      listBuiltInDigitalHumans:
+        logic.listBuiltInDigitalHumans ?? vi.fn().mockResolvedValue([]),
+      createBuiltInDigitalHumans:
+        logic.createBuiltInDigitalHumans ?? vi.fn().mockResolvedValue([])
+    }))
+  }));
 
   return import("./digital-human");
 }
 
 describe("createDigitalHumanRouter", () => {
+  const builtInListPath = "/api/dip-studio/v1/digital-human/built-in";
+  const builtInCreatePath = "/api/dip-studio/v1/digital-human/built-in/:ids";
   const listPath = "/api/dip-studio/v1/digital-human";
   const detailPath = "/api/dip-studio/v1/digital-human/:id";
+
+  it("registers GET /api/dip-studio/v1/digital-human/built-in", async () => {
+    const { createDigitalHumanRouter } = await importRouterWithLogicMock({});
+    const router = createDigitalHumanRouter() as Router;
+
+    expect(findHandler(router, "get", builtInListPath)).toBeDefined();
+  });
+
+  it("returns the built-in digital human list on success", async () => {
+    const { createDigitalHumanRouter } = await importRouterWithLogicMock({
+      listBuiltInDigitalHumans: async () => [
+        {
+          id: "__bkn_creator__",
+          name: "BKN Creator",
+          description: "desc"
+        }
+      ]
+    });
+    const router = createDigitalHumanRouter() as Router;
+    const handler = findHandler(router, "get", builtInListPath);
+    const response = createResponseDouble();
+    const next = vi.fn<NextFunction>();
+
+    await handler?.({} as Request, response, next);
+
+    expect(response.status).toHaveBeenCalledWith(200);
+    expect(response.json).toHaveBeenCalledWith([
+      {
+        id: "__bkn_creator__",
+        name: "BKN Creator",
+        description: "desc"
+      }
+    ]);
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it("registers PUT /api/dip-studio/v1/digital-human/built-in/:ids", async () => {
+    const { createDigitalHumanRouter } = await importRouterWithLogicMock({});
+    const router = createDigitalHumanRouter() as Router;
+
+    expect(findHandler(router, "put", builtInCreatePath)).toBeDefined();
+  });
+
+  it("creates selected built-in digital humans", async () => {
+    const createBuiltInDigitalHumans = vi.fn().mockResolvedValue([
+      { id: "a1", name: "BKN Creator" }
+    ]);
+    const { createDigitalHumanRouter } = await importRouterWithLogicMock({
+      createBuiltInDigitalHumans
+    });
+    const router = createDigitalHumanRouter() as Router;
+    const handler = findHandler(router, "put", builtInCreatePath);
+    const response = createResponseDouble();
+    const next = vi.fn<NextFunction>();
+
+    await handler?.(
+      { params: { ids: "__bkn_creator__,analyst" } } as unknown as Request,
+      response,
+      next
+    );
+
+    expect(createBuiltInDigitalHumans).toHaveBeenCalledWith(
+      ["__bkn_creator__", "analyst"],
+      expect.objectContaining({
+        agentSkillsLogic: expect.any(Object),
+        digitalHumanLogic: expect.any(Object)
+      })
+    );
+    expect(response.status).toHaveBeenCalledWith(201);
+    expect(response.json).toHaveBeenCalledWith([{ id: "a1", name: "BKN Creator" }]);
+    expect(next).not.toHaveBeenCalled();
+  });
 
   it("registers GET /api/dip-studio/v1/digital-human", async () => {
     const { createDigitalHumanRouter } = await importRouterWithLogicMock({});
@@ -191,7 +275,7 @@ describe("createDigitalHumanRouter", () => {
     expect(response.json).toHaveBeenCalledWith({ id: "x", name: "n", soul: "" });
   });
 
-  it("POST create ignores client-supplied id", async () => {
+  it("POST create forwards client-supplied id", async () => {
     const createDigitalHuman = vi.fn().mockResolvedValue({ id: "x", name: "n", soul: "" });
     const { createDigitalHumanRouter } = await importRouterWithLogicMock({
       createDigitalHuman
@@ -214,6 +298,7 @@ describe("createDigitalHumanRouter", () => {
     );
 
     expect(createDigitalHuman).toHaveBeenCalledWith({
+      id: "client-id",
       name: "slug-name",
       creature: undefined,
       icon_id: undefined,
@@ -223,6 +308,30 @@ describe("createDigitalHumanRouter", () => {
       channel: undefined
     });
     expect(next).not.toHaveBeenCalled();
+  });
+
+  it("POST create rejects an empty id when provided", async () => {
+    const { createDigitalHumanRouter } = await importRouterWithLogicMock({});
+    const router = createDigitalHumanRouter() as Router;
+    const handler = findHandler(router, "post", listPath);
+    const response = createResponseDouble();
+    const next = vi.fn<NextFunction>();
+
+    await handler?.(
+      {
+        body: {
+          id: "   ",
+          name: "slug-name",
+          soul: "s"
+        }
+      } as Request,
+      response,
+      next
+    );
+
+    expect(next).toHaveBeenCalledWith(
+      expect.objectContaining({ statusCode: 400, message: "id must be a non-empty string when provided" })
+    );
   });
 
   it("PUT :id updates", async () => {
@@ -558,6 +667,7 @@ describe("createDigitalHumanRouter", () => {
 
     expect(createDigitalHuman).toHaveBeenCalledWith(
       expect.objectContaining({
+        id: undefined,
         name: "n",
         creature: "c",
         soul: "s",

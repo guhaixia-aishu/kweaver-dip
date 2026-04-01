@@ -155,7 +155,7 @@ implements OpenClawAgentSkillsHttpClient {
     const response = await this.fetchImpl(
       buildOpenClawAgentSkillsUrl(this.options.gatewayUrl),
       {
-        method: "PUT",
+        method: "POST",
         headers: createOpenClawAgentSkillsHeaders(this.options.token, true),
         body: JSON.stringify({ agentId, skills })
       }
@@ -186,7 +186,7 @@ implements OpenClawAgentSkillsHttpClient {
       {
         method: "POST",
         headers: createOpenClawSkillInstallHeaders(this.options.token),
-        body: new Uint8Array(zipBody)
+        body: createOpenClawSkillInstallFormData(zipBody, options?.name)
       }
     ).catch((error: unknown) => {
       throw normalizeOpenClawSkillInstallError(error);
@@ -343,12 +343,11 @@ export function createOpenClawAgentSkillsHeaders(
  * Builds request headers for posting a `.skill` zip to the install route.
  *
  * @param token Optional bearer token.
- * @returns Headers including `application/zip` body type.
+ * @returns Headers for a multipart request body.
  */
 export function createOpenClawSkillInstallHeaders(token?: string): Headers {
   const headers = new Headers({
-    accept: "application/json",
-    "content-type": "application/zip"
+    accept: "application/json"
   });
 
   if (token !== undefined && token.trim().length > 0) {
@@ -356,6 +355,32 @@ export function createOpenClawSkillInstallHeaders(token?: string): Headers {
   }
 
   return headers;
+}
+
+/**
+ * Creates the multipart request body expected by the skill install route.
+ *
+ * @param zipBody Raw `.skill` zip bytes.
+ * @param name Optional skill slug used to derive a stable filename.
+ * @returns Multipart form data containing the `file` field.
+ */
+export function createOpenClawSkillInstallFormData(
+  zipBody: Buffer | Uint8Array,
+  name?: string
+): FormData {
+  const form = new FormData();
+  const fileName =
+    typeof name === "string" && name.trim().length > 0
+      ? `${name.trim()}.skill`
+      : "skill.skill";
+
+  form.append(
+    "file",
+    new Blob([new Uint8Array(zipBody)], { type: "application/zip" }),
+    fileName
+  );
+
+  return form;
 }
 
 /**

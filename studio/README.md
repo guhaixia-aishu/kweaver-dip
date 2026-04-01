@@ -196,6 +196,32 @@ GitHub：https://github.com/kweaver-ai/web
 | [\].skills | string[] | 绑定技能列表，可选 |
 | [\].channel | ChannelConfig | 渠道配置，可选 |
 
+#### 获取预置数字员工模板列表
+
+`GET /api/dip-studio/v1/digital-human/built-in`
+
+响应：`200 application/json`
+
+| 参数 | 类型 | 说明 |
+| -- | -- | -- |
+| [\].id | string | 预置数字员工模板 ID |
+| [\].name | string | 预置数字员工名称 |
+| [\].description | string | 预置数字员工描述，可选 |
+
+#### 创建或更新预置数字员工
+
+`PUT /api/dip-studio/v1/digital-human/built-in/{ids}`
+
+路径参数：
+
+| 参数 | 类型 | 是否必填 | 说明 |
+| -- | -- | -- | -- |
+| ids | string | 是 | 预置数字员工模板 ID，多个值使用英文逗号分隔 |
+
+响应：`201 application/json`
+
+返回值为创建或更新后的数字员工数组，元素结构与 `POST /api/dip-studio/v1/digital-human` 响应一致。
+
 #### 获取全局启用技能列表
 
 `GET /api/dip-studio/v1/skills`
@@ -440,6 +466,7 @@ GitHub：https://github.com/kweaver-ai/web
 
 | 参数 | 类型 | 是否必填 | 说明 |
 | -- | -- | -- | -- |
+| id | string | 否 | 数字员工 ID；不传时服务端自动生成 UUID |
 | name | string | 是 | 数字员工名称 |
 | creature | string | 否 | 数字员工岗位/角色 |
 | icon_id | string | 否 | 图标 ID |

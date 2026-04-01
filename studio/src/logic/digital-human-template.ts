@@ -175,7 +175,8 @@ export function parseIdentityMarkdown(
   const identity: DigitalHumanTemplate["identity"] = { name: "" };
   const lines = content.split(/\r?\n/);
 
-  for (const line of lines) {
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index] ?? "";
     const cleaned = line.trim().replace(/^\s*-\s*/, "");
     const colonIndex = cleaned.indexOf(":");
     if (colonIndex === -1) {
@@ -187,10 +188,14 @@ export function parseIdentityMarkdown(
       .replace(/[*_]/g, "")
       .trim()
       .toLowerCase();
-    const value = cleaned
+    let value = cleaned
       .slice(colonIndex + 1)
       .replace(/^[*_]+|[*_]+$/g, "")
       .trim();
+
+    if (!value) {
+      value = readIdentityContinuationValue(lines, index + 1);
+    }
 
     if (!value) {
       continue;
@@ -210,6 +215,31 @@ export function parseIdentityMarkdown(
   }
 
   return identity;
+}
+
+/**
+ * Reads a continuation value for one identity field from following lines.
+ *
+ * Supports the built-in template format:
+ * `- **Creature:**` on one line and the actual value on the next indented line.
+ *
+ * @param lines All IDENTITY.md lines.
+ * @param startIndex The line index after the label line.
+ * @returns The first non-empty continuation value, or an empty string.
+ */
+function readIdentityContinuationValue(lines: string[], startIndex: number): string {
+  for (let index = startIndex; index < lines.length; index += 1) {
+    const candidate = (lines[index] ?? "").trim();
+    if (candidate.length === 0) {
+      continue;
+    }
+    if (candidate.startsWith("-")) {
+      return "";
+    }
+    return candidate.replace(/^[*_]+|[*_]+$/g, "").trim();
+  }
+
+  return "";
 }
 
 /**

@@ -69,7 +69,6 @@ components:
         kweaver_token:
           type: string
           description: KWeaver Token；当 `kweaver_base_url` 非空时必填
-
     GuideInitializeResponse:
       type: object
       additionalProperties: false

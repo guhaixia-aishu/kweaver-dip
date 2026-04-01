@@ -64,6 +64,29 @@ components:
         - id
         - name
 
+    BuiltInDigitalHuman:
+      summary: 预置数字员工模板
+      type: object
+      properties:
+        id:
+          type: string
+          title: 预置数字员工模板 ID
+        name:
+          type: string
+          title: 预置数字员工名称
+        description:
+          type: string
+          title: 预置数字员工描述
+      required:
+        - id
+        - name
+
+    BuiltInDigitalHumanList:
+      summary: 预置数字员工模板列表
+      type: array
+      items:
+        $ref: '#/components/schemas/BuiltInDigitalHuman'
+
     DigitalHumanDetail:
       summary: 数字员工详情
       type: object
@@ -100,10 +123,14 @@ components:
     CreateDigitalHumanRequest:
       summary: 创建数字员工请求
       description: |
-        后端通过 OpenClaw `agents.create` 创建 agent：内部注册名使用 UUID，展示名写在 `IDENTITY.md`。
+        后端通过 OpenClaw `agents.create` 创建 agent：内部注册名优先使用请求中的 `id`，未提供时使用 UUID，展示名写在 `IDENTITY.md`。
         `channel` 写入本机 `OPENCLAW_CONFIG_PATH` 指向的 `openclaw.json`（非 Gateway `config.patch`）。
       type: object
       properties:
+        id:
+          type: string
+          title: 数字员工 ID
+          description: 可选；未提供时服务端自动生成 UUID
         name:
           type: string
           title: 展示名称（IDENTITY.md Name）
@@ -141,7 +168,7 @@ components:
       properties:
         id:
           type: string
-          description: 数字员工 ID（与 OpenClaw agent id 一致，创建时通常为 UUID）
+          description: 数字员工 ID（与 OpenClaw agent id 一致；未显式指定时通常为 UUID）
         name:
           type: string
         creature:

@@ -17,6 +17,54 @@ servers:
   - url: /api/dip-studio/v1
   
 paths:
+  /digital-human/built-in:
+    get:
+      operationId: getBuiltInDigitalHumanList
+      summary: 获取预置数字员工模板列表
+      responses:
+        "200":
+          description: 预置数字员工模板列表
+          content:
+            application/json:
+              schema:
+                $ref: './digital-human.schemas.yaml#/components/schemas/BuiltInDigitalHumanList'
+        "401":
+          $ref: '../common.schemas.yaml#/errors/Unauthorized'
+        "403":
+          $ref: '../common.schemas.yaml#/errors/Forbidden'
+        "500":
+          $ref: '../common.schemas.yaml#/errors/InternalServerError'
+  /digital-human/built-in/{ids}:
+    put:
+      operationId: createBuiltInDigitalHuman
+      summary: 根据模板 ID 创建或更新预置数字员工
+      parameters:
+        - name: ids
+          in: path
+          required: true
+          description: 预置数字员工模板 ID，多个值使用英文逗号分隔
+          schema:
+            type: string
+      responses:
+        "201":
+          description: 创建或更新成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: './digital-human.schemas.yaml#/components/schemas/CreateDigitalHumanResponse'
+        "400":
+          $ref: '../common.schemas.yaml#/errors/InvalidParameter'
+        "401":
+          $ref: '../common.schemas.yaml#/errors/Unauthorized'
+        "403":
+          $ref: '../common.schemas.yaml#/errors/Forbidden'
+        "500":
+          $ref: '../common.schemas.yaml#/errors/InternalServerError'
+        "502":
+          $ref: '../common.schemas.yaml#/errors/BadGateway'
+
   /digital-human:
     get:
       operationId: getDigitalHumanList

@@ -15,9 +15,14 @@ import {
 import {
   DefaultDigitalHumanLogic,
 } from "../logic/digital-human";
+import {
+  DefaultBuiltInDigitalHumanLogic,
+} from "../logic/built-in-digital-human";
 import type {
   BknEntry,
+  BuiltInDigitalHumanList,
   ChannelConfig,
+  CreateDigitalHumanResult,
   CreateDigitalHumanRequest,
   DigitalHumanChannelType,
   UpdateDigitalHumanRequest
@@ -44,6 +49,7 @@ const digitalHumanLogic = new DefaultDigitalHumanLogic({
   agentSkillsLogic,
   openClawWorkspaceDir: env.openClawWorkspaceDir
 });
+const builtInDigitalHumanLogic = new DefaultBuiltInDigitalHumanLogic();
 
 /**
  * Validates the create digital human request body.
@@ -155,7 +161,16 @@ function parseCreateRequest(body: unknown): CreateDigitalHumanRequest {
     throw new HttpError(400, "name is required and must be a non-empty string");
   }
 
+  let id: string | undefined;
+  if ("id" in raw) {
+    if (typeof raw.id !== "string" || raw.id.trim().length === 0) {
+      throw new HttpError(400, "id must be a non-empty string when provided");
+    }
+    id = raw.id.trim();
+  }
+
   return {
+    id,
     name: raw.name.trim(),
     creature: parseOptionalString(raw.creature),
     icon_id: parseOptionalString(raw.icon_id),
@@ -180,6 +195,35 @@ function resolveIdParam(idParam: string | string[] | undefined): string {
     throw new HttpError(400, "id path parameter is required");
   }
   return id;
+}
+
+/**
+ * Parses the comma-separated built-in digital human ids from the route path.
+ *
+ * @param idsParam Raw path parameter value.
+ * @returns Unique, non-empty ids in request order.
+ * @throws HttpError when no valid ids are provided.
+ */
+function parseBuiltInIdsParam(idsParam: string | string[] | undefined): string[] {
+  const raw = Array.isArray(idsParam) ? idsParam[0] : idsParam;
+  if (typeof raw !== "string" || raw.trim().length === 0) {
+    throw new HttpError(400, "ids path parameter is required");
+  }
+
+  const ids = Array.from(
+    new Set(
+      raw
+        .split(",")
+        .map((value) => decodeURIComponent(value).trim())
+        .filter((value) => value.length > 0)
+    )
+  );
+
+  if (ids.length === 0) {
+    throw new HttpError(400, "ids path parameter must contain at least one built-in id");
+  }
+
+  return ids;
 }
 
 /**
@@ -217,6 +261,55 @@ async function handleUpdateDigitalHuman(
  */
 export function createDigitalHumanRouter(): Router {
   const router = Router();
+
+  router.get(
+    "/api/dip-studio/v1/digital-human/built-in",
+    async (
+      _request: Request,
+      response: Response<BuiltInDigitalHumanList>,
+      next: NextFunction
+    ): Promise<void> => {
+      try {
+        response.status(200).json(await builtInDigitalHumanLogic.listBuiltInDigitalHumans());
+      } catch (error) {
+        next(
+          error instanceof HttpError
+            ? error
+            : new HttpError(502, "Failed to query built-in digital humans")
+        );
+      }
+    }
+  );
+
+  router.put(
+    "/api/dip-studio/v1/digital-human/built-in/:ids",
+    async (
+      request: Request,
+      response: Response<CreateDigitalHumanResult[]>,
+      next: NextFunction
+    ): Promise<void> => {
+      try {
+        const ids = parseBuiltInIdsParam(request.params.ids);
+        const result = await builtInDigitalHumanLogic.createBuiltInDigitalHumans(ids, {
+          agentSkillsLogic,
+          digitalHumanLogic
+        });
+
+        response.status(201).json(result);
+      } catch (error) {
+        next(
+          error instanceof HttpError
+            ? error
+            : new HttpError(
+                502,
+                error instanceof Error
+                  ? error.message
+                  : "Failed to create built-in digital humans"
+              )
+        );
+      }
+    }
+  );
 
   router.get(
     "/api/dip-studio/v1/digital-human",

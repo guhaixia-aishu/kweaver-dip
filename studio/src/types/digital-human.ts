@@ -26,10 +26,35 @@ export interface DigitalHuman {
 }
 
 /**
+ * Public summary of one built-in digital human template.
+ */
+export interface BuiltInDigitalHuman {
+  /**
+   * Stable built-in template identifier.
+   */
+  id: string;
+
+  /**
+   * Human-readable built-in template name.
+   */
+  name: string;
+
+  /**
+   * Human-readable built-in template description.
+   */
+  description?: string;
+}
+
+/**
  * Public digital human list response.
  * Each element has the same shape as the detail response.
  */
 export type DigitalHumanList = DigitalHumanDetail[];
+
+/**
+ * Public built-in digital human list response.
+ */
+export type BuiltInDigitalHumanList = BuiltInDigitalHuman[];
 
 /**
  * One globally available skill item.
@@ -185,6 +210,12 @@ export interface ChannelConfig {
  * Describes the request body for creating a new digital human.
  */
 export interface CreateDigitalHumanRequest {
+  /**
+   * Optional stable digital human identifier.
+   * When omitted, the server generates a UUID.
+   */
+  id?: string;
+
   /**
    * Display name for the digital human (maps to IDENTITY.md `Name`).
    */

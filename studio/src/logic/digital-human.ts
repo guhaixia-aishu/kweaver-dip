@@ -194,7 +194,7 @@ export class DefaultDigitalHumanLogic implements DigitalHumanLogic {
    * Creates a new digital human by orchestrating the full setup flow
    * as specified in the design document:
    *
-   * 1. Generate one UUID for the new agent id
+   * 1. Resolve the new agent id from `request.id`, or generate one UUID when omitted
    * 2. Create the agent in OpenClaw (`agents.create`)
    * 3. Update IDENTITY.md and SOUL.md via `agents.files.list` then `agents.files.set`
    * 4. Configure skills via {@link AgentSkillsLogic.updateAgentSkills}
@@ -207,31 +207,31 @@ export class DefaultDigitalHumanLogic implements DigitalHumanLogic {
   public async createDigitalHuman(
     request: CreateDigitalHumanRequest
   ): Promise<CreateDigitalHumanResult> {
-    const uuid = randomUUID();
+    const id = request.id?.trim() || randomUUID();
     const template = buildTemplate(request);
 
-    const workspace = resolveDefaultWorkspace(uuid, this.openClawWorkspaceDir);
+    const workspace = resolveDefaultWorkspace(id, this.openClawWorkspaceDir);
 
     await this.openClawAgentsAdapter.createAgent({
-      name: uuid,
+      name: id,
       workspace
     });
 
-    await this.writeTemplateViaOpenClawFilesRpc(uuid, template);
+    await this.writeTemplateViaOpenClawFilesRpc(id, template);
 
     const skills = mergeCreateDigitalHumanSkills(request.skills);
-    await this.agentSkillsLogic.updateAgentSkills(uuid, skills);
+    await this.agentSkillsLogic.updateAgentSkills(id, skills);
 
     if (request.channel) {
       try {
-        await this.bindChannelForAgent(uuid, request.channel);
+        await this.bindChannelForAgent(id, request.channel);
       } catch (err) {
         console.error("[digital-human] channel binding failed (non-fatal):", err);
       }
     }
 
     return {
-      id: uuid,
+      id,
       name: request.name,
       creature: request.creature,
       icon_id: request.icon_id,
@@ -410,11 +410,11 @@ export class DefaultDigitalHumanLogic implements DigitalHumanLogic {
 }
 
 /**
- * Resolves an isolated workspace directory for a given UUID.
+ * Resolves an isolated workspace directory for a given digital human id.
  *
- * Uses the UUID as the workspace subdirectory name per the design doc.
+ * Uses the digital human id as the workspace subdirectory name.
  *
- * @param uuid The digital human UUID.
+ * @param uuid The digital human identifier.
  * @returns The absolute path to the agent-specific workspace.
  */
 export function resolveDefaultWorkspace(

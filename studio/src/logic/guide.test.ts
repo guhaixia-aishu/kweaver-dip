@@ -422,6 +422,7 @@ describe("DefaultGuideLogic", () => {
 
     await rm(studioRootDir, { recursive: true, force: true });
   });
+
 });
 
 describe("OpenClaw root env helpers", () => {

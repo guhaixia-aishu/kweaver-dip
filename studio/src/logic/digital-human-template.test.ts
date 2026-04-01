@@ -85,6 +85,17 @@ describe("parseIdentityMarkdown", () => {
   it("skips lines without values", () => {
     expect(parseIdentityMarkdown("- Name:\n- Name: Z\n")).toEqual({ name: "Z" });
   });
+
+  it("parses multiline bold label values from built-in identity templates", () => {
+    expect(
+      parseIdentityMarkdown(
+        "- **Name:**\n  BKN Creator\n- **Creature:**\n  BKN 生命周期编排器\n"
+      )
+    ).toEqual({
+      name: "BKN Creator",
+      creature: "BKN 生命周期编排器"
+    });
+  });
 });
 
 describe("mergeFilesToTemplate", () => {

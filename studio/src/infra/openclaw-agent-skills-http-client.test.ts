@@ -5,6 +5,7 @@ import {
   buildOpenClawSkillInstallUrl,
   buildOpenClawSkillUninstallUrl,
   createOpenClawAgentSkillsHeaders,
+  createOpenClawSkillInstallFormData,
   createOpenClawAgentSkillsStatusError,
   createOpenClawSkillInstallStatusError,
   DefaultOpenClawAgentSkillsHttpClient,
@@ -70,6 +71,17 @@ describe("createOpenClawAgentSkillsHeaders", () => {
     const withoutToken = createOpenClawAgentSkillsHeaders();
     expect(withoutToken.get("authorization")).toBeNull();
     expect(withoutToken.get("content-type")).toBeNull();
+  });
+});
+
+describe("createOpenClawSkillInstallFormData", () => {
+  it("creates multipart form data with a file field", async () => {
+    const body = createOpenClawSkillInstallFormData(Buffer.from([0x50, 0x4b]), "weather");
+    const file = body.get("file");
+
+    expect(file).toBeInstanceOf(File);
+    expect((file as File).name).toBe("weather.skill");
+    expect(Buffer.from(await (file as File).arrayBuffer())).toEqual(Buffer.from([0x50, 0x4b]));
   });
 });
 
@@ -248,10 +260,11 @@ describe("DefaultOpenClawAgentSkillsHttpClient", () => {
     expect(fetchImpl.mock.calls[0]?.[0]).toBe(
       "http://127.0.0.1:19001/v1/config/agents/skills/install?overwrite=true"
     );
-    expect(fetchImpl.mock.calls[0]?.[1]).toMatchObject({
-      method: "POST",
-      body: new Uint8Array(zipBody)
-    });
+    expect(fetchImpl.mock.calls[0]?.[1]?.method).toBe("POST");
+    expect(fetchImpl.mock.calls[0]?.[1]?.body).toBeInstanceOf(FormData);
+    const file = (fetchImpl.mock.calls[0]?.[1]?.body as FormData).get("file");
+    expect(file).toBeInstanceOf(File);
+    expect((file as File).name).toBe("skill.skill");
   });
 
   it("uninstalls a skill via DELETE", async () => {
