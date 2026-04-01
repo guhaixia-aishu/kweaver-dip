@@ -28,9 +28,9 @@ spec:
             - "sh"
             - "-c"
             - >
-              curl -f -X DELETE http://studio-web-service:8877/api/workstation/v1/webapp/agent-web-all &&
-              curl -f -X DELETE http://studio-web-service:8877/api/workstation/v1/webapp/agent-web-space &&
-              curl -f -X DELETE http://studio-web-service:8877/api/workstation/v1/webapp/agent-web-customspace &&
+              curl -f -X DELETE http://studio-web-service:8877/api/workstation/v1/webapp/agent-web-all || true &&
+              curl -f -X DELETE http://studio-web-service:8877/api/workstation/v1/webapp/agent-web-space || true &&
+              curl -f -X DELETE http://studio-web-service:8877/api/workstation/v1/webapp/agent-web-customspace || true &&
               curl -f -H "Content-Type:application/json" -X PUT -d '
               [
               {
