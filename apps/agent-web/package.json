@@ -1,5 +1,5 @@
 {
-  "name": "agent-web",
+  "name": "@kweaver-web/agent-web",
   "version": "1.0.0",
   "description": "DIP数据智能体前端项目",
   "main": "index.js",
