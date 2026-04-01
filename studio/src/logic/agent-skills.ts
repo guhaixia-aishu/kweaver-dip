@@ -1,6 +1,7 @@
 import type { OpenClawAgentsAdapter } from "../adapters/openclaw-agents-adapter";
 import type { OpenClawAgentSkillsHttpClient } from "../infra/openclaw-agent-skills-http-client";
 import type {
+  DigitalHumanSkill,
   DigitalHumanAgentSkillList,
   DigitalHumanSkillList
 } from "../types/digital-human";
