@@ -501,25 +501,6 @@ GitHub：https://github.com/kweaver-ai/web
 | -- | -- | -- |
 | sessionKey | string | 新会话键，格式为 `agent:<agentId>:user:<userid>:direct:<chatId>` |
 
-#### 进行数字员工对话
-
-`POST /api/dip-studio/v1/chat/responses`
-
-请求头：
-
-| 参数 | 类型 | 是否必填 | 说明 |
-| -- | -- | -- | -- |
-| Authorization | string | 是 | `Bearer <access-token>`，用于 Hydra 内省鉴权 |
-| x-openclaw-session-key | string | 是 | 必须先通过 `POST /api/dip-studio/v1/chat/session` 获取；服务会从其中的 `agent:<agentId>` 前缀解析数字员工 ID |
-
-请求：`application/json`
-
-请求体为透传对象，支持任意 JSON 字段。
-
-响应：`200 text/event-stream`
-
-返回数字员工响应事件流，响应体为 SSE 流。
-
 #### 进行数字员工消息流对话
 
 `POST /api/dip-studio/v1/chat/agent`
