@@ -133,7 +133,7 @@ const MyApp = () => {
   }
 
   return (
-    <div className="h-full p-6 flex flex-col relative overflow-auto">
+    <div className="h-full p-6 pb-0 flex flex-col relative overflow-auto">
       {messageContextHolder}
       <div className="flex justify-between mb-4 flex-shrink-0 z-20">
         <div className="flex flex-col gap-y-3">

@@ -66,15 +66,15 @@ const AdminSider = ({ collapsed, onCollapse, layout = 'entry' }: AdminSiderProps
               allowedKeys={['digital-human-management']}
             />
           ) : null}
-          {hasStore ? (
-            <StoreMenuSection
-              collapsed={collapsed}
-              selectedKey={selectedKey}
-              roleIds={new Set<string>([])}
-              navigate={navigate}
-            />
-          ) : null}
         </div>
+        {hasStore ? (
+          <StoreMenuSection
+            collapsed={collapsed}
+            selectedKey={selectedKey}
+            roleIds={new Set<string>([])}
+            navigate={navigate}
+          />
+        ) : null}
         <ExternalLinksSection collapsed={collapsed} roleIds={new Set<string>([])} />
       </div>
 

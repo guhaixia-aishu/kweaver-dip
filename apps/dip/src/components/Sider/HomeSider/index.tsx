@@ -192,70 +192,73 @@ const HomeSider = ({ collapsed, onCollapse, layout = 'entry' }: HomeSiderProps) 
 
       {/* 菜单内容 */}
       <div className="flex-1 flex flex-col dip-hideScrollbar">
-        <div className="flex-1">
-          {hasStudio ? (
-            <>
-              <StudioMenuSection
-                collapsed={collapsed}
-                selectedKey={selectedKey}
-                roleIds={roleIds}
-                navigate={navigate}
-                allowedKeys={['digital-human-management']}
+        {hasStudio ? (
+          <div className="flex-1">
+            <StudioMenuSection
+              collapsed={collapsed}
+              selectedKey={selectedKey}
+              roleIds={roleIds}
+              navigate={navigate}
+              allowedKeys={['digital-human-management']}
+            />
+
+            {!collapsed && topPlans.length > 0 ? (
+              <WorkPlanSection
+                plans={topPlans}
+                hasMore={hasPlanMore}
+                total={plans.length}
+                selectedPlanId={selectedPlanId}
+                onMore={() => navigate('/work-plan')}
+                onOpenPlanDetail={(planId, agentId, sessionId) => {
+                  setSelectedPlanId(planId)
+                  handleOpenPlanDetail(planId, agentId, sessionId)
+                }}
+                onPausePlan={pausePlan}
+                onResumePlan={resumePlan}
+                onDeletePlan={deletePlan}
               />
+            ) : null}
 
-              {!collapsed && topPlans.length > 0 ? (
-                <WorkPlanSection
-                  plans={topPlans}
-                  hasMore={hasPlanMore}
-                  total={plans.length}
-                  selectedPlanId={selectedPlanId}
-                  onMore={() => navigate('/work-plan')}
-                  onOpenPlanDetail={(planId, agentId, sessionId) => {
-                    setSelectedPlanId(planId)
-                    handleOpenPlanDetail(planId, agentId, sessionId)
-                  }}
-                  onPausePlan={pausePlan}
-                  onResumePlan={resumePlan}
-                  onDeletePlan={deletePlan}
-                />
-              ) : null}
+            {!collapsed && topHistorySessions.length > 0 ? (
+              <HistorySection
+                sessions={topHistorySessions}
+                hasMore={hasHistoryMore}
+                total={historySessions.length}
+                selectedSessionKey={selectedSessionKey}
+                onMore={() => navigate('/history')}
+                onOpenHistoryDetail={(sessionKey) => {
+                  setSelectedSessionKey(sessionKey)
+                  navigate(`/history/${sessionKey}`)
+                }}
+                onDeleteHistory={(session) => {
+                  modal.confirm({
+                    title: '确认删除',
+                    content: '删除后将无法恢复，是否继续？',
+                    okText: '确定',
+                    okType: 'primary',
+                    okButtonProps: { danger: true },
+                    cancelText: '取消',
+                    onOk: async () => {
+                      await deleteHistorySession(session.key)
+                    },
+                  })
+                }}
+              />
+            ) : null}
+          </div>
+        ) : null}
 
-              {!collapsed && topHistorySessions.length > 0 ? (
-                <HistorySection
-                  sessions={topHistorySessions}
-                  hasMore={hasHistoryMore}
-                  total={historySessions.length}
-                  selectedSessionKey={selectedSessionKey}
-                  onMore={() => navigate('/history')}
-                  onOpenHistoryDetail={(sessionKey) => {
-                    setSelectedSessionKey(sessionKey)
-                    navigate(`/history/${sessionKey}`)
-                  }}
-                  onDeleteHistory={(session) => {
-                    modal.confirm({
-                      title: '确认删除',
-                      content: '删除后将无法恢复，是否继续？',
-                      okText: '确定',
-                      okType: 'primary',
-                      okButtonProps: { danger: true },
-                      cancelText: '取消',
-                      onOk: async () => {
-                        await deleteHistorySession(session.key)
-                      },
-                    })
-                  }}
-                />
-              ) : null}
-            </>
-          ) : null}
-        </div>
         {hasStore ? (
-          <StoreMenuSection
-            collapsed={collapsed}
-            selectedKey={selectedKey}
-            roleIds={roleIds}
-            navigate={navigate}
-          />
+          <div
+            className={clsx(hasStudio ? 'mt-auto shrink-0' : 'flex-1 flex flex-col justify-start')}
+          >
+            <StoreMenuSection
+              collapsed={collapsed}
+              selectedKey={selectedKey}
+              roleIds={roleIds}
+              navigate={navigate}
+            />
+          </div>
         ) : null}
         <ExternalLinksSection collapsed={collapsed} roleIds={roleIds} />
       </div>

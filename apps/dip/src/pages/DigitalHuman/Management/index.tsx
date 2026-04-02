@@ -143,7 +143,7 @@ const Management = () => {
   }
 
   return (
-    <div className="h-full p-6 flex flex-col relative bg-white">
+    <div className="h-full p-6 pb-0 flex flex-col relative bg-white">
       {messageContextHolder}
       <div className="flex justify-between items-center mb-4 flex-shrink-0 z-20">
         <span className="font-bold text-lg text-[--dip-text-color]">全部</span>

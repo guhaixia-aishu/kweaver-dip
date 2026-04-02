@@ -182,7 +182,7 @@ const AppStore = () => {
   }
 
   return (
-    <div className="h-full p-6 flex flex-col relative">
+    <div className="h-full p-6 pb-0 flex flex-col relative">
       {contextHolder}
       {messageContextHolder}
       <div className="flex justify-between mb-6 flex-shrink-0 z-20">

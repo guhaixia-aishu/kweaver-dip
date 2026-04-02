@@ -1,10 +1,9 @@
 import { useCallback, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import type { HeaderType, RouteModule } from '@/routes/types'
+import type { HeaderType } from '@/routes/types'
 import {
   getBreadcrumbAncestorRoutes,
   getBreadcrumbLinkPathForRoute,
-  getFirstVisibleRouteByModule,
   getRouteByPath,
   shouldShowCurrentRouteInBreadcrumb,
 } from '@/routes/utils'
@@ -20,33 +19,6 @@ import { UserInfo } from '../components/UserInfo'
 const getSectionName = (type: HeaderType): string => {
   return type === 'store' ? 'AI Store' : 'DIP Studio'
 }
-
-// /**
-//  * 根据路由路径和配置判断 BaseHeaderType
-//  */
-// const getHeaderTypeFromRoute = (
-//   pathname: string,
-//   routeConfig: ReturnType<typeof getRouteByPath>,
-// ): HeaderType => {
-//   // 优先从路由配置的 siderType 判断
-//   const siderType = routeConfig?.handle?.layout?.siderType
-//   if (siderType === 'store' || siderType === 'studio') {
-//     return siderType
-//   }
-
-//   // 如果路由配置中没有 siderType，通过路径判断
-//   // location.pathname 已经是相对于 basename 的路径，不包含 BASE_PATH
-//   const normalizedPath = pathname.startsWith('/') ? pathname.slice(1) : pathname
-//   if (normalizedPath.startsWith('store/')) {
-//     return 'store'
-//   }
-//   if (normalizedPath.startsWith('studio/')) {
-//     return 'studio'
-//   }
-
-//   // 默认返回 store
-//   return 'store'
-// }
 
 /**
  * 商店/工作室版块通用的导航头
@@ -65,17 +37,18 @@ const BaseHeader = ({ headerType }: { headerType: HeaderType }) => {
   // 不同平台（store）各自的首路由，用于面包屑首页返回
   const roleIds = useMemo(() => new Set<string>([]), [])
   const homePath = useMemo(() => {
-    if (headerType !== 'store' && headerType !== 'studio') {
-      return '/home'
-    }
-    const module = headerType as RouteModule
-    const firstRoute = getFirstVisibleRouteByModule(module, roleIds)
-    if (!isAdmin && headerType === 'studio') {
-      return '/home'
-    }
-    const path =
-      firstRoute?.path ?? (headerType === 'store' ? 'store/my-app' : 'digital-human/management')
-    return `/${path}`
+    // if (headerType !== 'store' && headerType !== 'studio') {
+    //   return '/home'
+    // }
+    // const module = headerType as RouteModule
+    // const firstRoute = getFirstVisibleRouteByModule(module, roleIds)
+    // if (!isAdmin && headerType === 'studio') {
+    //   return '/home'
+    // }
+    // const path =
+    //   firstRoute?.path ?? (headerType === 'store' ? 'store/my-app' : 'digital-human/management')
+    // return `/${path}`
+    return '/'
   }, [headerType, roleIds, isAdmin])
 
   // 面包屑导航跳转

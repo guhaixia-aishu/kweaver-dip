@@ -28,6 +28,7 @@ export const StoreMenuSection = ({
   const { pinnedMicroApps, wenshuAppInfo } = usePreferenceStore()
 
   const [openKeys, setOpenKeys] = useState<string[]>([AI_STORE_SUBMENU_KEY])
+  const isAiStoreOpen = openKeys.includes(AI_STORE_SUBMENU_KEY)
 
   const visibleSidebarRoutes = useMemo(() => {
     const hasKey = (route: RouteConfig): route is RouteConfig & { key: string } => {
@@ -40,12 +41,28 @@ export const StoreMenuSection = ({
       .filter(hasKey)
   }, [roleIds])
 
+  /** 仅当前 AI Store 子菜单内实际渲染的项（钉住应用 + 侧栏路由），用于判断是否高亮整组 */
+  const aiStoreChildKeys = useMemo(() => {
+    const keys = new Set<string>()
+    if (wenshuAppInfo) {
+      keys.add(`micro-app-${wenshuAppInfo.key}`)
+    }
+    pinnedMicroApps.forEach((app) => {
+      if (app.key !== wenshuAppInfo?.key) {
+        keys.add(`micro-app-${app.key}`)
+      }
+    })
+    visibleSidebarRoutes.forEach((route) => {
+      keys.add(route.key)
+    })
+    return keys
+  }, [pinnedMicroApps, visibleSidebarRoutes, wenshuAppInfo])
+
   const isSelectionUnderAiStore = useMemo(() => {
     if (!selectedKey) return false
     if (selectedKey === 'my-app' || selectedKey === 'app-store') return true
-    if (selectedKey.startsWith('micro-app-')) return true
-    return false
-  }, [selectedKey])
+    return aiStoreChildKeys.has(selectedKey)
+  }, [aiStoreChildKeys, selectedKey])
 
   useEffect(() => {
     if (collapsed) return
@@ -63,7 +80,9 @@ export const StoreMenuSection = ({
       children.push({
         key: `micro-app-${wenshuAppInfo.key}`,
         label: '智能问数',
-        icon: <AppIcon icon={wenshuAppInfo.icon} name={wenshuAppInfo.name} size={16} shape="square" />,
+        icon: (
+          <AppIcon icon={wenshuAppInfo.icon} name={wenshuAppInfo.name} size={16} shape="square" />
+        ),
         onClick: () => {
           navigate(`/application/${encodeURIComponent(wenshuAppInfo.key)}`)
         },
@@ -73,14 +92,14 @@ export const StoreMenuSection = ({
     pinnedMicroApps
       .filter((app) => app.key !== wenshuAppInfo?.key)
       .forEach((app) => {
-      children.push({
-        key: `micro-app-${app.key}`,
-        label: app.name,
-        icon: <AppIcon icon={app.icon} name={app.name} size={16} shape="square" />,
-        onClick: () => {
-          navigate(`/application/${encodeURIComponent(app.key)}`)
-        },
-      })
+        children.push({
+          key: `micro-app-${app.key}`,
+          label: app.name,
+          icon: <AppIcon icon={app.icon} name={app.name} size={16} shape="square" />,
+          onClick: () => {
+            navigate(`/application/${encodeURIComponent(app.key)}`)
+          },
+        })
       })
 
     visibleSidebarRoutes.forEach((route) => {
@@ -114,6 +133,9 @@ export const StoreMenuSection = ({
       {
         key: AI_STORE_SUBMENU_KEY,
         label: 'AI Store',
+        popupClassName: 'dip-sider-submenu-popup',
+        className:
+          isSelectionUnderAiStore && !isAiStoreOpen ? 'store-submenu-parent-highlight' : undefined,
         icon: (
           <MaskIcon
             url={aiStoreUrl}
@@ -129,6 +151,7 @@ export const StoreMenuSection = ({
       },
     ]
   }, [
+    isAiStoreOpen,
     isSelectionUnderAiStore,
     navigate,
     pinnedMicroApps,
