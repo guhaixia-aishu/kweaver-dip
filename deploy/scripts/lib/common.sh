@@ -430,6 +430,20 @@ resolve_embedded_release_manifest() {
     fi
 }
 
+# Resolve the latest embedded release manifest path for one aggregate product.
+# Args: <product>
+resolve_latest_embedded_release_manifest() {
+    local product="$1"
+
+    if [[ -z "${product}" ]] || [[ ! -d "${RELEASE_MANIFESTS_DIR}" ]]; then
+        return 0
+    fi
+
+    find "${RELEASE_MANIFESTS_DIR}" -mindepth 2 -maxdepth 2 -type f -name "${product}.yaml" 2>/dev/null \
+        | sort -V \
+        | tail -1
+}
+
 # Resolve the exact chart version for one aggregate release.
 # Args: <manifest_file> <expected_product> <aggregate_version> <release_name> [fallback_version]
 resolve_release_chart_version() {
@@ -445,6 +459,23 @@ resolve_release_chart_version() {
     fi
 
     get_release_manifest_release_version "${manifest_file}" "${expected_product}" "${aggregate_version}" "${release_name}"
+}
+
+# Resolve the chart name for one aggregate release.
+# Args: <manifest_file> <expected_product> <aggregate_version> <release_name> [fallback_chart_name]
+resolve_release_chart_name() {
+    local manifest_file="${1:-}"
+    local expected_product="$2"
+    local aggregate_version="${3:-}"
+    local release_name="$4"
+    local fallback_chart_name="${5:-${release_name}}"
+
+    if [[ -z "${manifest_file}" ]]; then
+        echo "${fallback_chart_name}"
+        return 0
+    fi
+
+    get_release_manifest_release_chart_name "${manifest_file}" "${expected_product}" "${aggregate_version}" "${release_name}"
 }
 
 # Get one release's exact chart version from a release manifest.
@@ -463,6 +494,26 @@ get_release_manifest_release_version() {
         _manifest_fail "Release version missing in manifest: ${release_name}"
         return 1
     fi
+    echo "${value}"
+}
+
+# Get one release's chart name from a release manifest.
+# Args: <manifest_file> <expected_product> <aggregate_version> <release_name>
+get_release_manifest_release_chart_name() {
+    local manifest_file="$1"
+    local expected_product="$2"
+    local aggregate_version="${3:-}"
+    local release_name="$4"
+
+    _manifest_validate_identity "${manifest_file}" "${expected_product}" "${aggregate_version}" || return 1
+
+    local value
+    value="$(_manifest_strip_quotes "$(_manifest_read_release_field "${manifest_file}" "${release_name}" "chart")")"
+    if [[ -z "${value}" ]]; then
+        echo "${release_name}"
+        return 0
+    fi
+
     echo "${value}"
 }
 

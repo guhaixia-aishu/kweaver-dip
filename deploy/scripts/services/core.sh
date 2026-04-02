@@ -1,56 +1,6 @@
 
-# KWeaver Core releases list
-# Merged from: studio, bkn, vega, agentoperator, dataagent, decisionagent, flowautomation, sandboxruntime
-# Note: ISF releases are managed separately by isf.sh
-declare -a KWEAVER_CORE_RELEASES=(
-    # studio
-    "deploy-web"
-    "studio-web"
-    "business-system-frontend"
-    "business-system-service"
-    "mf-model-manager-nginx"
-    "mf-model-manager"
-    "mf-model-api"
-    # bkn
-    "bkn-backend"
-    "ontology-query"
-    # vega
-    "vega-backend"
-    "vega-web"
-    "data-connection"
-    "vega-gateway"
-    "vega-gateway-pro"
-    "mdl-data-model"
-    "mdl-uniquery"
-    "mdl-data-model-job"
-    # agentoperator
-    "agent-operator-integration"
-    "operator-web"
-    "agent-retrieval"
-    "data-retrieval"
-    # dataagent
-    "agent-backend"
-    "agent-web"
-    # flowautomation
-    "flow-web"
-    "dataflow"
-    "coderunner"
-    "doc-convert"
-    # sandboxruntime
-    "sandbox"
-    # ossgateway
-    "oss-gateway-backend"
-    # trace ai
-    "otelcol-contrib"
-    "agent-observability"
-)
-
 # Default kweaver-core namespace
 CORE_NAMESPACE="${CORE_NAMESPACE:-kweaver-ai}"
-
-# release name -> chart name mapping (when chart name differs from release name)
-declare -A CORE_CHART_NAME_MAP=(
-)
 
 # Default local charts directory
 CORE_LOCAL_CHARTS_DIR="${CORE_LOCAL_CHARTS_DIR:-}"
@@ -170,29 +120,45 @@ _core_download_charts_dir() {
 }
 
 _core_auto_resolve_version_manifest() {
-    if [[ -n "${CORE_VERSION_MANIFEST_FILE:-}" || -z "${HELM_CHART_VERSION:-}" ]]; then
+    if [[ -n "${CORE_VERSION_MANIFEST_FILE:-}" ]]; then
         return 0
     fi
 
     local embedded_manifest
-    embedded_manifest="$(resolve_embedded_release_manifest "kweaver-core" "${HELM_CHART_VERSION}")"
+    if [[ -n "${HELM_CHART_VERSION:-}" ]]; then
+        embedded_manifest="$(resolve_embedded_release_manifest "kweaver-core" "${HELM_CHART_VERSION}")"
+    else
+        embedded_manifest="$(resolve_latest_embedded_release_manifest "kweaver-core")"
+    fi
     if [[ -n "${embedded_manifest}" ]]; then
         CORE_VERSION_MANIFEST_FILE="${embedded_manifest}"
     fi
 }
 
+_core_require_version_manifest() {
+    _core_auto_resolve_version_manifest
+
+    if [[ -z "${CORE_VERSION_MANIFEST_FILE:-}" ]]; then
+        log_error "No release manifest found for kweaver-core. Provide --version or --version_file."
+        return 1
+    fi
+}
+
 _core_resolve_release_version() {
     local release_name="$1"
+    _core_require_version_manifest || return 1
     resolve_release_chart_version "${CORE_VERSION_MANIFEST_FILE:-}" "kweaver-core" "${HELM_CHART_VERSION:-}" "${release_name}" "${HELM_CHART_VERSION:-}"
 }
 
-_core_release_names() {
-    if [[ -n "${CORE_VERSION_MANIFEST_FILE:-}" ]]; then
-        get_release_manifest_release_names "${CORE_VERSION_MANIFEST_FILE}" "kweaver-core" "${HELM_CHART_VERSION:-}"
-        return 0
-    fi
+_core_resolve_chart_name() {
+    local release_name="$1"
+    _core_require_version_manifest || return 1
+    resolve_release_chart_name "${CORE_VERSION_MANIFEST_FILE:-}" "kweaver-core" "${HELM_CHART_VERSION:-}" "${release_name}" "${release_name}"
+}
 
-    printf '%s\n' "${KWEAVER_CORE_RELEASES[@]}"
+_core_release_names() {
+    _core_require_version_manifest || return 1
+    get_release_manifest_release_names "${CORE_VERSION_MANIFEST_FILE}" "kweaver-core" "${HELM_CHART_VERSION:-}"
 }
 
 _core_resolve_isf_dependency_version() {
@@ -244,7 +210,7 @@ init_core_databases() {
 download_core() {
     log_info "Downloading KWeaver Core charts..."
     ensure_helm_available
-    _core_auto_resolve_version_manifest
+    _core_require_version_manifest || return 1
 
     HELM_CHART_REPO_NAME="${HELM_CHART_REPO_NAME:-kweaver}"
     HELM_CHART_REPO_URL="${HELM_CHART_REPO_URL:-https://kweaver-ai.github.io/helm-repo/}"
@@ -276,17 +242,19 @@ download_core() {
     mapfile -t release_names < <(_core_release_names)
     local release_name
     local release_version
+    local chart_name
     for release_name in "${release_names[@]}"; do
         release_version="$(_core_resolve_release_version "${release_name}")"
-        download_chart_to_cache "${charts_dir}" "${HELM_CHART_REPO_NAME}" "${release_name}" "${release_version}" "${FORCE_REFRESH_CHARTS:-false}"
+        chart_name="$(_core_resolve_chart_name "${release_name}")"
+        download_chart_to_cache "${charts_dir}" "${HELM_CHART_REPO_NAME}" "${chart_name}" "${release_version}" "${FORCE_REFRESH_CHARTS:-false}"
     done
 }
 
 # Find local chart tgz for a given release name
 _core_find_local_chart() {
     local charts_dir="$1"
-    local release_name="$2"
-    find_cached_chart_tgz "${charts_dir}" "${release_name}"
+    local chart_name="$2"
+    find_cached_chart_tgz "${charts_dir}" "${chart_name}"
 }
 
 # Install a single kweaver-core release from a local .tgz
@@ -295,19 +263,21 @@ _install_core_release_local() {
     local charts_dir="$2"
     local namespace="$3"
     local requested_version
+    local chart_name
 
     requested_version="$(_core_resolve_release_version "${release_name}")"
+    chart_name="$(_core_resolve_chart_name "${release_name}")"
 
     local chart_tgz=""
     if [[ -n "${requested_version}" ]]; then
-        chart_tgz="$(find_cached_chart_tgz_by_version "${charts_dir}" "${release_name}" "${requested_version}" || true)"
+        chart_tgz="$(find_cached_chart_tgz_by_version "${charts_dir}" "${chart_name}" "${requested_version}" || true)"
     fi
     if [[ -z "${chart_tgz}" ]]; then
-        chart_tgz="$(_core_find_local_chart "${charts_dir}" "${release_name}")"
+        chart_tgz="$(_core_find_local_chart "${charts_dir}" "${chart_name}")"
     fi
 
     if [[ -z "${chart_tgz}" ]]; then
-        log_error "✗ Local chart not found for ${release_name} in ${charts_dir}"
+        log_error "✗ Local chart not found for ${release_name} (${chart_name}) in ${charts_dir}"
         return 1
     fi
 
@@ -316,7 +286,7 @@ _install_core_release_local() {
     if [[ -z "${target_version}" ]]; then
         target_version="$(get_local_chart_version "${chart_tgz}")"
     fi
-    if should_skip_upgrade_same_chart_version "${release_name}" "${namespace}" "${release_name}" "${target_version}"; then
+    if should_skip_upgrade_same_chart_version "${release_name}" "${namespace}" "${chart_name}" "${target_version}"; then
         return 0
     fi
 
@@ -339,12 +309,8 @@ _install_core_release_repo() {
     local namespace="$2"
     local helm_repo_name="$3"
     local release_version="$4"
-
-    # Resolve actual chart name (may differ from release name)
-    local chart_name="${release_name}"
-    if [[ -n "${CORE_CHART_NAME_MAP[${release_name}]+_}" ]]; then
-        chart_name="${CORE_CHART_NAME_MAP[${release_name}]}"
-    fi
+    local chart_name
+    chart_name="$(_core_resolve_chart_name "${release_name}")"
 
     local chart_ref="${helm_repo_name}/${chart_name}"
 
@@ -391,7 +357,7 @@ _install_core_release_repo() {
 # Install KWeaver Core services via Helm
 install_core() {
     log_info "Installing KWeaver Core services via Helm..."
-    _core_auto_resolve_version_manifest
+    _core_require_version_manifest || return 1
 
     if ! ensure_platform_prerequisites; then
         log_error "Failed to ensure platform prerequisites for KWeaver Core"

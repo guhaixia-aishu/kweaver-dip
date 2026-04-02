@@ -532,6 +532,7 @@ main() {
                 uninstall_core
                 ;;
             status)
+                parse_core_args "status" "$@"
                 show_core_status
                 ;;
             *)
@@ -562,6 +563,7 @@ main() {
                 uninstall_dip
                 ;;
             status)
+                parse_dip_args "status" "$@"
                 show_dip_status
                 ;;
             *)
@@ -589,6 +591,7 @@ main() {
                 uninstall_isf
                 ;;
             status)
+                parse_isf_args "status" "$@"
                 show_isf_status
                 ;;
             *)

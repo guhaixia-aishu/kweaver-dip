@@ -1,34 +1,4 @@
 
-# KWeaver DIP (Data Intelligence Platform) releases list
-# Legacy fallback list when no release manifest is available.
-declare -a DIP_PRERELEASES=(
-    "dip-data-migrator"
-)
-
-# Legacy fallback list when no release manifest is available.
-declare -a DIP_RELEASES=(
-    "anyfabric-frontend"
-    "dip-frontend"
-    "dip-studio"
-    "dip-hub"
-    "auth-service"
-    "basic-search"
-    "configuration-center"
-    "data-application-gateway"
-    "data-application-service"
-    "data-catalog"
-    "data-exploration-service"
-    "data-semantic"
-    "data-subject"
-    "data-view"
-    "sailor"
-    "sailor-agent"
-    "sailor-service"
-    "session"
-    "standardization"
-    "task-center"
-)
-
 # Default DIP namespace
 DIP_NAMESPACE="${DIP_NAMESPACE:-kweaver-ai}"
 
@@ -125,9 +95,9 @@ _dip_helm_release_exists() {
 }
 
 # Ensure kweaver-core modules are installed.
-# Core = ISF + KWEAVER_CORE_RELEASES (defined in core.sh)
-# Use available installer entrypoints: install_isf and install_core.
 _dip_ensure_kweaver_core() {
+    _dip_require_version_manifest || return 1
+
     local namespace
     namespace=$(grep "^namespace:" "${CONFIG_YAML_PATH}" 2>/dev/null | head -1 | awk '{print $2}' | tr -d "'\"")
     namespace="${namespace:-kweaver-ai}"
@@ -145,33 +115,26 @@ _dip_ensure_kweaver_core() {
     local isf_dependency_manifest=""
     local isf_dependency_version="${HELM_CHART_VERSION:-}"
 
-    if [[ -n "${DIP_VERSION_MANIFEST_FILE:-}" ]]; then
-        core_dependency_manifest="$(_dip_resolve_core_dependency_manifest)"
-        core_dependency_version="$(_dip_resolve_core_dependency_version)"
-        isf_dependency_manifest="$(_dip_resolve_isf_dependency_manifest)"
-        isf_dependency_version="$(_dip_resolve_isf_dependency_version)"
-    fi
+    core_dependency_manifest="$(_dip_resolve_core_dependency_manifest)"
+    core_dependency_version="$(_dip_resolve_core_dependency_version)"
+    isf_dependency_manifest="$(_dip_resolve_isf_dependency_manifest)"
+    isf_dependency_version="$(_dip_resolve_isf_dependency_version)"
 
-    if [[ ${#ISF_RELEASES[@]} -gt 0 ]]; then
-        for release_name in "${ISF_RELEASES[@]}"; do
-            if _dip_helm_release_exists "${release_name}" "${namespace}"; then
-                log_info "  ✓ ISF release already installed (${release_name})"
-            else
-                log_info "  ✗ ISF release not installed (${release_name})"
-                missing_isf=true
-            fi
-        done
-    else
-        # Fallback: keep old behavior if ISF_RELEASES is unavailable for any reason.
-        if _dip_helm_release_exists "hydra" "${namespace}"; then
-            log_info "  ✓ ISF already installed (hydra found)"
+    local -a isf_release_names=()
+    mapfile -t isf_release_names < <(_dip_list_manifest_release_names "isf" "${isf_dependency_manifest}" "${isf_dependency_version}")
+    local -a core_release_names=()
+    mapfile -t core_release_names < <(_dip_list_manifest_release_names "kweaver-core" "${core_dependency_manifest}" "${core_dependency_version}")
+
+    for release_name in "${isf_release_names[@]}"; do
+        if _dip_helm_release_exists "${release_name}" "${namespace}"; then
+            log_info "  ✓ ISF release already installed (${release_name})"
         else
-            log_info "  ✗ ISF not installed — installing now..."
+            log_info "  ✗ ISF release not installed (${release_name})"
             missing_isf=true
         fi
-    fi
+    done
 
-    for release_name in "${KWEAVER_CORE_RELEASES[@]}"; do
+    for release_name in "${core_release_names[@]}"; do
         if _dip_helm_release_exists "${release_name}" "${namespace}"; then
             log_info "  ✓ Core release already installed (${release_name})"
         else
@@ -242,62 +205,65 @@ _dip_download_charts_dir() {
 }
 
 _dip_auto_resolve_version_manifest() {
-    if [[ -n "${DIP_VERSION_MANIFEST_FILE:-}" || -z "${HELM_CHART_VERSION:-}" ]]; then
+    if [[ -n "${DIP_VERSION_MANIFEST_FILE:-}" ]]; then
         return 0
     fi
 
     local embedded_manifest
-    embedded_manifest="$(resolve_embedded_release_manifest "kweaver-dip" "${HELM_CHART_VERSION}")"
+    if [[ -n "${HELM_CHART_VERSION:-}" ]]; then
+        embedded_manifest="$(resolve_embedded_release_manifest "kweaver-dip" "${HELM_CHART_VERSION}")"
+    else
+        embedded_manifest="$(resolve_latest_embedded_release_manifest "kweaver-dip")"
+    fi
     if [[ -n "${embedded_manifest}" ]]; then
         DIP_VERSION_MANIFEST_FILE="${embedded_manifest}"
     fi
 }
 
+_dip_require_version_manifest() {
+    _dip_auto_resolve_version_manifest
+
+    if [[ -z "${DIP_VERSION_MANIFEST_FILE:-}" ]]; then
+        log_error "No release manifest found for kweaver-dip. Provide --version or --version_file."
+        return 1
+    fi
+}
+
 _dip_resolve_release_version() {
     local release_name="$1"
+    _dip_require_version_manifest || return 1
     resolve_release_chart_version "${DIP_VERSION_MANIFEST_FILE:-}" "kweaver-dip" "${HELM_CHART_VERSION:-}" "${release_name}" "${HELM_CHART_VERSION:-}"
+}
+
+_dip_resolve_chart_name() {
+    local release_name="$1"
+    _dip_require_version_manifest || return 1
+    resolve_release_chart_name "${DIP_VERSION_MANIFEST_FILE:-}" "kweaver-dip" "${HELM_CHART_VERSION:-}" "${release_name}" "${release_name}"
 }
 
 _dip_resolve_release_stage() {
     local release_name="$1"
-
-    if [[ -n "${DIP_VERSION_MANIFEST_FILE:-}" ]]; then
-        get_release_manifest_release_stage "${DIP_VERSION_MANIFEST_FILE}" "kweaver-dip" "${HELM_CHART_VERSION:-}" "${release_name}"
-        return 0
-    fi
-
-    local prerelease_name
-    for prerelease_name in "${DIP_PRERELEASES[@]}"; do
-        if [[ "${prerelease_name}" == "${release_name}" ]]; then
-            echo "pre"
-            return 0
-        fi
-    done
-
-    echo "main"
+    _dip_require_version_manifest || return 1
+    get_release_manifest_release_stage "${DIP_VERSION_MANIFEST_FILE}" "kweaver-dip" "${HELM_CHART_VERSION:-}" "${release_name}"
 }
 
 _dip_release_names() {
-    if [[ -n "${DIP_VERSION_MANIFEST_FILE:-}" ]]; then
-        local -a manifest_release_names=()
-        mapfile -t manifest_release_names < <(get_release_manifest_release_names "${DIP_VERSION_MANIFEST_FILE}" "kweaver-dip" "${HELM_CHART_VERSION:-}")
+    _dip_require_version_manifest || return 1
 
-        local stage
-        local release_name
-        local release_stage
-        for stage in pre main post; do
-            for release_name in "${manifest_release_names[@]}"; do
-                release_stage="$(_dip_resolve_release_stage "${release_name}")" || return 1
-                if [[ "${release_stage}" == "${stage}" ]]; then
-                    printf '%s\n' "${release_name}"
-                fi
-            done
+    local -a manifest_release_names=()
+    mapfile -t manifest_release_names < <(get_release_manifest_release_names "${DIP_VERSION_MANIFEST_FILE}" "kweaver-dip" "${HELM_CHART_VERSION:-}")
+
+    local stage
+    local release_name
+    local release_stage
+    for stage in pre main post; do
+        for release_name in "${manifest_release_names[@]}"; do
+            release_stage="$(_dip_resolve_release_stage "${release_name}")" || return 1
+            if [[ "${release_stage}" == "${stage}" ]]; then
+                printf '%s\n' "${release_name}"
+            fi
         done
-        return 0
-    fi
-
-    printf '%s\n' "${DIP_PRERELEASES[@]}"
-    printf '%s\n' "${DIP_RELEASES[@]}"
+    done
 }
 
 _dip_release_names_reverse() {
@@ -311,37 +277,25 @@ _dip_release_names_reverse() {
 }
 
 _dip_resolve_core_dependency_version() {
-    if [[ -z "${DIP_VERSION_MANIFEST_FILE:-}" ]]; then
-        echo "${HELM_CHART_VERSION:-}"
-        return 0
-    fi
-
+    _dip_require_version_manifest || return 1
     get_release_manifest_dependency_version "${DIP_VERSION_MANIFEST_FILE}" "kweaver-core"
 }
 
 _dip_resolve_core_dependency_manifest() {
-    if [[ -z "${DIP_VERSION_MANIFEST_FILE:-}" ]]; then
-        return 0
-    fi
-
+    _dip_require_version_manifest || return 1
     get_release_manifest_dependency_manifest "${DIP_VERSION_MANIFEST_FILE}" "kweaver-core"
 }
 
 _dip_has_direct_dependency() {
     local dependency_product="$1"
 
-    if [[ -z "${DIP_VERSION_MANIFEST_FILE:-}" ]]; then
-        return 1
-    fi
+    _dip_require_version_manifest || return 1
 
     [[ -n "$(_manifest_strip_quotes "$(_manifest_read_dependency_field "${DIP_VERSION_MANIFEST_FILE}" "${dependency_product}" "version")")" ]]
 }
 
 _dip_resolve_isf_dependency_version() {
-    if [[ -z "${DIP_VERSION_MANIFEST_FILE:-}" ]]; then
-        echo "${HELM_CHART_VERSION:-}"
-        return 0
-    fi
+    _dip_require_version_manifest || return 1
 
     if _dip_has_direct_dependency "isf"; then
         get_release_manifest_dependency_version "${DIP_VERSION_MANIFEST_FILE}" "isf"
@@ -359,9 +313,7 @@ _dip_resolve_isf_dependency_version() {
 }
 
 _dip_resolve_isf_dependency_manifest() {
-    if [[ -z "${DIP_VERSION_MANIFEST_FILE:-}" ]]; then
-        return 0
-    fi
+    _dip_require_version_manifest || return 1
 
     if _dip_has_direct_dependency "isf"; then
         get_release_manifest_dependency_manifest "${DIP_VERSION_MANIFEST_FILE}" "isf"
@@ -373,6 +325,27 @@ _dip_resolve_isf_dependency_manifest() {
     if [[ -n "${core_manifest}" ]]; then
         get_release_manifest_dependency_manifest "${core_manifest}" "isf"
     fi
+}
+
+_dip_list_manifest_release_names() {
+    local product="$1"
+    local manifest_file="${2:-}"
+    local aggregate_version="${3:-}"
+
+    if [[ -z "${manifest_file}" ]]; then
+        if [[ -n "${aggregate_version}" ]]; then
+            manifest_file="$(resolve_embedded_release_manifest "${product}" "${aggregate_version}")"
+        else
+            manifest_file="$(resolve_latest_embedded_release_manifest "${product}")"
+        fi
+    fi
+
+    if [[ -z "${manifest_file}" ]]; then
+        log_error "No release manifest found for dependency product: ${product}"
+        return 1
+    fi
+
+    get_release_manifest_release_names "${manifest_file}" "${product}" "${aggregate_version}"
 }
 
 # Find a local tgz for a chart name inside a directory (picks the first match)
@@ -443,21 +416,34 @@ _dip_confirm_missing_openclaw_paths() {
 _dip_prompt_openclaw_paths() {
     local config_host_path="$1"
     local workspace_host_path="$2"
+    local gateway_token="$3"
+    local gateway_host="$4"
+    local gateway_port="$5"
 
     echo ""
     log_warn "dipStudio.openClaw configuration is missing or incomplete in ${CONFIG_YAML_PATH}"
-    log_info "dip-studio requires two host paths for OpenClaw persistence:"
+    log_info "dip-studio requires OpenClaw configuration:"
     log_info "  - configHostPath: Directory for OpenClaw configuration files"
     log_info "  - workspaceHostPath: Directory for OpenClaw workspace data"
+    log_info "  - gatewayToken: Authentication token for OpenClaw gateway"
+    log_info "  - gatewayHost: OpenClaw gateway host address"
+    log_info "  - gatewayPort: OpenClaw gateway port (default: 18789)"
     echo ""
 
+    # Get default gateway host (same as accessAddress)
+    local default_gateway_host
+    default_gateway_host="$(get_access_address_field "host")"
+    
     # Always try to prompt for input
     local input_config_path=""
     local input_workspace_path=""
+    local input_gateway_token=""
+    local input_gateway_host=""
+    local input_gateway_port=""
     
     if [[ -z "${config_host_path}" ]]; then
         read -r -p "Enter configHostPath: " input_config_path </dev/tty || {
-            log_error "Failed to read input. Please run in interactive mode or pre-configure dipStudio.openClaw paths in ${CONFIG_YAML_PATH}"
+            log_error "Failed to read input. Please run in interactive mode or pre-configure dipStudio.openClaw in ${CONFIG_YAML_PATH}"
             return 1
         }
         config_host_path="${input_config_path}"
@@ -465,15 +451,39 @@ _dip_prompt_openclaw_paths() {
 
     if [[ -z "${workspace_host_path}" ]]; then
         read -r -p "Enter workspaceHostPath: " input_workspace_path </dev/tty || {
-            log_error "Failed to read input. Please run in interactive mode or pre-configure dipStudio.openClaw paths in ${CONFIG_YAML_PATH}"
+            log_error "Failed to read input. Please run in interactive mode or pre-configure dipStudio.openClaw in ${CONFIG_YAML_PATH}"
             return 1
         }
         workspace_host_path="${input_workspace_path}"
     fi
 
-    # Validate that paths are not empty
-    if [[ -z "${config_host_path}" || -z "${workspace_host_path}" ]]; then
-        log_error "OpenClaw paths cannot be empty. Please provide valid paths."
+    if [[ -z "${gateway_token}" ]]; then
+        read -r -p "Enter gatewayToken: " input_gateway_token </dev/tty || {
+            log_error "Failed to read input. Please run in interactive mode or pre-configure dipStudio.openClaw in ${CONFIG_YAML_PATH}"
+            return 1
+        }
+        gateway_token="${input_gateway_token}"
+    fi
+
+    if [[ -z "${gateway_host}" ]]; then
+        read -r -p "Enter gatewayHost [${default_gateway_host}]: " input_gateway_host </dev/tty || {
+            log_error "Failed to read input. Please run in interactive mode or pre-configure dipStudio.openClaw in ${CONFIG_YAML_PATH}"
+            return 1
+        }
+        gateway_host="${input_gateway_host:-${default_gateway_host}}"
+    fi
+
+    if [[ -z "${gateway_port}" ]]; then
+        read -r -p "Enter gatewayPort [18789]: " input_gateway_port </dev/tty || {
+            log_error "Failed to read input. Please run in interactive mode or pre-configure dipStudio.openClaw in ${CONFIG_YAML_PATH}"
+            return 1
+        }
+        gateway_port="${input_gateway_port:-18789}"
+    fi
+
+    # Validate that required fields are not empty
+    if [[ -z "${config_host_path}" || -z "${workspace_host_path}" || -z "${gateway_token}" || -z "${gateway_host}" || -z "${gateway_port}" ]]; then
+        log_error "OpenClaw configuration cannot have empty fields. Please provide all required values."
         return 1
     fi
 
@@ -481,16 +491,25 @@ _dip_prompt_openclaw_paths() {
     log_info "Will use:"
     log_info "  configHostPath: ${config_host_path}"
     log_info "  workspaceHostPath: ${workspace_host_path}"
+    log_info "  gatewayToken: ${gateway_token}"
+    log_info "  gatewayHost: ${gateway_host}"
+    log_info "  gatewayPort: ${gateway_port}"
     echo ""
 
-    # Return the paths via global variables
+    # Return the values via global variables
     DIP_OPENCLAW_CONFIG_PATH="${config_host_path}"
     DIP_OPENCLAW_WORKSPACE_PATH="${workspace_host_path}"
+    DIP_OPENCLAW_GATEWAY_TOKEN="${gateway_token}"
+    DIP_OPENCLAW_GATEWAY_HOST="${gateway_host}"
+    DIP_OPENCLAW_GATEWAY_PORT="${gateway_port}"
 }
 
-_dip_update_config_with_openclaw_paths() {
+_dip_update_config_with_openclaw_config() {
     local config_path="$1"
     local workspace_path="$2"
+    local gateway_token="$3"
+    local gateway_host="$4"
+    local gateway_port="$5"
 
     if [[ ! -f "${CONFIG_YAML_PATH}" ]]; then
         log_error "Config file does not exist: ${CONFIG_YAML_PATH}"
@@ -500,8 +519,8 @@ _dip_update_config_with_openclaw_paths() {
     local tmp_file
     tmp_file="$(mktemp)"
 
-    # If both paths are empty, remove the dipStudio.openClaw section
-    if [[ -z "${config_path}" && -z "${workspace_path}" ]]; then
+    # If all fields are empty, remove the dipStudio.openClaw section
+    if [[ -z "${config_path}" && -z "${workspace_path}" && -z "${gateway_token}" && -z "${gateway_host}" && -z "${gateway_port}" ]]; then
         awk '
             BEGIN {
                 in_dip_studio=0
@@ -538,7 +557,8 @@ _dip_update_config_with_openclaw_paths() {
         ' "${CONFIG_YAML_PATH}" > "${tmp_file}"
     else
         # Use awk to update or insert the dipStudio.openClaw section
-        awk -v cfg_path="${config_path}" -v ws_path="${workspace_path}" '
+        awk -v cfg_path="${config_path}" -v ws_path="${workspace_path}" \
+            -v gw_token="${gateway_token}" -v gw_host="${gateway_host}" -v gw_port="${gateway_port}" '
             BEGIN {
                 in_dip_studio=0
                 in_openclaw=0
@@ -556,6 +576,9 @@ _dip_update_config_with_openclaw_paths() {
                     print "  openClaw:"
                     print "    configHostPath: " cfg_path
                     print "    workspaceHostPath: " ws_path
+                    print "    gatewayToken: " gw_token
+                    print "    gatewayHost: " gw_host
+                    print "    gatewayPort: " gw_port
                     in_openclaw=1
                     openclaw_updated=1
                     next
@@ -576,6 +599,9 @@ _dip_update_config_with_openclaw_paths() {
                         print "  openClaw:"
                         print "    configHostPath: " cfg_path
                         print "    workspaceHostPath: " ws_path
+                        print "    gatewayToken: " gw_token
+                        print "    gatewayHost: " gw_host
+                        print "    gatewayPort: " gw_port
                         openclaw_updated=1
                     }
                     in_dip_studio=0
@@ -590,17 +616,23 @@ _dip_update_config_with_openclaw_paths() {
                     print "  openClaw:"
                     print "    configHostPath: " cfg_path
                     print "    workspaceHostPath: " ws_path
+                    print "    gatewayToken: " gw_token
+                    print "    gatewayHost: " gw_host
+                    print "    gatewayPort: " gw_port
                 } else if (in_dip_studio==1 && openclaw_updated==0) {
                     print "  openClaw:"
                     print "    configHostPath: " cfg_path
                     print "    workspaceHostPath: " ws_path
+                    print "    gatewayToken: " gw_token
+                    print "    gatewayHost: " gw_host
+                    print "    gatewayPort: " gw_port
                 }
             }
         ' "${CONFIG_YAML_PATH}" > "${tmp_file}"
     fi
 
     mv "${tmp_file}" "${CONFIG_YAML_PATH}"
-    if [[ -z "${config_path}" && -z "${workspace_path}" ]]; then
+    if [[ -z "${config_path}" && -z "${workspace_path}" && -z "${gateway_token}" && -z "${gateway_host}" && -z "${gateway_port}" ]]; then
         log_info "Removed dipStudio.openClaw configuration from ${CONFIG_YAML_PATH}"
     else
         log_info "Updated ${CONFIG_YAML_PATH} with dipStudio.openClaw configuration"
@@ -625,26 +657,35 @@ _dip_append_release_extra_helm_args() {
 
     local config_host_path
     local workspace_host_path
+    local gateway_token
+    local gateway_host
+    local gateway_port
     local need_reprompt=true
 
-    # Loop to allow re-entering paths if validation fails
+    # Loop to allow re-entering configuration if validation fails
     while [[ "${need_reprompt}" == "true" ]]; do
         config_host_path="$(get_dip_studio_openclaw_field "configHostPath")"
         workspace_host_path="$(get_dip_studio_openclaw_field "workspaceHostPath")"
+        gateway_token="$(get_dip_studio_openclaw_field "gatewayToken")"
+        gateway_host="$(get_dip_studio_openclaw_field "gatewayHost")"
+        gateway_port="$(get_dip_studio_openclaw_field "gatewayPort")"
 
-        # If either path is missing, prompt for input
-        if [[ -z "${config_host_path}" || -z "${workspace_host_path}" ]]; then
-            _dip_prompt_openclaw_paths "${config_host_path}" "${workspace_host_path}" || return 1
+        # If any required field is missing, prompt for input
+        if [[ -z "${config_host_path}" || -z "${workspace_host_path}" || -z "${gateway_token}" || -z "${gateway_host}" || -z "${gateway_port}" ]]; then
+            _dip_prompt_openclaw_paths "${config_host_path}" "${workspace_host_path}" "${gateway_token}" "${gateway_host}" "${gateway_port}" || return 1
             config_host_path="${DIP_OPENCLAW_CONFIG_PATH}"
             workspace_host_path="${DIP_OPENCLAW_WORKSPACE_PATH}"
+            gateway_token="${DIP_OPENCLAW_GATEWAY_TOKEN}"
+            gateway_host="${DIP_OPENCLAW_GATEWAY_HOST}"
+            gateway_port="${DIP_OPENCLAW_GATEWAY_PORT}"
 
-            # Update config file with the new paths
-            _dip_update_config_with_openclaw_paths "${config_host_path}" "${workspace_host_path}" || return 1
+            # Update config file with the new configuration
+            _dip_update_config_with_openclaw_config "${config_host_path}" "${workspace_host_path}" "${gateway_token}" "${gateway_host}" "${gateway_port}" || return 1
         fi
 
-        # Validate that paths are not empty strings after prompting
-        if [[ -z "${config_host_path}" || -z "${workspace_host_path}" ]]; then
-            log_error "OpenClaw paths cannot be empty."
+        # Validate that all fields are not empty strings after prompting
+        if [[ -z "${config_host_path}" || -z "${workspace_host_path}" || -z "${gateway_token}" || -z "${gateway_host}" || -z "${gateway_port}" ]]; then
+            log_error "OpenClaw configuration fields cannot be empty."
             return 1
         fi
 
@@ -661,9 +702,9 @@ _dip_append_release_extra_helm_args() {
             _dip_confirm_missing_openclaw_paths "${missing_messages[@]}"
             local confirm_result=$?
             if [[ ${confirm_result} -eq 2 ]]; then
-                # User chose to re-enter paths, clear the config and loop again
-                log_info "Re-entering OpenClaw paths..."
-                _dip_update_config_with_openclaw_paths "" "" || return 1
+                # User chose to re-enter configuration, clear the config and loop again
+                log_info "Re-entering OpenClaw configuration..."
+                _dip_update_config_with_openclaw_config "" "" "" "" "" || return 1
                 continue
             elif [[ ${confirm_result} -ne 0 ]]; then
                 # User cancelled or error occurred
@@ -678,6 +719,9 @@ _dip_append_release_extra_helm_args() {
     target_args+=(
         "--set-string" "persistence.config.hostPath=${config_host_path}"
         "--set-string" "persistence.workspace.hostPath=${workspace_host_path}"
+        "--set-string" "studio.gatewayToken=${gateway_token}"
+        "--set-string" "studio.gatewayHost=${gateway_host}"
+        "--set-string" "studio.gatewayPort=${gateway_port}"
     )
 }
 
@@ -697,7 +741,7 @@ init_dip_database() {
 # Install DIP services via Helm
 install_dip() {
     log_info "Installing KWeaver DIP services via Helm..."
-    _dip_auto_resolve_version_manifest
+    _dip_require_version_manifest || return 1
 
     local charts_dir
     charts_dir="$(_dip_resolve_charts_dir)"
@@ -752,13 +796,15 @@ install_dip() {
 
     local release_name
     local release_version
+    local chart_name
     while IFS= read -r release_name; do
         [[ -n "${release_name}" ]] || continue
         release_version="$(_dip_resolve_release_version "${release_name}")"
+        chart_name="$(_dip_resolve_chart_name "${release_name}")"
         if [[ "${use_local}" == "true" ]]; then
             _install_dip_release_local "${release_name}" "${charts_dir}" "${namespace}"
         else
-            _install_dip_release_repo "${release_name}" "${namespace}" "${HELM_CHART_REPO_NAME}" "${release_version}"
+            _install_dip_release_repo "${release_name}" "${chart_name}" "${namespace}" "${HELM_CHART_REPO_NAME}" "${release_version}"
         fi
     done < <(_dip_release_names)
 
@@ -769,7 +815,7 @@ install_dip() {
 download_dip() {
     log_info "Downloading KWeaver DIP charts..."
     ensure_helm_available
-    _dip_auto_resolve_version_manifest
+    _dip_require_version_manifest || return 1
 
     HELM_CHART_REPO_NAME="${HELM_CHART_REPO_NAME:-kweaver}"
     HELM_CHART_REPO_URL="${HELM_CHART_REPO_URL:-https://kweaver-ai.github.io/helm-repo/}"
@@ -799,8 +845,10 @@ download_dip() {
     while IFS= read -r release_name; do
         [[ -n "${release_name}" ]] || continue
         local release_version
+        local chart_name
         release_version="$(_dip_resolve_release_version "${release_name}")"
-        download_chart_to_cache "${charts_dir}" "${HELM_CHART_REPO_NAME}" "${release_name}" "${release_version}" "${FORCE_REFRESH_CHARTS:-false}"
+        chart_name="$(_dip_resolve_chart_name "${release_name}")"
+        download_chart_to_cache "${charts_dir}" "${HELM_CHART_REPO_NAME}" "${chart_name}" "${release_version}" "${FORCE_REFRESH_CHARTS:-false}"
     done < <(_dip_release_names)
 
     CORE_LOCAL_CHARTS_DIR="${original_core_charts_dir}"
@@ -814,19 +862,21 @@ _install_dip_release_local() {
     local charts_dir="$2"
     local namespace="$3"
     local requested_version
+    local chart_name
 
     requested_version="$(_dip_resolve_release_version "${release_name}")"
+    chart_name="$(_dip_resolve_chart_name "${release_name}")"
 
     local chart_tgz=""
     if [[ -n "${requested_version}" ]]; then
-        chart_tgz="$(find_cached_chart_tgz_by_version "${charts_dir}" "${release_name}" "${requested_version}" || true)"
+        chart_tgz="$(find_cached_chart_tgz_by_version "${charts_dir}" "${chart_name}" "${requested_version}" || true)"
     fi
     if [[ -z "${chart_tgz}" ]]; then
-        chart_tgz="$(_dip_find_local_chart "${charts_dir}" "${release_name}")"
+        chart_tgz="$(_dip_find_local_chart "${charts_dir}" "${chart_name}")"
     fi
 
     if [[ -z "${chart_tgz}" ]]; then
-        log_error "✗ Local chart not found for ${release_name} in ${charts_dir}"
+        log_error "✗ Local chart not found for ${release_name} (${chart_name}) in ${charts_dir}"
         return 1
     fi
 
@@ -835,7 +885,7 @@ _install_dip_release_local() {
     if [[ -z "${target_version}" ]]; then
         target_version="$(get_local_chart_version "${chart_tgz}")"
     fi
-    if should_skip_upgrade_same_chart_version "${release_name}" "${namespace}" "${release_name}" "${target_version}"; then
+    if should_skip_upgrade_same_chart_version "${release_name}" "${namespace}" "${chart_name}" "${target_version}"; then
         return 0
     fi
 
@@ -862,16 +912,17 @@ _install_dip_release_local() {
 # Install a single DIP release from a Helm repository
 _install_dip_release_repo() {
     local release_name="$1"
-    local namespace="$2"
-    local helm_repo_name="$3"
-    local release_version="$4"
+    local chart_name="$2"
+    local namespace="$3"
+    local helm_repo_name="$4"
+    local release_version="$5"
 
     local target_version="${release_version}"
     if [[ -z "${target_version}" ]]; then
-        target_version=$(get_repo_chart_latest_version "${helm_repo_name}" "${release_name}")
+        target_version=$(get_repo_chart_latest_version "${helm_repo_name}" "${chart_name}")
     fi
 
-    if should_skip_upgrade_same_chart_version "${release_name}" "${namespace}" "${release_name}" "${target_version}"; then
+    if should_skip_upgrade_same_chart_version "${release_name}" "${namespace}" "${chart_name}" "${target_version}"; then
         return 0
     fi
 
@@ -885,7 +936,7 @@ _install_dip_release_repo() {
 
     log_info "Installing ${release_name} from repo..."
 
-    local chart_ref="${helm_repo_name}/${release_name}"
+    local chart_ref="${helm_repo_name}/${chart_name}"
 
     local -a helm_args=(
         "upgrade" "--install" "${release_name}"
@@ -913,6 +964,7 @@ _install_dip_release_repo() {
 # Uninstall DIP services
 uninstall_dip() {
     log_info "Uninstalling KWeaver DIP services..."
+    _dip_require_version_manifest || return 1
 
     local namespace
     namespace=$(grep "^namespace:" "${CONFIG_YAML_PATH}" 2>/dev/null | head -1 | awk '{print $2}' | tr -d "'\"")
@@ -936,6 +988,7 @@ uninstall_dip() {
 # Show DIP services status
 show_dip_status() {
     log_info "KWeaver DIP services status:"
+    _dip_require_version_manifest || return 1
 
     local namespace
     namespace=$(grep "^namespace:" "${CONFIG_YAML_PATH}" 2>/dev/null | head -1 | awk '{print $2}' | tr -d "'\"")

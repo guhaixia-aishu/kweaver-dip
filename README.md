@@ -25,7 +25,15 @@ KWeaver DIP is an AI-native platform for developing and managing digital employe
 
 ## Quick Start
 
-To deploy KWeaver DIP quickly, use the built-in `deploy` directory in this repository:
+Before deploying KWeaver DIP, prepare OpenClaw first:
+
+1. Deploy [OpenClaw](https://openclaw.ai) first. The recommended version is `v2026.3.11`. You can also use the preparation notes in [kweaver-ai/dip-studio/studio/README.md](https://github.com/kweaver-ai/dip-studio/blob/main/studio/README.md).
+2. Start OpenClaw Gateway.
+3. Copy `gateway.auth.token` from `openclaw.json`, then run `openclaw gateway status` and record the gateway bind address and port.
+4. Run `openclaw config set gateway.http.endpoints.responses.enabled true` to enable the `POST /v1/responses` HTTP endpoint.
+5. Make sure the machine running `deploy.sh` can access the OpenClaw config file and workspace directory. If you want to preconfigure them, set `dipStudio.openClaw.configHostPath` and `dipStudio.openClaw.workspaceHostPath` in `deploy/conf/config.yaml` or in your custom config file.
+
+Then use the built-in `deploy` directory in this repository:
 
 ```bash
 git clone https://github.com/kweaver-ai/kweaver-dip.git
@@ -35,10 +43,9 @@ sudo ./deploy.sh kweaver-dip install
 
 After deployment, open:
 
-- `https://<node-ip>/deploy` for the deployment console
-- `https://<node-ip>/studio` for KWeaver Studio
+- `https://<node-ip>/dip-hub` for KWeaver DIP Hub
 
-For full installation requirements, flags, and offline deployment options, see [deploy/README.md](deploy/README.md).
+For full installation requirements, config details, flags, and offline deployment options, see [deploy/README.md](deploy/README.md).
 
 ## Platform Architecture
 
