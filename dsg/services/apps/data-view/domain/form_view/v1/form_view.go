@@ -1804,7 +1804,7 @@ func (f *formViewUseCase) GetFields(ctx context.Context, req *form_view.GetField
 	// 检查是否收藏
 	err1, resp := f.CheckFavorite(ctx, formView)
 	if err1 != nil {
-		return nil, err1
+		log.WithContext(ctx).Warn("CheckFavorite failed, fallback to not favored", zap.Error(err1), zap.String("form_view_id", formView.ID))
 	}
 	if resp != nil {
 		if resp.FavorID == 0 {
