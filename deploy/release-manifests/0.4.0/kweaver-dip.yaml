@@ -52,7 +52,7 @@ releases:
     version: 0.4.0-main.20260331.2
   data-view:
     chart: data-view
-    version: 0.4.0-main.20260401.1
+    version: 0.4.0-main.20260402.1
   sailor:
     chart: sailor
     version: 0.4.0-main.20260401.1
@@ -67,7 +67,7 @@ releases:
     version: 0.4.0-main.20260331.1
   standardization:
     chart: standardization
-    version: 0.4.0-main.20260402.7
+    version: 0.4.0-main.20260402.8
   task-center:
     chart: task-center
     version: 0.4.0-main.20260331.2

@@ -413,18 +413,16 @@ _dip_confirm_missing_openclaw_paths() {
     esac
 }
 
-_dip_prompt_openclaw_paths() {
-    local config_host_path="$1"
-    local workspace_host_path="$2"
-    local gateway_token="$3"
-    local gateway_host="$4"
-    local gateway_port="$5"
+_dip_prompt_openclaw_config() {
+    local host_path="$1"
+    local gateway_token="$2"
+    local gateway_host="$3"
+    local gateway_port="$4"
 
     echo ""
-    log_warn "dipStudio.openClaw configuration is missing or incomplete in ${CONFIG_YAML_PATH}"
+    log_warn "studio.openclaw configuration is missing or incomplete in ${CONFIG_YAML_PATH}"
     log_info "dip-studio requires OpenClaw configuration:"
-    log_info "  - configHostPath: Directory for OpenClaw configuration files"
-    log_info "  - workspaceHostPath: Directory for OpenClaw workspace data"
+    log_info "  - hostPath: Directory for OpenClaw data (config and workspace)"
     log_info "  - gatewayToken: Authentication token for OpenClaw gateway"
     log_info "  - gatewayHost: OpenClaw gateway host address"
     log_info "  - gatewayPort: OpenClaw gateway port (default: 18789)"
@@ -435,31 +433,22 @@ _dip_prompt_openclaw_paths() {
     default_gateway_host="$(get_access_address_field "host")"
     
     # Always try to prompt for input
-    local input_config_path=""
-    local input_workspace_path=""
+    local input_host_path=""
     local input_gateway_token=""
     local input_gateway_host=""
     local input_gateway_port=""
     
-    if [[ -z "${config_host_path}" ]]; then
-        read -r -p "Enter configHostPath: " input_config_path </dev/tty || {
-            log_error "Failed to read input. Please run in interactive mode or pre-configure dipStudio.openClaw in ${CONFIG_YAML_PATH}"
+    if [[ -z "${host_path}" ]]; then
+        read -r -p "Enter hostPath: " input_host_path </dev/tty || {
+            log_error "Failed to read input. Please run in interactive mode or pre-configure studio.openclaw in ${CONFIG_YAML_PATH}"
             return 1
         }
-        config_host_path="${input_config_path}"
-    fi
-
-    if [[ -z "${workspace_host_path}" ]]; then
-        read -r -p "Enter workspaceHostPath: " input_workspace_path </dev/tty || {
-            log_error "Failed to read input. Please run in interactive mode or pre-configure dipStudio.openClaw in ${CONFIG_YAML_PATH}"
-            return 1
-        }
-        workspace_host_path="${input_workspace_path}"
+        host_path="${input_host_path}"
     fi
 
     if [[ -z "${gateway_token}" ]]; then
         read -r -p "Enter gatewayToken: " input_gateway_token </dev/tty || {
-            log_error "Failed to read input. Please run in interactive mode or pre-configure dipStudio.openClaw in ${CONFIG_YAML_PATH}"
+            log_error "Failed to read input. Please run in interactive mode or pre-configure studio.openclaw in ${CONFIG_YAML_PATH}"
             return 1
         }
         gateway_token="${input_gateway_token}"
@@ -467,7 +456,7 @@ _dip_prompt_openclaw_paths() {
 
     if [[ -z "${gateway_host}" ]]; then
         read -r -p "Enter gatewayHost [${default_gateway_host}]: " input_gateway_host </dev/tty || {
-            log_error "Failed to read input. Please run in interactive mode or pre-configure dipStudio.openClaw in ${CONFIG_YAML_PATH}"
+            log_error "Failed to read input. Please run in interactive mode or pre-configure studio.openclaw in ${CONFIG_YAML_PATH}"
             return 1
         }
         gateway_host="${input_gateway_host:-${default_gateway_host}}"
@@ -475,41 +464,38 @@ _dip_prompt_openclaw_paths() {
 
     if [[ -z "${gateway_port}" ]]; then
         read -r -p "Enter gatewayPort [18789]: " input_gateway_port </dev/tty || {
-            log_error "Failed to read input. Please run in interactive mode or pre-configure dipStudio.openClaw in ${CONFIG_YAML_PATH}"
+            log_error "Failed to read input. Please run in interactive mode or pre-configure studio.openclaw in ${CONFIG_YAML_PATH}"
             return 1
         }
         gateway_port="${input_gateway_port:-18789}"
     fi
 
     # Validate that required fields are not empty
-    if [[ -z "${config_host_path}" || -z "${workspace_host_path}" || -z "${gateway_token}" || -z "${gateway_host}" || -z "${gateway_port}" ]]; then
+    if [[ -z "${host_path}" || -z "${gateway_token}" || -z "${gateway_host}" || -z "${gateway_port}" ]]; then
         log_error "OpenClaw configuration cannot have empty fields. Please provide all required values."
         return 1
     fi
 
     echo ""
     log_info "Will use:"
-    log_info "  configHostPath: ${config_host_path}"
-    log_info "  workspaceHostPath: ${workspace_host_path}"
+    log_info "  hostPath: ${host_path}"
     log_info "  gatewayToken: ${gateway_token}"
     log_info "  gatewayHost: ${gateway_host}"
     log_info "  gatewayPort: ${gateway_port}"
     echo ""
 
     # Return the values via global variables
-    DIP_OPENCLAW_CONFIG_PATH="${config_host_path}"
-    DIP_OPENCLAW_WORKSPACE_PATH="${workspace_host_path}"
+    DIP_OPENCLAW_HOST_PATH="${host_path}"
     DIP_OPENCLAW_GATEWAY_TOKEN="${gateway_token}"
     DIP_OPENCLAW_GATEWAY_HOST="${gateway_host}"
     DIP_OPENCLAW_GATEWAY_PORT="${gateway_port}"
 }
 
 _dip_update_config_with_openclaw_config() {
-    local config_path="$1"
-    local workspace_path="$2"
-    local gateway_token="$3"
-    local gateway_host="$4"
-    local gateway_port="$5"
+    local host_path="$1"
+    local gateway_token="$2"
+    local gateway_host="$3"
+    local gateway_port="$4"
 
     if [[ ! -f "${CONFIG_YAML_PATH}" ]]; then
         log_error "Config file does not exist: ${CONFIG_YAML_PATH}"
@@ -519,63 +505,62 @@ _dip_update_config_with_openclaw_config() {
     local tmp_file
     tmp_file="$(mktemp)"
 
-    # If all fields are empty, remove the dipStudio.openClaw section
-    if [[ -z "${config_path}" && -z "${workspace_path}" && -z "${gateway_token}" && -z "${gateway_host}" && -z "${gateway_port}" ]]; then
+    # If all fields are empty, remove the studio.openclaw section
+    if [[ -z "${host_path}" && -z "${gateway_token}" && -z "${gateway_host}" && -z "${gateway_port}" ]]; then
         awk '
             BEGIN {
-                in_dip_studio=0
+                in_studio=0
                 in_openclaw=0
             }
             {
-                if ($1=="dipStudio:") {
-                    in_dip_studio=1
+                if ($1=="studio:") {
+                    in_studio=1
                     next
                 }
-                if (in_dip_studio && $1=="openClaw:") {
+                if (in_studio && $1=="openclaw:") {
                     in_openclaw=1
                     next
                 }
-                if (in_dip_studio && in_openclaw) {
+                if (in_studio && in_openclaw) {
                     if ($0 ~ /^  [^ ]/) {
                         in_openclaw=0
-                        in_dip_studio=0
+                        in_studio=0
                         print $0
                     } else if ($0 ~ /^[^ ]/) {
-                        in_dip_studio=0
+                        in_studio=0
                         in_openclaw=0
                         print $0
                     }
                     next
                 }
-                if (in_dip_studio && $0 ~ /^[^ ]/) {
-                    in_dip_studio=0
+                if (in_studio && $0 ~ /^[^ ]/) {
+                    in_studio=0
                 }
-                if (!in_dip_studio) {
+                if (!in_studio) {
                     print $0
                 }
             }
         ' "${CONFIG_YAML_PATH}" > "${tmp_file}"
     else
-        # Use awk to update or insert the dipStudio.openClaw section
-        awk -v cfg_path="${config_path}" -v ws_path="${workspace_path}" \
-            -v gw_token="${gateway_token}" -v gw_host="${gateway_host}" -v gw_port="${gateway_port}" '
+        # Use awk to update or insert the studio.openclaw section
+        awk -v hp="${host_path}" -v gw_token="${gateway_token}" \
+            -v gw_host="${gateway_host}" -v gw_port="${gateway_port}" '
             BEGIN {
-                in_dip_studio=0
+                in_studio=0
                 in_openclaw=0
-                dip_studio_found=0
+                studio_found=0
                 openclaw_updated=0
             }
             {
-                if ($1=="dipStudio:") {
+                if ($1=="studio:") {
                     print $0
-                    in_dip_studio=1
-                    dip_studio_found=1
+                    in_studio=1
+                    studio_found=1
                     next
                 }
-                if (in_dip_studio && $1=="openClaw:") {
-                    print "  openClaw:"
-                    print "    configHostPath: " cfg_path
-                    print "    workspaceHostPath: " ws_path
+                if (in_studio && $1=="openclaw:") {
+                    print "  openclaw:"
+                    print "    hostPath: " hp
                     print "    gatewayToken: " gw_token
                     print "    gatewayHost: " gw_host
                     print "    gatewayPort: " gw_port
@@ -583,46 +568,43 @@ _dip_update_config_with_openclaw_config() {
                     openclaw_updated=1
                     next
                 }
-                if (in_dip_studio && in_openclaw) {
+                if (in_studio && in_openclaw) {
                     if ($0 ~ /^  [^ ]/) {
                         in_openclaw=0
                         print $0
                     } else if ($0 ~ /^[^ ]/) {
-                        in_dip_studio=0
+                        in_studio=0
                         in_openclaw=0
                         print $0
                     }
                     next
                 }
-                if (in_dip_studio && $0 ~ /^[^ ]/) {
+                if (in_studio && $0 ~ /^[^ ]/) {
                     if (openclaw_updated==0) {
-                        print "  openClaw:"
-                        print "    configHostPath: " cfg_path
-                        print "    workspaceHostPath: " ws_path
+                        print "  openclaw:"
+                        print "    hostPath: " hp
                         print "    gatewayToken: " gw_token
                         print "    gatewayHost: " gw_host
                         print "    gatewayPort: " gw_port
                         openclaw_updated=1
                     }
-                    in_dip_studio=0
+                    in_studio=0
                     print $0
                     next
                 }
                 print $0
             }
             END {
-                if (dip_studio_found==0) {
-                    print "dipStudio:"
-                    print "  openClaw:"
-                    print "    configHostPath: " cfg_path
-                    print "    workspaceHostPath: " ws_path
+                if (studio_found==0) {
+                    print "studio:"
+                    print "  openclaw:"
+                    print "    hostPath: " hp
                     print "    gatewayToken: " gw_token
                     print "    gatewayHost: " gw_host
                     print "    gatewayPort: " gw_port
-                } else if (in_dip_studio==1 && openclaw_updated==0) {
-                    print "  openClaw:"
-                    print "    configHostPath: " cfg_path
-                    print "    workspaceHostPath: " ws_path
+                } else if (in_studio==1 && openclaw_updated==0) {
+                    print "  openclaw:"
+                    print "    hostPath: " hp
                     print "    gatewayToken: " gw_token
                     print "    gatewayHost: " gw_host
                     print "    gatewayPort: " gw_port
@@ -632,10 +614,10 @@ _dip_update_config_with_openclaw_config() {
     fi
 
     mv "${tmp_file}" "${CONFIG_YAML_PATH}"
-    if [[ -z "${config_path}" && -z "${workspace_path}" && -z "${gateway_token}" && -z "${gateway_host}" && -z "${gateway_port}" ]]; then
-        log_info "Removed dipStudio.openClaw configuration from ${CONFIG_YAML_PATH}"
+    if [[ -z "${host_path}" && -z "${gateway_token}" && -z "${gateway_host}" && -z "${gateway_port}" ]]; then
+        log_info "Removed studio.openclaw configuration from ${CONFIG_YAML_PATH}"
     else
-        log_info "Updated ${CONFIG_YAML_PATH} with dipStudio.openClaw configuration"
+        log_info "Updated ${CONFIG_YAML_PATH} with studio.openclaw configuration"
     fi
 }
 
@@ -655,8 +637,7 @@ _dip_append_release_extra_helm_args() {
         return 1
     fi
 
-    local config_host_path
-    local workspace_host_path
+    local host_path
     local gateway_token
     local gateway_host
     local gateway_port
@@ -664,38 +645,33 @@ _dip_append_release_extra_helm_args() {
 
     # Loop to allow re-entering configuration if validation fails
     while [[ "${need_reprompt}" == "true" ]]; do
-        config_host_path="$(get_dip_studio_openclaw_field "configHostPath")"
-        workspace_host_path="$(get_dip_studio_openclaw_field "workspaceHostPath")"
+        host_path="$(get_dip_studio_openclaw_field "hostPath")"
         gateway_token="$(get_dip_studio_openclaw_field "gatewayToken")"
         gateway_host="$(get_dip_studio_openclaw_field "gatewayHost")"
         gateway_port="$(get_dip_studio_openclaw_field "gatewayPort")"
 
         # If any required field is missing, prompt for input
-        if [[ -z "${config_host_path}" || -z "${workspace_host_path}" || -z "${gateway_token}" || -z "${gateway_host}" || -z "${gateway_port}" ]]; then
-            _dip_prompt_openclaw_paths "${config_host_path}" "${workspace_host_path}" "${gateway_token}" "${gateway_host}" "${gateway_port}" || return 1
-            config_host_path="${DIP_OPENCLAW_CONFIG_PATH}"
-            workspace_host_path="${DIP_OPENCLAW_WORKSPACE_PATH}"
+        if [[ -z "${host_path}" || -z "${gateway_token}" || -z "${gateway_host}" || -z "${gateway_port}" ]]; then
+            _dip_prompt_openclaw_config "${host_path}" "${gateway_token}" "${gateway_host}" "${gateway_port}" || return 1
+            host_path="${DIP_OPENCLAW_HOST_PATH}"
             gateway_token="${DIP_OPENCLAW_GATEWAY_TOKEN}"
             gateway_host="${DIP_OPENCLAW_GATEWAY_HOST}"
             gateway_port="${DIP_OPENCLAW_GATEWAY_PORT}"
 
             # Update config file with the new configuration
-            _dip_update_config_with_openclaw_config "${config_host_path}" "${workspace_host_path}" "${gateway_token}" "${gateway_host}" "${gateway_port}" || return 1
+            _dip_update_config_with_openclaw_config "${host_path}" "${gateway_token}" "${gateway_host}" "${gateway_port}" || return 1
         fi
 
         # Validate that all fields are not empty strings after prompting
-        if [[ -z "${config_host_path}" || -z "${workspace_host_path}" || -z "${gateway_token}" || -z "${gateway_host}" || -z "${gateway_port}" ]]; then
+        if [[ -z "${host_path}" || -z "${gateway_token}" || -z "${gateway_host}" || -z "${gateway_port}" ]]; then
             log_error "OpenClaw configuration fields cannot be empty."
             return 1
         fi
 
-        # Check if paths exist on disk
+        # Check if path exists on disk
         local -a missing_messages=()
-        if [[ ! -e "${config_host_path}" ]]; then
-            missing_messages+=("Configured OpenClaw config path does not exist: ${config_host_path}")
-        fi
-        if [[ ! -e "${workspace_host_path}" ]]; then
-            missing_messages+=("Configured OpenClaw workspace path does not exist: ${workspace_host_path}")
+        if [[ ! -e "${host_path}" ]]; then
+            missing_messages+=("Configured OpenClaw host path does not exist: ${host_path}")
         fi
 
         if [[ ${#missing_messages[@]} -gt 0 ]]; then
@@ -704,7 +680,7 @@ _dip_append_release_extra_helm_args() {
             if [[ ${confirm_result} -eq 2 ]]; then
                 # User chose to re-enter configuration, clear the config and loop again
                 log_info "Re-entering OpenClaw configuration..."
-                _dip_update_config_with_openclaw_config "" "" "" "" "" || return 1
+                _dip_update_config_with_openclaw_config "" "" "" "" || return 1
                 continue
             elif [[ ${confirm_result} -ne 0 ]]; then
                 # User cancelled or error occurred
@@ -717,11 +693,10 @@ _dip_append_release_extra_helm_args() {
     done
 
     target_args+=(
-        "--set-string" "persistence.config.hostPath=${config_host_path}"
-        "--set-string" "persistence.workspace.hostPath=${workspace_host_path}"
-        "--set-string" "studio.gatewayToken=${gateway_token}"
-        "--set-string" "studio.gatewayHost=${gateway_host}"
-        "--set-string" "studio.gatewayPort=${gateway_port}"
+        "--set-string" "studio.openclaw.hostPath=${host_path}"
+        "--set-string" "studio.openclaw.gatewayToken=${gateway_token}"
+        "--set-string" "studio.openclaw.gatewayHost=${gateway_host}"
+        "--set-string" "studio.openclaw.gatewayPort=${gateway_port}"
     )
 }
 

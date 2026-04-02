@@ -1136,25 +1136,25 @@ get_dip_studio_openclaw_field() {
     fi
 
     awk -v key="${field}:" '
-        $1=="dipStudio:" {
-            in_dip_studio=1
+        $1=="studio:" {
+            in_studio=1
             in_openclaw=0
             next
         }
-        in_dip_studio && $1=="openClaw:" {
+        in_studio && $1=="openclaw:" {
             in_openclaw=1
             next
         }
-        in_dip_studio && in_openclaw && $1==key {
+        in_studio && in_openclaw && $1==key {
             sub(/^[^:]+:[[:space:]]*/, "", $0)
             print $0
             exit
         }
-        in_dip_studio && in_openclaw && $0 ~ /^  [^ ]/ {
+        in_studio && in_openclaw && $0 ~ /^  [^ ]/ {
             in_openclaw=0
         }
-        in_dip_studio && $0 ~ /^[^ ]/ {
-            in_dip_studio=0
+        in_studio && $0 ~ /^[^ ]/ {
+            in_studio=0
             in_openclaw=0
         }
     ' "${cfg}" 2>/dev/null | sed -e 's/^"//; s/"$//' -e "s/^'//; s/'$//" | tr -d '\r'

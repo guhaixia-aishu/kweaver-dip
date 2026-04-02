@@ -19,14 +19,6 @@ generate_config_yaml() {
         if [[ -n "${v}" ]]; then cfg_tz="${v}"; fi
     fi
 
-    # Read existing OpenClaw paths from config if present (preserve user settings)
-    local dip_studio_openclaw_config_host_path=""
-    local dip_studio_openclaw_workspace_host_path=""
-    if [[ -f "${out}" ]]; then
-        dip_studio_openclaw_config_host_path="$(get_dip_studio_openclaw_field "configHostPath")"
-        dip_studio_openclaw_workspace_host_path="$(get_dip_studio_openclaw_field "workspaceHostPath")"
-    fi
-
     local node_ip
     # Try to get the first non-loopback IP address
     node_ip="$(hostname -I 2>/dev/null | tr ' ' '\n' | grep -v '^127\.' | head -1 | tr -d '\n' || true)"
@@ -559,16 +551,6 @@ DEP_EOF
 )
     fi
 
-    local dip_studio_section=""
-    if [[ -n "${dip_studio_openclaw_config_host_path}" || -n "${dip_studio_openclaw_workspace_host_path}" ]]; then
-        dip_studio_section=$(cat <<DIP_STUDIO_EOF
-dipStudio:
-  openClaw:
-    configHostPath: $(yaml_quote "${dip_studio_openclaw_config_host_path}")
-    workspaceHostPath: $(yaml_quote "${dip_studio_openclaw_workspace_host_path}")
-DIP_STUDIO_EOF
-)
-    fi
 
     cat > "${out}" <<EOF
 namespace: ${cfg_namespace}
@@ -583,7 +565,6 @@ accessAddress:
   port: 443
   scheme: https
   path: /
-${dip_studio_section}
 ${dep_services_section}
 EOF
 
