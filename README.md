@@ -93,4 +93,4 @@ Scan to join the KWeaver community group
 
 - **Contributing**: [Contributing Guide](rules/CONTRIBUTING.md)
 - **Issues**: [GitHub Issues](https://github.com/kweaver-ai/kweaver/issues)
-- **License**: [Apache License 2.0](LICENSE)
+- **License**: [Apache License 2.0](LICENSE) 
