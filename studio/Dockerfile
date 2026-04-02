@@ -20,8 +20,11 @@ RUN npm ci --omit=dev
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/assets ./assets
 COPY --from=build /app/templates ./templates
+COPY --from=build /app/built-in ./built-in
+COPY --from=build /app/extensions ./extensions
+COPY --from=build /app/scripts ./scripts
 
-RUN mkdir -p /data/openclaw/config /data/openclaw/workspace
+RUN mkdir -p /data/.openclaw/workspace
 
 EXPOSE 3100
 
