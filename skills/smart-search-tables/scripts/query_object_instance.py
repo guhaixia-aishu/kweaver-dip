@@ -4,12 +4,15 @@
 query_object_instance 可执行脚本（支持外部输入参数）。
 
 用法（推荐）：
-  python query_object_instance.py --token <TOKEN> --search "企业"
-或（位置参数）：
-  python query_object_instance.py <TOKEN> "企业"
+  python query_object_instance.py --base-url <BASE_URL> --account-id <ACCOUNT_ID> --token <TOKEN> --search "企业"
+或（位置参数 + 必填 base-url/account-id）：
+  python query_object_instance.py --base-url <BASE_URL> --account-id <ACCOUNT_ID> <TOKEN> "企业"
 
 说明：
+- `--base-url`（简写 `-b`）必填，对应平台网关 `base_url`。
+- `--account-id`（简写 `-a`）必填，对应请求头 `x-account-id`，无内置默认值。
 - token 获取顺序：命令行参数（位置 / `--token`）→ 环境变量 `QOI_TOKEN` → `kweaver token` / `npx kweaver token` 主动获取。
+- 未传 `--url-path` 时：若 `base_url` 含 `dip-poc` 则用 tool-box 调试地址，否则用 `/api/agent-retrieval/v1/kn/query_object_instance`。
 - 其余参数保留默认值，可按需覆盖。
 """
 
@@ -25,12 +28,11 @@ import urllib.request
 from typing import Any
 
 
-DEFAULT_BASE_URL = "https://dip-poc.aishu.cn"
-DEFAULT_URL_PATH = "/api/agent-operator-integration/v1/tool-box/db4da399-af91-4214-afd9-1762d07c942d/tool/0f2b2b86-8af3-4fcc-9d8f-810a4f3fa6ce/debug"
+URL_PATH_DIP_POC = "/api/agent-operator-integration/v1/tool-box/db4da399-af91-4214-afd9-1762d07c942d/tool/0f2b2b86-8af3-4fcc-9d8f-810a4f3fa6ce/debug"
+URL_PATH_AGENT_RETRIEVAL = "/api/agent-retrieval/v1/kn/query_object_instance"
 DEFAULT_X_BD = "bd_public"
 DEFAULT_KN_ID = "idrm_metadata_kn_object_lbb"
 DEFAULT_OT_ID = "metadata"
-DEFAULT_ACCOUNT_ID = "f6713976-1cf6-11f1-b2cd-d6e9efdbcbb2"
 DEFAULT_ACCOUNT_TYPE = "user"
 
 
@@ -73,6 +75,13 @@ def _get_token_fallback() -> str:
     return ""
 
 
+def _default_url_path_for_base(base_url: str) -> str:
+    """dip-poc 环境走 tool-box 调试路径，其余走 agent-retrieval。"""
+    if "dip-poc" in (base_url or "").lower():
+        return URL_PATH_DIP_POC
+    return URL_PATH_AGENT_RETRIEVAL
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description="POST query_object_instance tool-box debug")
 
@@ -88,10 +97,24 @@ def main() -> int:
     p.add_argument("--knn-limit-value", type=int, default=1000)
     p.add_argument("--kn-id", "-k", default=DEFAULT_KN_ID)
     p.add_argument("--ot-id", default=DEFAULT_OT_ID)
-    p.add_argument("--account-id", default=DEFAULT_ACCOUNT_ID)
+    p.add_argument(
+        "--account-id",
+        "-a",
+        required=True,
+        help="请求头 x-account-id（必填，无默认值）",
+    )
     p.add_argument("--account-type", default=DEFAULT_ACCOUNT_TYPE)
-    p.add_argument("--base-url", "-b", default=DEFAULT_BASE_URL)
-    p.add_argument("--url-path", default=DEFAULT_URL_PATH)
+    p.add_argument(
+        "--base-url",
+        "-b",
+        required=True,
+        help="平台网关 base_url（必填，无默认值）",
+    )
+    p.add_argument(
+        "--url-path",
+        default="",
+        help="可选；不传则按 base_url 是否含 dip-poc 自动选择路径",
+    )
     p.add_argument("--x-business-domain", "-d", default=DEFAULT_X_BD)
     p.add_argument("--insecure", action="store_true")
     p.add_argument("--timeout", type=float, default=120.0)
@@ -112,8 +135,18 @@ def main() -> int:
         )
         return 2
 
+    account_id = (args.account_id or "").strip()
+    if not account_id:
+        print("error: --account-id is required and must be non-empty", file=sys.stderr)
+        return 2
+
     base_url = args.base_url.rstrip("/")
-    url_path = args.url_path if args.url_path.startswith("/") else "/" + args.url_path
+    path_opt = (args.url_path or "").strip()
+    if path_opt:
+        url_path = path_opt if path_opt.startswith("/") else "/" + path_opt
+    else:
+        raw = _default_url_path_for_base(base_url)
+        url_path = raw if raw.startswith("/") else "/" + raw
     url = base_url + url_path
 
 
@@ -145,7 +178,7 @@ def main() -> int:
             "include_type_info": False,
         },
         "header": {
-            "x-account-id": args.account_id,
+            "x-account-id": account_id,
             "x-account-type": args.account_type,
         },
     }

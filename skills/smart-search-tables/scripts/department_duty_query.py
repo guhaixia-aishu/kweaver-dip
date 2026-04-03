@@ -22,7 +22,7 @@ import uuid
 from typing import Any
 
 
-DEFAULT_BASE_URL = "https://dip-poc.aishu.cn"
+DEFAULT_BASE_URL = ""
 DEFAULT_URL_PATH = "/api/af-sailor-agent/v1/assistant/tools/department_duty_query"
 DEFAULT_X_BUSINESS_DOMAIN = "bd_public"
 DEFAULT_KN_ID = "duty"
@@ -74,7 +74,12 @@ def main() -> int:
     p.add_argument("--token", "-t", dest="token_opt", default="")
     p.add_argument("--query", "-q", dest="query_opt", default="")
     p.add_argument("--kn-id", "-k", default=DEFAULT_KN_ID)
-    p.add_argument("--base-url", "-b", default=DEFAULT_BASE_URL)
+    p.add_argument(
+        "--base-url",
+        "-b",
+        required=True,
+        help="平台网关 base_url（必填，无默认值）",
+    )
     p.add_argument("--url-path", default=DEFAULT_URL_PATH)
     p.add_argument("--x-business-domain", "-d", default=DEFAULT_X_BUSINESS_DOMAIN)
     p.add_argument("--trace-id", default="")

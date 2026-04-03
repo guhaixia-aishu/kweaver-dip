@@ -49,16 +49,31 @@ argument-hint: [找表/找数/资产定位类中文问题；可选 kn_id 覆盖]
 - **脚本**：[scripts/query_object_instance.py](scripts/query_object_instance.py)
 - **认证**：`--token` / `-t` 或位置参数；否则由脚本内部使用 `QOI_TOKEN` 和 `kweaver token` 主动获取
 - **检索词**：`--search` / `-s` 或第 2 个位置参数（默认 `企业`）
-- **常用可选**：`--kn-id`、`--ot-id`、`--limit`、`--base-url`、`--url-path`、`--x-business-domain`、`--insecure`、`--timeout`、`--out`
+- **必填参数**：
+  - `--base-url` / `-b`：平台网关 `base_url`，可通过 `kweaver auth whoami` 的 **Issuer** 字段获取
+  - `--account-id` / `-a`：请求头 `x-account-id`，可通过 `kweaver auth whoami` 的 **User ID** 字段获取
+- **常用可选**：`--kn-id`、`--ot-id`、`--limit`、`--url-path`、`--x-business-domain`、`--insecure`、`--timeout`、`--out`
 - **说明**：脚本内 `need_total` 为 `false`；`kn_id` 须为元数据网且符合 `SOUL.md`。
 
 ### 第 2 步：`department_duty_query`
 
 - **脚本**：[scripts/department_duty_query.py](scripts/department_duty_query.py)
 - **认证**：`--token` / `-t` 或位置参数；否则由脚本内部使用 `DDQ_TOKEN` 和 `kweaver token` 主动获取
+- **必填参数**：
+  - `--base-url` / `-b`：平台网关 `base_url`，可通过 `kweaver auth whoami` 的 **Issuer** 字段获取
 - **问句**：`--query` / `-q` 或第 2 个位置参数（未给则用脚本内默认长句）
 - **注意**：请求 JSON 内 **`kn_id` 当前固定 `menu_kg_dept_infosystem_duty`**，`--kn-id` 未写入 body。脚本会先向 stdout 打印请求体再发请求，联调时注意区分输出。
 - **404**：不阻断第 1 步表/视图结论，见「步骤约束」。
+
+## 临时文件清理（成功后）
+
+本 skill 在调用子能力时，允许在“本机任务目录”创建临时脚本（用于组织请求 JSON/发起 HTTP）；**MUST NOT** 将临时脚本落在仓库 **`skills/`** 及其任意子目录下，若仓库内另有 **`.claude/skills/`** 等 skill 同步树亦同。**宜** 使用工作区根目录、系统临时目录等与上述路径隔离的位置。为减少磁盘残留，本 skill 增加清理门禁：
+
+- MUST：当且仅当本轮流程成功完成到“总结（Step 6）”并输出最终回复后，删除本轮创建的临时脚本文件。
+- MUST：仅删除满足以下规则的文件名模式：以 `_tmp_` 开头，后缀为 `.py` / `.sh` / `.ps1`（大小写不敏感也视为匹配）。
+- MUST：绝对不删除仓库中的任何 `*_request_example*` 样例脚本，或用户非本轮创建的临时文件。
+- MUST：若流程在任一步骤发生异常并提前终止，则不删除临时脚本（保留用于排查）；在异常回执中可提示“临时脚本已保留”。
+- MUST：若用户明确要求“保留调试文件/导出详情/展开详情”，则不删除相关临时脚本。
 
 ## 严格限定（找数场景）
 
