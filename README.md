@@ -29,14 +29,31 @@ Before deploying KWeaver DIP, prepare OpenClaw first:
 Then use the built-in `deploy` directory in this repository:
 
 ```bash
+# 1. Clone the repository
 git clone https://github.com/kweaver-ai/kweaver-dip.git
 cd kweaver-dip/deploy
+
+# 2. Install KWeaver DIP
 sudo ./deploy.sh kweaver-dip install
+
+# 3. Install OpenClaw DIP extensions
+openclaw plugins install ./openclaw-extensions/dip
 ```
 
-After deployment, open:
+### Authorization
 
-- `https://<node-ip>/dip-hub` for KWeaver DIP Hub
+After deployment, authorize OpenClaw to link with DIP Studio:
+
+1. Run `openclaw devices list` to find the pending device
+2. Run `openclaw devices approve <Request>` to approve it
+
+After authorization, you can access:
+
+- `https://<node-ip>/deploy`: deployment console
+- `https://<node-ip>/studio`: KWeaver Studio
+
+Default username: `admin`  
+Initial password: `eisoo.com`
 
 For full installation requirements, config details, flags, and offline deployment options, see [deploy/README.md](deploy/README.md).
 
