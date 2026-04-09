@@ -64,6 +64,7 @@ metadata:
 创建 Cron 任务时，强制参数：
 1. `sessionTarget` 必须是 "isolated"
 2. `payload.kind` 必须是 "agentTurn"
+3. `delivery.bestEffort` 必须是 true
 
 ## 【PLAN.md 模板】
 
