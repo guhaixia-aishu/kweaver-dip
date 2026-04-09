@@ -2,7 +2,7 @@ import { memo, useCallback, useEffect, useMemo, useRef } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import DipChatKit from '@/components/DipChatKit'
 import useSyncHistorySessions from '@/hooks/useSyncHistorySessions'
-import type { ConversationLocationState, ConversationRouteState } from './types'
+import type { ConversationRouteState } from './types'
 
 const SUBMIT_CONSUMED_PREFIX = 'dip-chatkit-submit-consumed'
 
@@ -10,7 +10,7 @@ const Conversation = () => {
   useSyncHistorySessions()
 
   const navigate = useNavigate()
-  const location = useLocation() as ConversationLocationState
+  const location = useLocation()
   const [searchParams] = useSearchParams()
   const employeeFromQuery = searchParams.get('employee')
   const sessionKeyFromQuery = searchParams.get('sessionKey')?.trim() || ''

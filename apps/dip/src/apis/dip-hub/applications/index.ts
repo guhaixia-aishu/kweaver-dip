@@ -39,19 +39,19 @@ export const getApplications = (params?: Record<string, any>): Promise<Applicati
 
 /**
  * 查看应用基础信息
- * OpenAPI: GET /applications/basic-info?appkey=xxx 或 ?package_name=xxx
- * 支持通过 appkey 或 packageName 任意一个参数查询
+ * OpenAPI: GET /applications/basic-info?key=xxx 或 ?package_name=xxx
+ * 支持通过 key 或 packageName 任意一个参数查询
  */
-export const getApplicationsBasicInfo = (appkey?: string): Promise<ApplicationBasicInfo> => {
-  return get(`/api/dip-hub/v1/applications/basic-info`, { params: { appkey } })
+export const getApplicationsBasicInfo = (key?: string): Promise<ApplicationBasicInfo> => {
+  return get(`/api/dip-hub/v1/applications/basic-info`, { params: { key } })
 }
 
 /**
  * 查看业务知识网络配置
- * OpenAPI: GET /applications/ontologies?appkey=xxx
+ * OpenAPI: GET /applications/ontologies?key=xxx
  */
-export const getApplicationsOntologies = (appkey: string): Promise<OntologyInfo[]> => {
-  const p1 = get(`/api/dip-hub/v1/applications/ontologies`, { params: { appkey } })
+export const getApplicationsOntologies = (key: string): Promise<OntologyInfo[]> => {
+  const p1 = get(`/api/dip-hub/v1/applications/ontologies`, { params: { key } })
   const p2 = p1.then((result: any) => {
     // 如果结果不是数组，返回空数组
     return Array.isArray(result) ? result : []
@@ -62,10 +62,10 @@ export const getApplicationsOntologies = (appkey: string): Promise<OntologyInfo[
 
 /**
  * 查看智能体配置
- * OpenAPI: GET /applications/agents?appkey=xxx
+ * OpenAPI: GET /applications/agents?key=xxx
  */
-export const getApplicationsAgents = (appkey: string): Promise<AgentInfo[]> => {
-  const p1 = get(`/api/dip-hub/v1/applications/agents`, { params: { appkey } })
+export const getApplicationsAgents = (key: string): Promise<AgentInfo[]> => {
+  const p1 = get(`/api/dip-hub/v1/applications/agents`, { params: { key } })
   const p2 = p1.then((result: any) => {
     // 如果结果不是数组，返回空数组
     return Array.isArray(result) ? result : []
@@ -76,18 +76,18 @@ export const getApplicationsAgents = (appkey: string): Promise<AgentInfo[]> => {
 
 /**
  * 卸载应用
- * @param appkey 应用包唯一标识
+ * @param key 应用包唯一标识
  */
-export const deleteApplications = (appkey: string): Promise<void> => {
-  return del(`/api/dip-hub/v1/applications/${encodeURIComponent(appkey)}`)
+export const deleteApplications = (key: string): Promise<void> => {
+  return del(`/api/dip-hub/v1/applications/${encodeURIComponent(key)}`)
 }
 
 /**
  * 钉住/取消钉住微应用
  */
 export async function pinMicroAppApi(params: PinMicroAppParams): Promise<ApplicationInfo> {
-  const { appkey, pinned } = params
-  return put(`/api/dip-hub/v1/applications/${encodeURIComponent(appkey)}/pinned`, {
+  const { key, pinned } = params
+  return put(`/api/dip-hub/v1/applications/${encodeURIComponent(key)}/pinned`, {
     body: JSON.stringify({ pinned }),
   })
 }

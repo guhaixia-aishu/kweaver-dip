@@ -213,7 +213,7 @@ export const removeBasePath = (path: string): string => {
 
 /**
  * 通过固定应用 key（WENSHU_APP_KEY）解析默认微应用路由
- * - 成功时返回 /application/{appkey}
+ * - 成功时返回 /application/{key}
  * - 失败或找不到应用时返回 /application/error
  */
 export const resolveDefaultMicroAppPath = async (): Promise<string> => {

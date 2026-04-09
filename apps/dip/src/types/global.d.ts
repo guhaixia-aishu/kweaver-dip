@@ -2,12 +2,8 @@
 
 declare module 'js-cookie'
 
-declare global {
-  interface Window {
-    __APP_RUNTIME_CONFIG__?: {
-      PUBLIC_ENABLED_MODULES?: string
-    }
+declare interface Window {
+  __APP_RUNTIME_CONFIG__?: {
+    PUBLIC_ENABLED_MODULES?: string
   }
 }
-
-export {}

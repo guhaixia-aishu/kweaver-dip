@@ -34,7 +34,7 @@ export interface MicroAppProps {
   application: {
     /** 应用 ID */
     id: number
-    /** 应用包唯一标识 appkey */
+    /** 应用包唯一标识 key */
     key: string
     /** 应用名称 */
     name: string

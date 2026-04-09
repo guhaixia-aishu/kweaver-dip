@@ -4,7 +4,7 @@ import { type ApplicationBasicInfo, getApplicationsBasicInfo } from '@/apis'
 import ScrollBarContainer from '../ScrollBarContainer'
 
 interface BasicConfigProps {
-  /** 应用 appkey（ApplicationBasicInfo.key） */
+  /** 应用 key（ApplicationBasicInfo.key） */
   appKey?: string
 }
 

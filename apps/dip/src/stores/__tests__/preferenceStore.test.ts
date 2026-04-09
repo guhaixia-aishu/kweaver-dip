@@ -20,7 +20,7 @@ const { getApplicationsMock, pinMicroAppApiMock } = vi.hoisted(() => ({
 
 vi.mock('@/apis', () => ({
   getApplications: () => getApplicationsMock(),
-  pinMicroAppApi: (body: { appkey: string; pinned: boolean }) => pinMicroAppApiMock(body),
+  pinMicroAppApi: (body: { key: string; pinned: boolean }) => pinMicroAppApiMock(body),
 }))
 
 const baseApp = (key: string, pinned: boolean): ApplicationInfo =>
@@ -76,7 +76,7 @@ describe('preferenceStore', () => {
     const { usePreferenceStore } = await import('../preferenceStore')
     const ok = await usePreferenceStore.getState().pinMicroApp('new-app')
     expect(ok).toBe(true)
-    expect(pinMicroAppApiMock).toHaveBeenCalledWith({ appkey: 'new-app', pinned: true })
+    expect(pinMicroAppApiMock).toHaveBeenCalledWith({ key: 'new-app', pinned: true })
     expect(messageSuccess).toHaveBeenCalledWith('固定成功')
   })
 
@@ -97,7 +97,7 @@ describe('preferenceStore', () => {
     await usePreferenceStore.getState().fetchPinnedMicroApps()
     expect(usePreferenceStore.getState().isPinned('t1')).toBe(true)
     await usePreferenceStore.getState().togglePin('t1')
-    expect(pinMicroAppApiMock).toHaveBeenCalledWith({ appkey: 't1', pinned: false })
+    expect(pinMicroAppApiMock).toHaveBeenCalledWith({ key: 't1', pinned: false })
   })
 
   it('fetchPinnedMicroApps 接口失败时结束 loading、不抛错', async () => {
