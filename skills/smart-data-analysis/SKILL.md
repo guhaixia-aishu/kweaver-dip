@@ -4,12 +4,13 @@ version: "1.0.0"
 user-invocable: true
 description: >-
   数据分析员工（Data Analyst Agent）的唯一总入口：凡与数据资产、取数、指标、表/视图、
-  治理职责、知识网络、统计或分析相关的问题，必须先经本 skill 做编排与路由，再进入找表或问数等子流程。
-  负责 kn 分域、上下文注入（token、date）及与 smart-search-tables、smart-ask-data、kweaver-core 的交接。
+  治理职责、知识网络等相关的问题，必须先经本 skill 做编排与路由，再进入找表或问数等子流程。
+  其中「问数」在本仓库中**仅**指 text2sql 查询返数；**解读性分析、出图、代码二次计算不通过问数交付**（见 SOUL.md 与 smart-ask-data）。
+  负责 kn 分域、上下文注入（token、base_url、user_id、date）及与 smart-search-tables、smart-ask-data、kweaver-core 的交接。
   当用户提出任何数据类自然语言任务、或需在多条业务 KN 间切换时使用；知识网络来源强制以 SOUL.md 配置为准。
 metadata:
   openclaw:
-    skillKey: smart_data_analysis
+    skillKey: smart-data-analysis
 allowed-tools: Bash(kweaver *), Bash(npx kweaver *)
 argument-hint: [自然语言指令或带 kn 上下文的任务描述]
 ---
@@ -18,16 +19,17 @@ argument-hint: [自然语言指令或带 kn 上下文的任务描述]
 
 本 skill 是 **数据分析员工角色的总入口**：在 OpenClaw / KWeaver 数据技能栈中，**所有数据相关问题必须先经过本 skill**，完成 **KN 与上下文对齐、意图路由** 后，再委派至 **找表** 或 **问数**（或其它数据子 skill），**禁止**在未做编排判断时直接跳到 `smart-search-tables`、`smart-ask-data` 或零散工具调用（紧急纯 CLI 运维除外且须在推理中注明例外理由）。
 
-**OpenClaw**：`metadata.openclaw.skillKey` 为 `smart_data_analysis`。与其它 skill 并存时，**数据类意图优先匹配并应用本 skill**；子 skill 作为 **执行层**，承接本编排给出的分支与约束。
+**OpenClaw**：`metadata.openclaw.skillKey` 为 `smart-data-analysis`。与其它 skill 并存时，**数据类意图优先匹配并应用本 skill**；子 skill 作为 **执行层**，承接本编排给出的分支与约束。
 
 ## 总入口原则（必须遵守）
 
 1. **先编排，后执行**：识别用户问题是否属于「数据域」（资产/表/视图/指标/SQL/图表/职责/元数据/多 KN 等）；若是，**先走本节下方「编排总流程」与「路由识别」**，再打开对应子 skill 或工具链。
 2. **单一前门**：同一轮对话中新增的数据子任务，仍应 **回到本 skill 的编排逻辑** 决定是延续当前分支还是切换找表/问数。
-3. **按最终意图路由**：先判断用户最终想要的是“定位数据资产（表/视图）”还是“拿到数据结果（指标/明细/统计/图表）”。前者走找表；后者走问数，必要时在问数分支内先找表再生成 SQL。
+3. **按最终意图路由**：先判断用户最终想要的是“定位数据资产（表/视图）”还是“**用 SQL 拿到查询结果（明细/汇总均可，但必须能落成 gen_exec）**”。前者走找表；后者走问数，必要时在问数流程内用 `show_ds` 收敛表字段。若用户**主诉求**为业务解读、图表、归因建议等且不能收敛为单次（或明确多条）查询 → **不得**指望 `smart-ask-data` 交付，应在编排层说明「问数仅返数」，由对话其它方式处理或请用户收窄为可查询问题。
 4. **交接清晰**：转入 [smart-search-tables](../smart-search-tables/SKILL.md) 或 [smart-ask-data](../smart-ask-data/SKILL.md) 时，在内部上下文中保留已解析的 **`kn_id_*`、时间口径**，避免子 skill 重复猜 KN。
 5. **非数据问题**：与数据无关时 **不必** 强行套用本 skill；若用户一句话里混有数据与非数据，**数据部分**仍按上述原则经本 skill 编排（可分段回答）。
 6. **禁止交叉兜底**：本轮路由为 **问数** 时，若问数走不通，**禁止**改走 **找表** 分支代替交付；路由为 **找表** 时，若找表走不通，**禁止**改走 **问数** 分支代替交付。两种情况下均应 **直接输出走不通的原因**（缺 KN、token、无命中、平台错误等）及用户侧可采取的修复条件。细则见下方「分支走不通时的处理（禁止交叉兜底）」。
+7. **数据分析类但超出找表/问数（须告知并终止）**：若问题属于 **广义数据分析 / 数据域**（例如解读性分析、图表可视化、预测与建模、归因与归因建议、分析报告撰写、依赖 `execute_code_sync` / `json2plot` 的加工与出图、无法收敛为可执行 SQL 的多轮探索等），但 **最终无法** 落成 **找表** 交付（元数据检索下的资产/职责定位，见 `smart-search-tables`）也 **无法** 落成 **问数** 交付（`show_ds` → `gen_exec` 可表达的明细或汇总，见 `smart-ask-data`）→ **必须在本 skill 终止流程**：向用户 **明确说明** 当前数据分析员工在本仓库中 **仅** 通过 **找表/找数** 与 **问数** 两类子流程交付；该需求 **不在上述能力范围内**；**不得** 继续调用 `smart-search-tables` 或 `smart-ask-data` 「凑答案」；可提示用户将问题 **收窄** 为「查哪张表/谁负责」或「一条（或多条）可用 SQL 表达的取数」。细则见下方「数据域内但不在找表/问数范围」。
 
 ## 入口门禁（防跑偏，必须先判定）
 
@@ -35,6 +37,7 @@ argument-hint: [自然语言指令或带 kn 上下文的任务描述]
 - **Front Gate B（是否已过总入口）**：若将进入 `smart-ask-data` 或 `smart-search-tables`，必须先在本 skill 完成 KN 与路由判定；除非用户显式 `/smart-ask-data` 或 `/smart-search-tables` 强制调用。
 - **Front Gate C（路由唯一性）**：同一轮仅保留一个最终交付分支（找表或问数）；前置步骤可复用，但最终交付不允许双分支并行混答。
 - **Front Gate D（失败处理）**：目标分支走不通时，仅输出失败原因和修复条件，不得切换到另一分支兜底生成“近似答案”。
+- **Front Gate E（能力边界：数据域内但无找表/问数落点）**：已进入本 skill 且确认为数据域，但经「路由识别」后 **不能** 有效归入 **找表** 或 **问数** 任一终态交付（含用户拒绝将问题收窄为可交付形式）→ **停止** `smart-search-tables` / `smart-ask-data` 及等价执行，仅输出 **能力边界说明** 与 **可收窄建议**；**禁止** 用通用长文、虚构取数或无关检索冒充交付。
 
 ## SOUL.md 知识网络来源（强约束）
 
@@ -49,17 +52,17 @@ argument-hint: [自然语言指令或带 kn 上下文的任务描述]
 |------|------------------|------------------------|
 | 路由、kn 切换、上下文注入 | ✅ 主责 | 配合 |
 | 找表 / 定位 / 职责 / 澄清 | 定义路由与交接 | [smart-search-tables/SKILL.md](../smart-search-tables/SKILL.md) |
-| 问数 / 指标 / 图表 / text2sql | 定义路由与交接 | [smart-ask-data/SKILL.md](../smart-ask-data/SKILL.md) |
+| 问数（仅 text2sql 查询返数） | 定义路由与交接 | [smart-ask-data/SKILL.md](../smart-ask-data/SKILL.md) |
 | 平台 CLI、认证、BKN 全量手册 | 按需引用 | [kweaver-core/SKILL.md](../kweaver-core/SKILL.md) |
 
 ## 职能矩阵（谁做什么）
 
 | 角色/技能 | 负责（Do） | 不负责（Don't） | 典型输出 |
 |-----------|------------|-----------------|----------|
-| `smart-data-analysis`（总编排） | 识别主意图；确定 `kn_id_find_table` / `kn_id_ask_data`；组织 token/date 上下文；决定先找表还是先问数 | 不直接做对象检索细节；不直接做 SQL 生成与执行；不替代子 skill 结果 | 路由决策、执行顺序、交接约束 |
+| `smart-data-analysis`（总编排） | 识别主意图；确定 `kn_id_find_table` / `kn_id_ask_data`；组织 token/date 上下文；决定先找表还是先问数；对 **数据域内但超出找表/问数** 的请求 **告知并终止** | 不直接做对象检索细节；不直接做 SQL 生成与执行；不替代子 skill 结果；**不**在超范围场景下强行启动子 skill | 路由决策、执行顺序、交接约束；超范围时的边界说明 |
 | `smart-search-tables`（找表执行） | 基于给定 KN 做对象实例检索；返回候选表/视图；补充职责归属与澄清问题 | 不直接给最终指标结果；不做复杂统计分析结论 | 候选表清单、优先级、归属说明 |
-| `smart-ask-data`（问数执行） | 基于给定 KN 做问数取数；完成指标口径确认；按需产出图表与可复核步骤 | 不承担跨流程总路由；在实体不明确时不应盲算 | 数值结果、口径说明、图表/SQL 路径 |
-| `kweaver-core`（平台能力） | 提供认证与平台操作参考；承载底层 CLI 能力说明 | 不替代业务编排判断；不直接定义问数口径；不作为 KN 列表来源 | token 获取结果、平台操作依据 |
+| `smart-ask-data`（问数执行） | **Step 1** 确认 `base_url`/`user_id`/`token`/`inner_llm.name` → 基于给定 KN 做 **text2sql**（show_ds → gen_exec）；附与 SQL 一致的最小口径 | 不承担跨流程总路由；**不做**业务分析结论、**不出图**、**不使用** execute_code_sync；实体不明确时不应盲算 | 原样 SQL、原样结果集、最小口径与 KN/表依据 |
+| `kweaver-core`（平台能力） | 提供认证与平台操作参考；承载底层 CLI 能力说明 | 不替代业务编排判断；不直接定义问数口径；不作为 KN 列表来源 | **`token` / `base_url` / `user_id` 等平台连接信息**（见下文「上下文注入」与 kweaver-core）、平台操作依据 |
 
 若仅有顶层编排而无子 skill 正文：**仍须按下方路由规则执行**；找表/问数细节分别以 [smart-search-tables](../smart-search-tables/SKILL.md)、[smart-ask-data](../smart-ask-data/SKILL.md) 为准；CLI 与 BKN 以 `kweaver-core` 的 `references/*.md` 为准（尤其 `bkn.md`）。
 
@@ -71,15 +74,16 @@ argument-hint: [自然语言指令或带 kn 上下文的任务描述]
 编排进度：
 - [ ] 1. 解析任务中的 KN / 业务域（见「知识网络分域」）
 - [ ] 2. 注入公共上下文（见「上下文注入」）
-- [ ] 3. 意图路由：找表 / 问数（见「路由识别」）
-- [ ] 4. 进入对应分支清单并完成；歧义时先澄清
-- [ ] 5. 输出结构：结论 + 依据（表/视图/KN）+ 下一步可选动作
+- [ ] 3. 意图路由：找表 / 问数 / **超范围终止**（见「路由识别」；数据域内若无法落成找表或问数则走「数据域内但不在找表/问数范围」）
+- [ ] 4. 进入对应分支清单并完成；歧义时先澄清；若已判定超范围则 **不进入** 步骤 4 的子 skill
+- [ ] 5. 输出结构：结论 + 依据（表/视图/KN）+ 下一步可选动作；超范围时仅为边界说明 + 收窄建议
 ```
 
 ## 编排前自检（开始执行子流程前必须为“是”）
 
 - 是否确认本请求属于数据任务？
-- 是否从 `SOUL.md` 获得并校验了可用 KN？
+- 若属于数据任务：是否已排除「仅广义数据分析、**无**找表/问数可交付落点」？若属于该类，是否已 **告知用户并终止**，**未**调用 `smart-search-tables` / `smart-ask-data`？
+- 是否从 `SOUL.md` 获得并校验了可用 KN？（超范围终止时：未完成 KN 校验亦 **不得** 用子 skill 凑合执行）
 - 是否已确定本轮最终交付分支（找表或问数）？
 - 是否已记录对应 `kn_id_find_table` / `kn_id_ask_data` 与时间口径？
 - 是否明确失败时只报错不交叉兜底？
@@ -91,7 +95,7 @@ argument-hint: [自然语言指令或带 kn 上下文的任务描述]
 | 占位 | 典型用途 |
 |------|----------|
 | `kn_id_find_table` | 找表、数据视图定位、目录/语义归属 |
-| `kn_id_ask_data` | 问数、指标、分析、自然语言取数 |
+| `kn_id_ask_data` | 问数：业务数据 **SQL 查询**（自然语言→gen_exec），非广义「分析」 |
 
 **切换规则**
 
@@ -106,16 +110,16 @@ argument-hint: [自然语言指令或带 kn 上下文的任务描述]
 
 | 键 | 含义 |
 |----|------|
-| `token` | token 优先由 `kweaver-core` 获取（CLI 会自动刷新）；仅当 token 获取连续失败 **>3 次**（命令报错/无有效 token/仍返回 401）时，才提示用户手动用 `kweaver auth login <url>` 获取 token，或直接在对话中输入 `token`（仅 token，不要密码）；随后将 token 注入后续工具调用 |
+| `token` | 访问令牌；**KWeaver CLI**（[kweaver-core/SKILL.md](../kweaver-core/SKILL.md)）可通过 `kweaver token`、环境变量 `KWEAVER_TOKEN` 或与 `~/.kweaver/` 凭据联动的自动刷新取得。仅当获取连续失败 **>3 次**（命令报错/无有效 token/仍返回 401）时，才提示用户 `kweaver auth login <url>` 或仅在对话中提供 token（仅 token，不要密码）；随后注入后续调用 |
+| `base_url` | 平台网关根地址（与各工具 `url_path` 拼接）。**KWeaver** 侧可通过环境变量 `KWEAVER_BASE_URL`、登录写入的凭据中的平台 URL，或 `kweaver config show` 等输出的平台地址取得，供问数/HTTP 样例脚本与 [smart-ask-data](../smart-ask-data/SKILL.md) 的 `TEXT2SQL_BASE_URL` / `--base-url` 等对齐 |
+| `user_id` | 平台用户标识（如 text2sql 请求体 `data_source.user_id` 常用 UUID）。**KWeaver** 与平台账号上下文可确定或导出该值；亦可经环境变量 `TEXT2SQL_USER_ID`、命令行 `--user-id` 等与 [smart-ask-data/references/text2sql.md](../smart-ask-data/references/text2sql.md)「网关根地址与用户 ID」的解析链衔接 |
 | `date` | 用户问题中的时间范围、默认「当前日期」与对比周期（同比/环比） |
 将上述与当前 `kn_id_*` 一并作为后续工具调用的隐含约束，减少跨 KN 误查。
 
-#### Token 获取策略（配合 kweaver-core）
+#### KWeaver 与 `token` / `base_url` / `user_id`（配合 kweaver-core）
 
-- token 默认尝试从 `kweaver-core` 获取/刷新（例如通过执行目标命令触发自动刷新或使用 `kweaver token` 打印 token）。
-- 若 token 获取连续失败 **>3 次**：停止自动获取，转人工模式，要求用户手动 `kweaver auth login <url>` 获取 token，或直接在对话中提供 token（仅 token，不要密码）。
-- token 一般不会过期；接口无结果不等于 token 过期，不要轻易下「token 过期」结论。
-- smart-search-tables技能的脚本中已经有token获取的逻辑，所以找数意图就不用主动获取token了
+- **默认**：三类信息优先通过 **KWeaver CLI** 与 [kweaver-core](../kweaver-core/SKILL.md) 文档中的认证优先级（`KWEAVER_TOKEN` + `KWEAVER_BASE_URL`、`kweaver auth login`、`kweaver token` 等）取得，再映射到子 skill 约定的环境变量或脚本参数。
+- **token** 获取连续失败 **>3 次**：停止自动获取，转人工模式，要求用户 `kweaver auth login <url>` 或仅在对话中提供 token（仅 token，不要密码）。
 
 ## 路由识别
 
@@ -142,27 +146,47 @@ argument-hint: [自然语言指令或带 kn 上下文的任务描述]
 - [ ] 输出：候选表/视图列表 + 推荐优先级 + 若用户下一步要统计则引导进入问数
 ```
 
-### 走「问数」分支（最终目标是拿到数据结果）
+### 走「问数」分支（最终目标是 **SQL 查询结果**）
 
-触发词或场景：**多少、占比、趋势、TopN、指标、统计、分析结论、画图、查询…信息（需要结果）**；已识别具体视图/表并需要 **聚合或 SQL 级取数**。
+触发词或场景：查**多少**、**列**、**明细**、**汇总**、可 SQL 表达的 **TopN/占比**（结果由 gen_exec 直接返回）、「把…查出来」等。**不**包括：纯解读「分析一下」、要 **图表**、要 **代码再算**、要 **结论建议**（这些不由 `smart-ask-data` 完成）。
 
 **分支清单**
 
 ```text
 问数进度：
+- [ ] 进入 `smart-ask-data` 前：确认 **`base_url`、`user_id`、`token`、`inner_llm.name`**（大模型名优先记忆区、无则用户确认），见 [smart-ask-data/SKILL.md](../smart-ask-data/SKILL.md) Step 1
 - [ ] 确认 `kn_id_ask_data`
-- [ ] 若表未就绪：先在问数流程内短循环找表/找视图（调用 `smart-search-tables` 或追问）后再继续
-- [ ] 明确指标口径、时间粒度、维度与过滤条件
-- [ ] 使用平台允许的 text2sql / 同步执行 / 图表工具（以环境可用工具为准；细则见 [smart-ask-data/SKILL.md](../smart-ask-data/SKILL.md)）
-- [ ] 输出：数字/图表 + 口径说明 + 可复核步骤
+- [ ] 若表未就绪：在问数流程内用 `show_ds`（或必要时 `smart-search-tables`）收敛表字段后再继续
+- [ ] 明确与 SQL 可落地的指标口径、时间、维度与过滤条件
+- [ ] 仅使用 text2sql（show_ds → gen_exec）；细则见 [smart-ask-data/SKILL.md](../smart-ask-data/SKILL.md)
+- [ ] 输出：**原样 SQL + 原样结果** + 最小口径（KN/表）；**不承诺** 分析结论或图表
 ```
 
 ### 歧义与复合请求（按最终意图收敛）
 
-- **找表 + 问数** 同句出现：最终目标若是“出结果”，则归入**问数分支**，仅把找表当作前置步骤。
-- **仅**「分析一下」且无对象：先澄清对象与时间范围，默认不要直接生成长文编造数字。
+- **找表 + 问数** 同句出现：最终目标若是“**查数/出表**”，则归入**问数分支**，找表仅作前置。
+- **仅**「分析一下」且无**可查询**落点：先澄清能否收窄为具体问题（要查哪些字段、什么条件）；**不得**用问数分支伪造「分析长文」。
 - **跨 KN**：分别切换 `kn_id_find_table` / `kn_id_ask_data` 完成各自步骤，禁止混用未声明的 KN。
 - 示例：`查询企业相关信息` 若用户期望返回企业数据内容/统计结果，归入**问数**（必要时先找企业相关表/视图，再生成 SQL 查询）。
+
+### 数据域内但不在找表/问数范围（须告知并终止）
+
+**适用**：已满足 **Front Gate A**（问题属于数据域 / 广义数据分析），但经归纳后 **既不** 属于「找表（找数）」终态（见 `smart-search-tables`：资产/表/视图/职责定位），**也** 不属于「问数」终态（见 `smart-ask-data`：可经 `show_ds` → `gen_exec` 表达的取数）。
+
+**典型情形（非穷举）**
+
+- 只要解读、结论、建议、归因、异常诊断，**拒绝**或 **无法** 收窄为「查哪些字段、什么条件、是否要汇总」等可 SQL 问题。
+- 明确要 **图表 / 看板 / 交互探索**，且不接受改为「先给一条可 SQL 查询」。
+- 要求 **代码二次计算**、统计建模、预测、ETL 开发、数据质量全表扫描等，且与本仓库问数/找表能力无关。
+- 多维对比、叙事性分析报告等，**无法** 分解为有限条、边界清晰的 `gen_exec` 查询。
+
+**必须动作（MUST）**
+
+1. **停止流程**：**不** 进入 `smart-search-tables`；**不** 进入 `smart-ask-data`；**不** 用 `kweaver`/零散调用 **伪造** 取数或检索结果。
+2. **告知用户**：说明本数字员工路径下 **仅支持**「找表/找数」（资产与职责定位）与「问数」（text2sql 返数）；当前需求 **不在上述范围内**。
+3. **可选收窄**：邀请用户改提 **可定位资产** 或 **可用 SQL 表达** 的具体问题（与仓库根目录 [SOUL.md](../../SOUL.md) 配置一致时再执行）。
+
+**与「歧义先澄清」的区分**：可先 **一轮** 澄清能否收窄为找表或问数；若用户 **明确不收窄** 或澄清后仍无落点，则按本节 **终止**，不再重试子 skill。
 
 ### 分支走不通时的处理（禁止交叉兜底）
 
@@ -177,14 +201,14 @@ argument-hint: [自然语言指令或带 kn 上下文的任务描述]
 1. **结论**（一两句）
 2. **依据**（用了哪个 KN、哪些表/视图或取数路径）
 3. **数据或列表**（表格或要点）
-4. **可选下一步**（例如：是否在同一视图上做同比）
+4. **可选下一步**（例如：是否再提一条**可 SQL 表达**的查询；同比/环比需用户明确时间口径）
 
 ## 调用示例（slash / 指令）
 
 ```text
 /smart-data-analysis 在当前找表用的 kn 里查有没有订单相关宽表
-/smart-data-analysis 用问数 kn 算上月销售额环比，口径按销售域约定
-/smart-data-analysis 找表 kn 用 A，问数 kn 用 B：先找「库存」视图再算周转
+/smart-data-analysis 用问数 kn 查出上月与上上月销售额（两条可 SQL 落地的查询）
+/smart-data-analysis 找表 kn 用 A，问数 kn 用 B：先找「库存」视图再查周转相关明细或汇总
 ```
 
 ## 注意事项

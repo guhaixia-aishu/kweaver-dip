@@ -6,6 +6,8 @@
 与 references/kn-select.md、config.json → tools.kn_select 一致：
 POST JSON：auth、query、kn_ids；请求头 x-business-domain、Authorization（与 auth.token 相同）。
 
+临时调用：将本文件 **整份复制** 并 **重命名** 为 `_tmp_kn_*.py` 后执行；**勿**直接用本路径作为任务入口；详见 references/kn-select.md「请求方式」。
+
 示例（Linux/macOS Bash）：
   export TOKEN=$(kweaver token | tr -d '\\r\\n')
   python kn_select_request_example.py --token "$TOKEN" --query "销售域上月各区域销售额统计应选用哪个知识网络？" --insecure

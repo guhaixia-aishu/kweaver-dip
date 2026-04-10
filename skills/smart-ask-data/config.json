@@ -1,11 +1,11 @@
 {
-  "name": "smart-ask-data",
+  "name": "cc",
   "version": "1.0.0",
   "base_url": "",
   "openclaw": {
-    "skillKey": "smart_ask_data"
+    "skillKey": "smart-ask-data"
   },
-  "description": "问数编排：kn_select → text2sql(show_ds → gen_exec) → execute_code_sync（可选）→ json2plot（可选）→ 总结 → 清理临时脚本与临时数据（成功后）",
+  "description": "问数编排（仅查询返数）：Step1 确认 base_url/user_id/token/inner_llm.name（记忆区优先，无则用户确认）→ kn_select（如需）→ text2sql(show_ds → gen_exec) → 最小口径交付；不执行 execute_code_sync / json2plot；成功后删除临时脚本，_tmp_*.json/.ndjson 等临时数据默认保留",
   "defaults": {
     "user_id": "",
     "x_business_domain": "bd_public"
@@ -25,7 +25,7 @@
       },
       "inner_llm": {
         "id": "",
-        "name": "deepseek_v3",
+        "name": "",
         "temperature": 0.1,
         "top_k": 1,
         "top_p": 1,

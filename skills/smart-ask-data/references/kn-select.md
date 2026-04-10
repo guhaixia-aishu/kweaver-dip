@@ -39,13 +39,13 @@
 - 与最终目标保持一致：若目的是问数，`query` 应体现统计口径；若目的是找表，`query` 应体现对象类型与业务域。
 - 尽量避免模糊代词（如「这个」「那个」），改为可检索实体词（部门、主题域、业务名词）。
 
-## 请求方式（先写临时脚本，再执行临时脚本）
+## 请求方式（复制样例脚本并重命名，再执行临时脚本）
 
 **执行顺序（强约束）**：
 
-1. **先** 在本机任务目录 **新建临时脚本**（文件名建议带任务含义或时间戳，例如 `_tmp_kn_<主题>.py`、`_tmp_kn_<主题>.sh`；**不要**覆盖、改写仓库内已有脚本）。
-2. 在临时脚本内按本文 **「样例（assistant 工具网关）」** 组装 **与样例同构** 的 JSON，再向 `base_url` + `tools.kn_select.url_path` 发起 POST。
-3. **再** 在终端 **仅执行该临时脚本**，完成本轮 `kn_select` 调用。
+1. **先** 将 [`kn_select_request_example.py`](../scripts/kn_select_request_example.py)（或本轮使用的 [`kn_select_request_example.sh`](../scripts/kn_select_request_example.sh)）**整文件复制**到本机任务目录，并把副本 **重命名** 为例如 `_tmp_kn_<主题>_<YYYYMMDD_HHMMSS>.py`（或 `.sh`）。**不要**覆盖、修改仓库内 `kn_select_request_example*` 原文件；**禁止**在空白文件上从零手写临时脚本。
+2. **仅执行副本**：在副本内已包含与同构 JSON 对应的 **POST** 逻辑；通过 **命令行与环境变量** 传入 `query`、`kn_ids`、`token` 等，请求 `base_url` + `tools.kn_select.url_path`。副本 **通常与样例逐行一致**，无需改源码。
+3. **再** 在终端 **只运行该重命名后的副本**。
 
 **禁止**：
 
@@ -57,13 +57,14 @@
 
 ### 编写临时脚本的要点
 
+- **创建方式（必须）**：临时脚本 = **复制** `kn_select_request_example.py`（或 `.sh`）→ **重命名** 为 `_tmp_kn_*`；不得以空文件 + 片段粘贴代替。
 - **URL**：`base_url` + `url_path` 以 [config.json](../config.json) → `tools.kn_select` 为准。
 - **请求体**：与样例 JSON **字段名、嵌套层级** 保持一致；仅按上文 **「子技能调用约束」** 调整允许变动的参数值。
-- **HTTP 头**：`Content-Type: application/json`、`Authorization`（与 `auth.token` 一致）、`x-business-domain`（与 config 一致）；实现细节可对照下方「结构参考文件」中的写法，但**逻辑须落在你的临时脚本内**。
+- **HTTP 头**：`Content-Type: application/json`、`Authorization`（与 `auth.token` 一致）、`x-business-domain`（与 config 一致）；实现已在样例中，**落在副本内、通常不改代码**。
 
 ### 结构参考文件（只读对照，不得当执行入口）
 
-下列文件与 **JSON 样例** 等价，**仅用于打开核对字段、请求头与序列化方式**；编临时脚本时从中**复制思路或片段**到**新建文件**，**不要**在任务中直接跑通联调样例文件。
+下列文件与 **JSON 样例** 等价，且为**临时脚本的整文件复制源**；临时脚本须为其中 **推荐 / 备选** 文件的 **完整副本**（仅文件名改为 `_tmp_kn_*`），**不要**只抄片段到空文件，**不要**在任务中直接以 `*_request_example*` 原路径作为执行入口。
 
 | 类型 | 参考文件 | 说明 |
 |------|----------|------|
@@ -73,9 +74,9 @@
 
 临时脚本为 **单次任务专用**；联调 **成功后** 可删除；**失败时** 保留临时脚本与终端输出便于定位。仓库长期维护的 `*_request_example*` **勿在任务中当入口执行**；需要变更时只改你的临时副本。
 
-### 执行示例（仅执行你新建的临时脚本）
+### 执行示例（仅执行复制并重命名后的临时脚本）
 
-推荐用 **Python**（Windows / Linux / macOS 通用；假设已生成与样例同构的 `_tmp_kn_my_task.py`）。
+推荐用 **Python**（Windows / Linux / macOS 通用；`_tmp_kn_my_task.py` 须为 [`kn_select_request_example.py`](../scripts/kn_select_request_example.py) 的 **复制件**）。
 
 Linux/macOS（Bash）示例：
 

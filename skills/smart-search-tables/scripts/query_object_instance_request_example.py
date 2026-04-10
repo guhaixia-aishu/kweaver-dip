@@ -5,6 +5,10 @@
 
 与 skills/smart-search-tables/references/query-object-instance.md 对齐：
 请求体必须是三层结构：body + query + header。
+
+必填：`--base-url`、`--account-id`（user_id / x-account-id）、`--search`、`--kn-id`；
+`--token` 须提供或通过环境变量 `QOI_TOKEN` 传入。
+POST 路径为本文件内 `DEFAULT_URL_PATH`（与 [config.json](../config.json) → `tools.query_object_instance.url_path` 对齐），不再提供 `--url-path`。
 """
 
 import argparse
@@ -14,30 +18,37 @@ import ssl
 import sys
 import urllib.error
 import urllib.request
-from typing import Any
 
 
-DEFAULT_BASE_URL = "https://dip-poc.aishu.cn"
 DEFAULT_URL_PATH = "/api/agent-operator-integration/v1/tool-box/db4da399-af91-4214-afd9-1762d07c942d/tool/0f2b2b86-8af3-4fcc-9d8f-810a4f3fa6ce/debug"
 DEFAULT_X_BD = "bd_public"
-DEFAULT_KN_ID = "idrm_metadata_kn_object_lbb"
 DEFAULT_OT_ID = "metadata"
-DEFAULT_ACCOUNT_ID = "f6713976-1cf6-11f1-b2cd-d6e9efdbcbb2"
 DEFAULT_ACCOUNT_TYPE = "user"
 
 
 def main() -> int:
     p = argparse.ArgumentParser(description="POST query_object_instance tool-box debug")
-    p.add_argument("--token", "-t", default=os.environ.get("QOI_TOKEN", "").strip())
-    p.add_argument("--search", "-s", default="企业")
+    p.add_argument("--base-url", "-b", required=True, help="网关根地址（必填）")
+    p.add_argument(
+        "--account-id",
+        "--user-id",
+        "-a",
+        required=True,
+        metavar="USER_ID",
+        help="x-account-id / user_id（必填）",
+    )
+    p.add_argument(
+        "--token",
+        "-t",
+        default=os.environ.get("QOI_TOKEN", "").strip(),
+        help="鉴权 token（必填；未传则须设置环境变量 QOI_TOKEN）",
+    )
+    p.add_argument("--search", "-s", required=True, help="检索词（必填）")
+    p.add_argument("--kn-id", "-k", required=True, help="query.kn_id（必填）")
     p.add_argument("--limit", "-L", type=int, default=100)
     p.add_argument("--knn-limit-value", type=int, default=1000)
-    p.add_argument("--kn-id", "-k", default=DEFAULT_KN_ID)
     p.add_argument("--ot-id", default=DEFAULT_OT_ID)
-    p.add_argument("--account-id", default=DEFAULT_ACCOUNT_ID)
     p.add_argument("--account-type", default=DEFAULT_ACCOUNT_TYPE)
-    p.add_argument("--base-url", "-b", default=DEFAULT_BASE_URL)
-    p.add_argument("--url-path", default=DEFAULT_URL_PATH)
     p.add_argument("--x-business-domain", "-d", default=DEFAULT_X_BD)
     p.add_argument("--insecure", action="store_true")
     p.add_argument("--timeout", type=float, default=120.0)
@@ -50,7 +61,7 @@ def main() -> int:
         return 2
 
     base_url = args.base_url.rstrip("/")
-    url_path = args.url_path if args.url_path.startswith("/") else "/" + args.url_path
+    url_path = DEFAULT_URL_PATH if DEFAULT_URL_PATH.startswith("/") else "/" + DEFAULT_URL_PATH
     x_bd = args.x_business_domain
     kn_id = args.kn_id
     ot_id = args.ot_id

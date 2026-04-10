@@ -14,27 +14,29 @@
 配置以编排默认 [../config.json](../config.json) 中 `tools.json2plot` 为准。
 请求 URL 约定为：`base_url` + `tools.json2plot.url_path`。
 
-## 请求方式（先写临时脚本，再执行临时脚本）
+## 请求方式（复制样例脚本并重命名，再执行临时脚本）
 
 **执行顺序（强约束）**：
 
-1. **先** 在本机任务目录新建临时脚本（例如 `_tmp_j2p_<主题>.py` 或 `_tmp_j2p_<主题>.sh`，**不要**覆盖仓库样例）。
-2. 按本文样例结构组装请求，POST 至 `base_url` + `tools.json2plot.url_path`。
-3. **再** 在终端仅执行你的临时脚本。
+1. **先** 将 [`json2plot_request_example.py`](../scripts/json2plot_request_example.py)（或 [`json2plot_request_example.sh`](../scripts/json2plot_request_example.sh)）**整文件复制**到本机任务目录，并把副本 **重命名** 为例如 `_tmp_j2p_<主题>.py`（或 `.sh`）。**不要**修改仓库内 `json2plot_request_example*` 原文件；**禁止**在空白文件上从零手写临时脚本。
+2. **仅执行副本**：通过命令行与环境变量传入 `chart_type`、`tool_result_cache_key` 等，由副本 POST 至 `base_url` + `tools.json2plot.url_path`。
+3. **再** 在终端 **只运行该重命名后的副本**。
 
 **禁止**：
 
 - **禁止**直接把 `../scripts/json2plot_request_example.py` / `.sh` 当任务入口执行。
 - **禁止**在仓库 **`skills/`** 及其任意子目录下创建临时脚本；若仓库内另有 **`.claude/skills/`** 等 skill 同步树，**同样禁止** 在其下创建。**宜** 使用工作区根目录、系统临时目录（如 `/tmp`、`%TEMP%`）等与上述路径隔离的位置。
 
-### 结构参考文件（只读对照，不得当执行入口）
+### 结构参考文件（临时脚本的复制源，不得当执行入口）
+
+**临时脚本** = 下表文件的 **整份复制** + 重命名为 `_tmp_j2p_*`。
 
 | 类型 | 参考文件 | 说明 |
 |------|----------|------|
 | **推荐（跨平台）** | [`../scripts/json2plot_request_example.py`](../scripts/json2plot_request_example.py) | 支持 `--chart-type`、`--group-by`、`--data-field`、`--tool-result-cache-key`；标准库 `urllib`；`--insecure` 跳过 TLS；`-c ../config.json` 对齐路径与业务域。 |
 | **备选（curl）** | [`../scripts/json2plot_request_example.sh`](../scripts/json2plot_request_example.sh) | 同参数语义；依赖 `python3` 组装 JSON；`-K` 跳过 TLS。 |
 
-### 执行示例（仅执行你新建的临时脚本）
+### 执行示例（仅执行复制并重命名后的临时脚本）
 
 Linux/macOS（Bash）：
 

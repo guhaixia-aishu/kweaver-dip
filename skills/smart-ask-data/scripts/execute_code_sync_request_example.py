@@ -5,6 +5,8 @@
 
 与 references/execute-code-sync.md、config.json → tools.execute_code_sync 一致：
 Query 传 poll_interval / sync_timeout，Body 传 code/language/event 等。
+
+临时调用：将本文件 **整份复制** 并 **重命名** 为 `_tmp_exec_sync_*.py` 后执行；**勿**直接用本路径作为任务入口；详见 references/execute-code-sync.md「请求方式」。
 """
 
 import argparse

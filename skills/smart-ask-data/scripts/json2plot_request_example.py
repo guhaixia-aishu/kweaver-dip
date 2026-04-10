@@ -5,6 +5,8 @@
 
 与 references/json2plot.md、config.json → tools.json2plot 一致。
 优先传 tool_result_cache_key（来自 text2sql/gen_exec），避免手写 data 与缓存键混用。
+
+临时调用：将本文件 **整份复制** 并 **重命名** 为 `_tmp_j2p_*.py` 后执行；**勿**直接用本路径作为任务入口；详见 references/json2plot.md「请求方式」。
 """
 
 import argparse
