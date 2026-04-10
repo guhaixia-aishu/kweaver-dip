@@ -106,7 +106,24 @@ describe("createChatRouter", () => {
     const getChatMessages = vi.fn().mockResolvedValue({
       sessionKey: "agent:demo:user:user-1:direct:chat-1",
       sessionId: "runtime-1",
-      messages: []
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "input_file",
+              source: {
+                type: "path",
+                path: "tmp/chat-1/a.txt"
+              }
+            },
+            {
+              type: "text",
+              text: "hello"
+            }
+          ]
+        }
+      ]
     });
     const router = createChatRouter({
       sessionsLogic: {
@@ -156,6 +173,28 @@ describe("createChatRouter", () => {
       limit: 50
     });
     expect(response.status).toHaveBeenCalledWith(200);
+    expect(response.json).toHaveBeenCalledWith({
+      sessionKey: "agent:demo:user:user-1:direct:chat-1",
+      sessionId: "runtime-1",
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "input_file",
+              source: {
+                type: "path",
+                path: "tmp/chat-1/a.txt"
+              }
+            },
+            {
+              type: "text",
+              text: "hello"
+            }
+          ]
+        }
+      ]
+    });
     expect(next).not.toHaveBeenCalled();
   });
 });

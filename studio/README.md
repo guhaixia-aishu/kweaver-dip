@@ -839,6 +839,7 @@ If any file cannot be read, explicitly report which path failed and why.
 响应：`200 application/json`
 
 返回指定 Chat 会话的历史消息详情，底层通过 OpenClaw WebSocket `chat.history` 获取。
+若消息中包含通过 `POST /api/dip-studio/v1/chat/upload` 上传并随 `POST /api/dip-studio/v1/chat/agent` 发送的附件，响应里的 `messages[].content` 会补齐为数组。单个附件时首项为 `{ type: "input_file", source: { type: "path", path } }`；多个附件时首项为 `{ type: "input_files", files: [{ type: "path", path }, ...] }`。
 
 #### 获取会话消息详情
 
@@ -855,6 +856,7 @@ If any file cannot be read, explicitly report which path failed and why.
 响应：`200 application/json`
 
 返回指定会话的完整消息详情。该接口内部复用 `GET /api/dip-studio/v1/chat/messages` 的消息查询逻辑，但保持原有路径参数与响应结构不变。
+当消息存在上传附件时，`messages[].content` 同样会在第一项返回标准化后的附件内容项。
 
 说明：会话历史响应会自动过滤上述隐藏附件上下文模板，不会返回给前端展示。
 
