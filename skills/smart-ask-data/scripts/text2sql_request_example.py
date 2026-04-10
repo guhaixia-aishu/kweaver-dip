@@ -8,10 +8,8 @@
 （非交互且仍缺省则报错）。
 `url_path`、`kn_id`、`inner_llm` 与限流参数等写在本文件常量中，不读取 config.json；
 `user_id` 由 **`--user-id` → `TEXT2SQL_USER_ID` → 交互输入** 解析。
-常用项：`--kn-id`、`--input`、`--background`、`--token`、`--inner-llm-id`（或与 `TEXT2SQL_INNER_LLM_ID` 覆盖 `inner_llm.id`）。
-生成临时 `_tmp_t2s_*.py` 时须与本文件同构（仅按任务调整 action、token、input、background、
-session_id、kn_id、user_id、base_url 等），且 **不得** 写在仓库 `skills/` 或 `.claude/skills/` 及其子目录下；
-详见同目录上级 `references/text2sql.md` 中「请求方式」与「临时 text2sql Python 脚本规范」。
+常用项：`--kn-id`、`--input`、`--background`、`--token`、`--inner-llm-name`（或与 `TEXT2SQL_INNER_LLM_NAME` 覆盖 `inner_llm.name` 大模型名称）。
+**临时脚本**：将本文件 **整份复制** 到任务目录并 **重命名** 为 `_tmp_t2s_*.py` 后再执行；**不要**以本路径 `text2sql_request_example.py` 作为任务入口，**不要**新建空文件拼贴。**副本** 与本文件同构，仅通过命令行传入 action、token、input、background、session_id、kn_id、user_id、base_url 等；副本 **不得** 放在仓库 `skills/` 或 `.claude/skills/` 及其子目录下。详见 `references/text2sql.md`「请求方式」与「临时 text2sql Python 脚本规范」。
 
 直传 JSON：config、data_source、inner_llm、input、action、timeout、auth；
 请求头 `x-business-domain` 与路径均使用内置默认值，Authorization 与 `auth.token` 保持一致。
@@ -31,7 +29,7 @@ session_id、kn_id、user_id、base_url 等），且 **不得** 写在仓库 `sk
 
 可选覆盖：`TEXT2SQL_BASE_URL` 或 `-b https://...`；非交互场景请提前配置环境变量或传入对应参数。
 环境变量 TEXT2SQL_TOKEN；若未设置则尝试 KN_SELECT_TOKEN（与 kn_select 同会话时便于共用）。
-`inner_llm.id` 获取与持久化见 `references/text2sql.md`「inner_llm.id 获取与持久化」：OpenClaw 下读 **`OPENCLAW_MEMORY_INNER_LLM_ID`** / **`inner_llm.openclaw.txt`**；其它环境读 **`inner_llm.txt`**（或 **`TEXT2SQL_INNER_LLM_FILE`**）；仍无则 TTY 提示输入，并写回对应记忆镜像文件（OpenClaw 须由宿主再同步记忆区）。
+`inner_llm.name`（大模型名称）默认见本文件 `DEFAULT_INNER_LLM["name"]`；可用 **`TEXT2SQL_INNER_LLM_NAME`** 或 **`--inner-llm-name`** 覆盖。
 非交互且无法解析 user_id 时请设置 `TEXT2SQL_USER_ID` 或传入 `--user-id`。
 """
 
@@ -56,8 +54,7 @@ DEFAULT_RETURN_RECORD_LIMIT = 20
 DEFAULT_TIMEOUT_SEC = 120
 
 DEFAULT_INNER_LLM: dict = {
-    "id": "",
-    "name": "deepseek_v3",
+    "name": "",
     "temperature": 0.1,
     "top_k": 1,
     "top_p": 1,
@@ -94,87 +91,15 @@ def _token_from_env() -> str:
     )
 
 
-def _is_openclaw() -> bool:
-    v = (os.environ.get("OPENCLAW") or "").strip().lower()
-    return v in ("1", "true", "yes")
-
-
-def _path_inner_llm_txt() -> Path:
-    s = (os.environ.get("TEXT2SQL_INNER_LLM_FILE") or "").strip()
-    return Path(s) if s else Path.cwd() / "inner_llm.txt"
-
-
-def _path_openclaw_inner_llm_store() -> Path:
-    s = (os.environ.get("TEXT2SQL_OPENCLAW_INNER_LLM_STORE") or "").strip()
-    return Path(s) if s else Path.cwd() / "inner_llm.openclaw.txt"
-
-
-def _read_inner_llm_id_line(path: Path) -> str:
-    try:
-        if path.is_file():
-            for line in path.read_text(encoding="utf-8").splitlines():
-                t = line.strip()
-                if t and not t.startswith("#"):
-                    return t
-    except OSError:
-        pass
-    return ""
-
-
-def _write_inner_llm_id_line(path: Path, llm_id: str) -> None:
-    text = (llm_id or "").strip() + "\n"
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text, encoding="utf-8")
-
-
-def _resolve_inner_llm_id_for_request(cli: str) -> str:
-    """与 references/text2sql.md「inner_llm.id 获取与持久化」一致。"""
+def _resolve_inner_llm_name_for_request(cli: str) -> str:
+    """大模型名称：--inner-llm-name > TEXT2SQL_INNER_LLM_NAME > DEFAULT_INNER_LLM[\"name\"]。"""
     s = (cli or "").strip()
     if s:
         return s
-    s = os.environ.get("TEXT2SQL_INNER_LLM_ID", "").strip()
+    s = os.environ.get("TEXT2SQL_INNER_LLM_NAME", "").strip()
     if s:
         return s
-    if _is_openclaw():
-        s = os.environ.get("OPENCLAW_MEMORY_INNER_LLM_ID", "").strip()
-        if s:
-            return s
-        s = _read_inner_llm_id_line(_path_openclaw_inner_llm_store())
-        if s:
-            return s
-    else:
-        s = _read_inner_llm_id_line(_path_inner_llm_txt())
-        if s:
-            return s
-
-    if sys.stdin.isatty():
-        try:
-            print(
-                "未从记忆区/OpenClaw 镜像文件或 inner_llm.txt 获取到 inner_llm.id，"
-                "请输入大模型 id（inner_llm.id）：",
-                file=sys.stderr,
-            )
-            s = input().strip()
-        except EOFError:
-            s = ""
-        if s:
-            if _is_openclaw():
-                store = _path_openclaw_inner_llm_store()
-                _write_inner_llm_id_line(store, s)
-                print(
-                    "info: 已将 inner_llm.id 写入 "
-                    f"{store.resolve()}；OpenClaw 宿主请同步到记忆区。",
-                    file=sys.stderr,
-                )
-            else:
-                _write_inner_llm_id_line(_path_inner_llm_txt(), s)
-            return s
-
-    print(
-        "warn: 未配置 inner_llm.id（非交互或空输入），回退 DEFAULT_INNER_LLM[\"id\"]。",
-        file=sys.stderr,
-    )
-    return str(DEFAULT_INNER_LLM["id"])
+    return str(DEFAULT_INNER_LLM["name"])
 
 
 def _base_url_from_env() -> str:
@@ -298,11 +223,10 @@ def main() -> int:
     p.add_argument("--insecure", action="store_true", help="跳过 TLS 证书校验")
     p.add_argument("--out", "-o", default="", help="响应 JSON 写入路径（UTF-8）")
     p.add_argument(
-        "--inner-llm-id",
+        "--inner-llm-name",
         default="",
-        metavar="ID",
-        help="body.inner_llm.id；省略时见 text2sql.md「inner_llm.id」：TEXT2SQL_INNER_LLM_ID、"
-        "OPENCLAW 记忆/inner_llm.openclaw.txt 或 inner_llm.txt、交互补录",
+        metavar="NAME",
+        help="body.inner_llm.name（大模型名称）；省略时用 TEXT2SQL_INNER_LLM_NAME 或 DEFAULT_INNER_LLM",
     )
     args = p.parse_args()
 
@@ -316,7 +240,7 @@ def main() -> int:
         return 2
     url_path = DEFAULT_URL_PATH
     inner_llm: dict = dict(DEFAULT_INNER_LLM)
-    inner_llm["id"] = _resolve_inner_llm_id_for_request(args.inner_llm_id)
+    inner_llm["name"] = _resolve_inner_llm_name_for_request(args.inner_llm_name)
     kn_id = args.kn_id
     timeout_sec = DEFAULT_TIMEOUT_SEC
 

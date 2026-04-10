@@ -5,6 +5,7 @@
 
 与 skills/smart-search-tables/references/department-duty-query.md 对齐：
 请求体为直传 JSON：auth、query、kn_id。
+POST 路径为脚本内 `DEFAULT_URL_PATH`（与 config → `tools.department_duty_query.url_path` 对齐），不设 `--url-path`。
 """
 
 import argparse
@@ -15,7 +16,6 @@ import sys
 import urllib.error
 import urllib.request
 import uuid
-from typing import Any
 
 
 DEFAULT_BASE_URL = "https://dip-poc.aishu.cn"
@@ -31,7 +31,6 @@ def main() -> int:
     p.add_argument("--query", "-q", default=DEFAULT_QUERY)
     p.add_argument("--kn-id", "-k", default=DEFAULT_KN_ID)
     p.add_argument("--base-url", "-b", default=DEFAULT_BASE_URL)
-    p.add_argument("--url-path", default=DEFAULT_URL_PATH)
     p.add_argument("--x-business-domain", "-d", default=DEFAULT_X_BUSINESS_DOMAIN)
     p.add_argument("--trace-id", default="")
     p.add_argument("--config", "-c", default="", help="读取 smart-search-tables/config.json")
@@ -46,7 +45,7 @@ def main() -> int:
         return 2
 
     base_url = args.base_url.rstrip("/")
-    url_path = args.url_path if args.url_path.startswith("/") else "/" + args.url_path
+    url_path = DEFAULT_URL_PATH if DEFAULT_URL_PATH.startswith("/") else "/" + DEFAULT_URL_PATH
     kn_id = args.kn_id
     x_bd = args.x_business_domain
 

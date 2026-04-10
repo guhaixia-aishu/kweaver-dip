@@ -1,6 +1,6 @@
 # 子能力：Query Object Instance（对象实例 / 找表元数据）
 
-在 **找表主流程第 1 步** 调用：在业务知识网络下，按语义检索 **对象实例**（常用于 **表/视图/数据资产** 等元数据对象），为后续职责查询提供 **对象名、归属部门线索、业务域关键词**。
+在 **找表主流程第 2 步**（`query_object_instance`）调用：在业务知识网络下，按语义检索 **对象实例**（常用于 **表/视图/数据资产** 等元数据对象），为后续职责查询提供 **对象名、归属部门线索、业务域关键词**。
 
 ## 与本流程的衔接
 
@@ -172,6 +172,8 @@ TOKEN=$(kweaver token | tr -d '\r\n')
 - `view_business_name`：视图业务名（如 `港务区建设发展部_示范企业信息`）
 - `view_uuid`：视图 UUID（如 `ec3e47b1-f127-4b40-9ac8-e8aaa52a1788`）
 
+以上三项在 **找表最终列表** 中 **必须均能解析出非空值**；任一项为空则该条记录 **不得** 列入用户可见候选，见 [SKILL.md](../SKILL.md)「最终交付：视图/表清单真实性」。
+
 在本能力中，**视图与表按同等关系处理**，字段映射约定如下：
 
 - `view_tech_name` 等价于 `table_tech_name`（表技术名称）
@@ -182,6 +184,7 @@ TOKEN=$(kweaver token | tr -d '\r\n')
 
 ## 注意事项
 
+- 找表 **最终用户可见的视图列表** 仅能使用本接口返回中 **可解析且非空** 的 `view_uuid`、`view_tech_name` 与 `view_business_name`（及表侧等价字段）；**三者缺一** 则该条不得输出，见 [SKILL.md](../SKILL.md)「最终交付：视图/表清单真实性」。
 - `token` 须显式提供，不从配置自动补全用户凭证。
 - **`header` 不可省略**：空 `x-account-id` / `x-account-type` 可能导致上游 500 且 `error_details` 含 `missing account ID or type`。
 - 若结果为空：放宽 `condition`、改写 `search`，或核对 **`query.kn_id` / `ot_id`** 与当前环境是否一致。

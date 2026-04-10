@@ -1,6 +1,6 @@
 # 问数编排：端到端示例（逻辑顺序）
 
-以下为 **流程骨架**；**逐步可复制 JSON / Header 完整样例** 见各子文档中的 **「样例」** 小节：[kn-select.md](kn-select.md)、[text2sql.md](text2sql.md)、[execute-code-sync.md](execute-code-sync.md)、[json2plot.md](json2plot.md)。
+以下为 **流程骨架**；**逐步可复制 JSON / Header 完整样例** 见各子文档中的 **「样例」** 小节：[kn-select.md](kn-select.md)、[text2sql.md](text2sql.md)、[execute-code-sync.md](execute-code-sync.md)、[json2plot.md](json2plot.md)。**HTTP 调用** 时：各步须先将对应 `*_request_example*` **整文件复制** 到任务目录并 **重命名** 为 `_tmp_*` 再执行，见各子文档「请求方式」。
 
 真实工具网关 URL、`token`、`kn_ids`、`user_id` 以 [smart-ask-data/config.json](../config.json) 及环境为准；完整网关 URL 约定为 `base_url` + `tools.<tool>.url_path`。
 
