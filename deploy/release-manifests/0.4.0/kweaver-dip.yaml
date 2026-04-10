@@ -22,7 +22,7 @@ releases:
     version: 0.4.0-main.20260403.2
   dip-frontend:
     chart: dip-frontend
-    version: 0.4.0-main.41dfacf
+    version: 0.4.0-main.f18cfd3
   auth-service:
     chart: auth-service
     version: 0.4.0-main.20260402.1
@@ -76,4 +76,4 @@ releases:
     version: 0.4.0
   dip-studio:
     chart: dip-studio
-    version: 0.4.0
+    version: 0.4.0-1
