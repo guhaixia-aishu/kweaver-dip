@@ -59,7 +59,7 @@ describe("connectOpenClawGatewayIfInitialized", () => {
         "OPENCLAW_GATEWAY_HOST=127.0.0.1",
         "OPENCLAW_GATEWAY_PORT=19001",
         "OPENCLAW_GATEWAY_TOKEN=token-1",
-        `OPENCLAW_WORKSPACE_DIR=${join(studioRootDir, "workspace")}`
+        `OPENCLAW_ROOT_DIR=${join(studioRootDir, ".openclaw")}`
       ].join("\n"),
       "utf8"
     );
@@ -81,7 +81,7 @@ describe("connectOpenClawGatewayIfInitialized", () => {
       openClawGatewayHttpUrl: "http://127.0.0.1:19001/",
       openClawGatewayToken: "token-1",
       openClawGatewayTimeoutMs: 5000,
-      openClawWorkspaceDir: join(studioRootDir, "workspace")
+      openClawWorkspaceDir: join(studioRootDir, ".openclaw", "workspace")
     });
 
     await expect(

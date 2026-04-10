@@ -12,7 +12,6 @@ export type GuideInitializationRequirement =
   | "gatewayHost"
   | "gatewayPort"
   | "gatewayToken"
-  | "workspaceDir"
   | "privateKey"
   | "publicKey";
 

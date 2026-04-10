@@ -1,5 +1,6 @@
 import { EventEmitter } from "node:events";
 import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 import type { NextFunction, Request, Response } from "express";
 import { describe, expect, it, vi, beforeEach, afterAll } from "vitest";
@@ -936,14 +937,17 @@ describe("gateway env helpers", () => {
     expect(() => resolveTimeoutMs("0")).toThrow(
       "Invalid OPENCLAW_GATEWAY_TIMEOUT_MS value: 0"
     );
-    expect(resolveWorkspaceDir(undefined)).toBe("workspace");
-    expect(resolveWorkspaceDir("./custom-workspace")).toBe("./custom-workspace");
+    expect(resolveWorkspaceDir(undefined)).toBe(
+      join(process.env.HOME ?? "", ".openclaw", "workspace")
+    );
+    expect(resolveWorkspaceDir("./custom-root")).toBe("custom-root/workspace");
   });
 });
 
 describe("getEnv", () => {
   it("reads HTTP and OpenClaw environment variables", () => {
     delete process.env.OPENCLAW_GATEWAY_URL;
+    delete process.env.OPENCLAW_ROOT_DIR;
     delete process.env.KWEAVER_BASE_URL;
     delete process.env.KWEAVER_TOKEN;
     delete process.env.KWEAVER_HYDRA_ADMIN_URL;
@@ -966,7 +970,7 @@ describe("getEnv", () => {
       openClawGatewayHttpUrl: "http://127.0.0.1:19001/",
       openClawGatewayToken: undefined,
       openClawGatewayTimeoutMs: 6000,
-      openClawWorkspaceDir: resolveWorkspaceDir(process.env.OPENCLAW_WORKSPACE_DIR)
+      openClawWorkspaceDir: resolveWorkspaceDir(process.env.OPENCLAW_ROOT_DIR)
     });
   });
 
@@ -977,7 +981,7 @@ describe("getEnv", () => {
       forceReload: true
     });
     process.env.OPENCLAW_GATEWAY_URL = "wss://gateway.example.com/ws";
-    process.env.OPENCLAW_WORKSPACE_DIR = "./openclaw-workspace";
+    process.env.OPENCLAW_ROOT_DIR = "./openclaw-root";
     process.env.KWEAVER_BASE_URL = "https://core.example.com";
     process.env.KWEAVER_TOKEN = "token-1";
     process.env.KWEAVER_HYDRA_ADMIN_URL = "https://hydra.example.com/admin";
@@ -992,7 +996,7 @@ describe("getEnv", () => {
       oauthMockUserId: "user-dev",
       openClawGatewayUrl: "wss://gateway.example.com/ws",
       openClawGatewayHttpUrl: "https://gateway.example.com/ws",
-      openClawWorkspaceDir: "./openclaw-workspace"
+      openClawWorkspaceDir: "openclaw-root/workspace"
     });
   });
 });

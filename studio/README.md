@@ -246,7 +246,7 @@ GitHub：https://github.com/kweaver-ai/web
 | -- | -- | -- |
 | state | string | 初始化状态，枚举值：`ready`、`pending` |
 | ready | boolean | 是否已完成初始化 |
-| missing | string[] | 当前缺失的初始化项，可能值包括 `envFile`、`gatewayProtocol`、`gatewayHost`、`gatewayPort`、`gatewayToken`、`workspaceDir`、`privateKey`、`publicKey` |
+| missing | string[] | 当前缺失的初始化项，可能值包括 `envFile`、`gatewayProtocol`、`gatewayHost`、`gatewayPort`、`gatewayToken`、`privateKey`、`publicKey` |
 
 `GET /api/dip-studio/v1/guide/openclaw-config`
 
