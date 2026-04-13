@@ -14,6 +14,10 @@ export interface UserMenuItemProps {
 export const UserMenuItem = ({ collapsed }: UserMenuItemProps) => {
   const navigate = useNavigate()
   const { userInfo, logout } = useUserInfoStore()
+  const showSystemSettings = useUserInfoStore(
+    (s) => s.isAdmin && s.modules.includes('studio'),
+  )
+
   const handleLogout = () => {
     logout()
   }
@@ -22,15 +26,19 @@ export const UserMenuItem = ({ collapsed }: UserMenuItemProps) => {
     userInfo?.email || userInfo?.vision_name || userInfo?.account || intl.get('sider.defaultUser')
 
   const menuItems: MenuProps['items'] = [
-    {
-      key: 'system-settings',
-      label: intl.get('sider.systemSettings'),
-      title: '',
-      onClick: () => {
-        navigate('/studio/initial-configuration')
-      },
-    },
-    { type: 'divider' },
+    ...(showSystemSettings
+      ? [
+          {
+            key: 'system-settings',
+            label: intl.get('sider.systemSettings'),
+            title: '',
+            onClick: () => {
+              navigate('/studio/initial-configuration')
+            },
+          },
+          { type: 'divider' as const },
+        ]
+      : []),
     {
       key: 'logout',
       label: intl.get('sider.logout'),
