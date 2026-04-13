@@ -87,7 +87,7 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ digitalHuman, menuItems, on
         )}
       </div>
 
-      <div className="mt-6 text-[22px] leading-[22px] font-bold truncate" title={digitalHuman.name}>
+      <div className="mt-6 text-[22px] font-bold truncate" title={digitalHuman.name}>
         {digitalHuman.name}
       </div>
       <p
