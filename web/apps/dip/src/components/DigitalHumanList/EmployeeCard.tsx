@@ -1,6 +1,7 @@
 import { Card, Dropdown, type MenuProps } from 'antd'
 import clsx from 'clsx'
 import { useState } from 'react'
+import intl from 'react-intl-universal'
 import type { DigitalHuman } from '@/apis'
 import { resolveDigitalHumanIconSrc } from '@/utils/digital-human/resolveDigitalHumanIcon'
 import { isPublicChannelVisible } from '@/utils/publicEnv'
@@ -95,22 +96,22 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ digitalHuman, menuItems, on
         className="mt-8 text-sm leading-[22px] text-[rgba(0,0,0,0.5)] line-clamp-2 min-h-[44px]"
         title={digitalHuman.creature}
       >
-        {digitalHuman.creature || '[暂无简介]'}
+        {digitalHuman.creature || intl.get('digitalHuman.card.noBio')}
       </p>
 
       <div className="mt-auto -mx-6 -mb-6 px-6 h-12 bg-[#F8FAFC] flex items-center gap-7 text-xs leading-6 text-[rgba(0,0,0,0.5)]">
         <div className="flex items-center gap-1">
           <IconFont type="icon-think" className="text-base text-black mr-0.5" />
-          <span>{skillCount} 个技能</span>
+          <span>{intl.get('digitalHuman.card.skillsCount', { count: skillCount })}</span>
         </div>
         <div className="flex items-center gap-1">
           <IconFont type="icon-graph" className="text-base text-black mr-0.5" />
-          <span>{knowledgeCount} 个知识网络</span>
+          <span>{intl.get('digitalHuman.card.knowledgeCount', { count: knowledgeCount })}</span>
         </div>
         {isPublicChannelVisible ? (
           <div className="flex items-center gap-1">
             <IconFont type="icon-index-management" className="text-base text-black mr-0.5" />
-            <span>{channelCount} 个通道</span>
+            <span>{intl.get('digitalHuman.card.channelCount', { count: channelCount })}</span>
           </div>
         ) : null}
       </div>
