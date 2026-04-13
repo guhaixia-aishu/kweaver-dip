@@ -95,9 +95,7 @@ Approved cc8d2143cf8fcd04161ade9e5161006c410a0bee65f835e2629792aa584bb119 (3ef17
 
 DIP 数字员工 Web 界面
 
-GitHub：https://github.com/kweaver-ai/web
-
-请参考 [`apps/dip`](https://github.com/kweaver-ai/web/tree/main/apps/dip) 下的 README.md 安装 Web 界面
+请参考 [`web/apps/dip`](https://github.com/kweaver-ai/kweaver-dip/tree/main/web/apps/dip) 下的 README.md 安装 Web 界面
 
 ## API
 
