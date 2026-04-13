@@ -77,9 +77,13 @@ components:
         description:
           type: string
           title: 预置数字员工描述
+        created:
+          type: boolean
+          title: 是否已创建
       required:
         - id
         - name
+        - created
 
     BuiltInDigitalHumanList:
       summary: 预置数字员工模板列表

@@ -30,13 +30,17 @@ describe("readOpenClawDetectedConfigFromEnv", () => {
         OPENCLAW_GATEWAY_PROTOCOL: "wss",
         OPENCLAW_GATEWAY_HOST: "gateway.example.com",
         OPENCLAW_GATEWAY_PORT: "18443",
-        OPENCLAW_GATEWAY_TOKEN: " token-1 "
+        OPENCLAW_GATEWAY_TOKEN: " token-1 ",
+        KWEAVER_BASE_URL: " https://kweaver.example.com ",
+        KWEAVER_TOKEN: " kw-token "
       })
     ).toEqual({
       protocol: "wss",
       host: "gateway.example.com",
       port: 18443,
-      token: "token-1"
+      token: "token-1",
+      kweaver_base_url: "https://kweaver.example.com",
+      kweaver_token: "kw-token"
     });
   });
 
@@ -283,7 +287,9 @@ describe("DefaultGuideLogic", () => {
         protocol: "ws",
         host: "127.0.0.1",
         port: 19001,
-        token: "token-1"
+        token: "token-1",
+        kweaver_base_url: undefined,
+        kweaver_token: undefined
       });
       expect(execFile).not.toHaveBeenCalled();
     } finally {

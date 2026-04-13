@@ -323,7 +323,9 @@ export function readOpenClawDetectedConfigFromEnv(
     protocol: resolveGatewayProtocol(envSource.OPENCLAW_GATEWAY_PROTOCOL),
     host: resolveGatewayHost(envSource.OPENCLAW_GATEWAY_HOST),
     port: resolveGatewayPort(envSource.OPENCLAW_GATEWAY_PORT),
-    token
+    token,
+    kweaver_base_url: readOptionalString(envSource.KWEAVER_BASE_URL),
+    kweaver_token: readOptionalString(envSource.KWEAVER_TOKEN)
   };
 }
 

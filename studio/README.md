@@ -312,6 +312,8 @@ DIP 数字员工 Web 界面
 | host | string | OpenClaw Gateway 主机地址 |
 | port | integer | OpenClaw Gateway 端口 |
 | token | string | 从运行时注入环境变量中读取的 Gateway Token |
+| kweaver_base_url | string | 从运行时注入环境变量中读取的 KWeaver 服务地址，未配置时为空 |
+| kweaver_token | string | 从运行时注入环境变量中读取的 KWeaver Token，未配置时为空 |
 
 错误响应：`500`、`502`
 
@@ -421,6 +423,7 @@ DIP 数字员工 Web 界面
 | [\].id | string | 预置数字员工模板 ID |
 | [\].name | string | 预置数字员工名称 |
 | [\].description | string | 预置数字员工描述，可选 |
+| [\].created | boolean | 是否已存在同 ID 的数字员工 |
 
 #### 创建或更新预置数字员工
 
