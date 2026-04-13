@@ -55,6 +55,8 @@ export default defineConfig({
     // 配置代理，解决远程微应用 CORS 问题
     proxy: {
       // 子应用代理
+      '/isfweb': proxyBase,
+      '/mf-model-manager': proxyBase,
       '/agent-web': proxyBase,
       '/vega': proxyBase,
       '/flow-web': proxyBase,
@@ -74,6 +76,7 @@ export default defineConfig({
       '/api/data-connection': proxyBase,
       '/api/eacp': proxyBase,
       '/api/audit-log': proxyBase,
+      '/api/mf-model-manager': proxyBase,
       // 开发环境：将 API 请求代理到远程服务器
       // 登录相关路由由中间件插件处理，不走代理
       '/api/dip-hub': {

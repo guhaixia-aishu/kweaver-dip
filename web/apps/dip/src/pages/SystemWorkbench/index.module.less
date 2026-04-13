@@ -1,0 +1,21 @@
+.microAppScope {
+  height: 100%;
+  width: 100%;
+  --custom-theme-color: #126ee3;
+
+  :global {
+    img,
+    svg {
+      display: inline;
+      vertical-align: unset;
+    }
+
+    div[data-qiankun='mailconfig'] #isf-web-plugins .src-ui-ToolBar-styles-desktop---tool-bar {
+      box-sizing: content-box !important;
+
+      .src-components-IntegrationConfig-SMTPConfig-styles-desktop---toolbar-icon {
+        line-height: normal;
+      }
+    }
+  }
+}
