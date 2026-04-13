@@ -127,6 +127,8 @@ docker run \
   dip-studio:0.4.0
 ```
 
+注意：在完成 OpenClaw 初始化之前请不要使用 `--restart unless-stopped` 参数.
+
 3. 复制 `container_id`
 
 4. 进入容器
