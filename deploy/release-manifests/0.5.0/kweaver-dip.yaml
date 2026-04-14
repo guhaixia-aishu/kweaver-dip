@@ -103,7 +103,7 @@ releases:
     version: 0.4.0
   dip-studio:
     chart: dip-studio
-    version: 0.5.0-main.bqm34eh-20260414.1
+    version: 0.5.0-main.bqm34eh-20260414.2
     values:
       studio:
         envFilePath: /data/.env # Studio 环境变量文件路径
