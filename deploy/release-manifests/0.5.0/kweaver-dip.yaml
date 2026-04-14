@@ -17,33 +17,33 @@ releases:
     chart: dip-data-migrator
     version: 0.4.0-main.20260410.4.9fd9eb7
     stage: pre
-  deploy-web:
-    chart: deploy-web
-    version: 0.3.0
-  studio-web:
-    chart: studio-web
-    version: 0.3.0
-  business-system-frontend:
-    chart: business-system-frontend
-    version: 0.3.0
   business-system-service:
     chart: business-system-service
     version: 0.3.0-1d43acc
   mf-model-manager-nginx:
     chart: mf-model-manager-nginx
-    version: 0.3.0
+    version: 0.5.0
   vega-web:
     chart: vega-web
-    version: 0.5.0
+    version: 0.5.1-main
   operator-web:
     chart: operator-web
-    version: 0.4.0
+    version: 0.5.0-main.git-671eead
   agent-web:
     chart: agent-web
-    version: 0.5.0
+    version: 0.5.1-main.git-671eead
   flow-web:
     chart: flow-web
-    version: 0.5.0
+    version: 0.5.1-main.git+671eead
+  doc-audit-client:
+    chart: doc-audit-client
+    version: 0.5.1-main.git-671eead
+  workflow-manage-client:
+    chart: workflow-manage-client
+    version: 0.5.0-main.git-84bea21
+  workflow-manage-front:
+    chart: workflow-manage-front
+    version: 0.5.0-main.git-84bea21
   anyfabric-frontend:
     chart: anyfabric-frontend
     version: 0.4.0-main.20260403.2
