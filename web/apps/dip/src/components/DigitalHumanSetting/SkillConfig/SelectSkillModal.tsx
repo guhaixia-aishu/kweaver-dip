@@ -65,6 +65,7 @@ const SelectSkillModal = ({
     getFetchArgs,
     autoLoad: false,
   })
+  const selectableSkills = allSkills.filter((skill) => !skill.built_in)
 
   useLayoutEffect(() => {
     if (!open) return
@@ -101,7 +102,7 @@ const SelectSkillModal = ({
   }
 
   const renderStateContent = () => {
-    if (loading && !allSkills.length) {
+    if (loading && !selectableSkills.length) {
       return <Spin />
     }
 
@@ -114,7 +115,7 @@ const SelectSkillModal = ({
       )
     }
 
-    if (allSkills.length === 0) {
+    if (selectableSkills.length === 0) {
       if (searchValue.trim()) {
         return <Empty type="search" desc={intl.get('global.noResult')} />
       }
@@ -127,7 +128,7 @@ const SelectSkillModal = ({
   const renderSkillRows = () => {
     return (
       <div>
-        {allSkills.map((item: DigitalHumanSkill, index: number) => {
+        {selectableSkills.map((item: DigitalHumanSkill, index: number) => {
           const isAdded = selectedSkills.some((x) => x.name === item.name)
           return (
             <div
@@ -135,7 +136,7 @@ const SelectSkillModal = ({
               className={clsx(
                 'flex flex-col bg-[#F8F8F7]',
                 index === 0 && 'rounded-t-lg',
-                index === allSkills.length - 1 && 'rounded-b-lg',
+                index === selectableSkills.length - 1 && 'rounded-b-lg',
               )}
             >
               <div className="flex items-center gap-3 px-4 py-3.5">
@@ -182,7 +183,7 @@ const SelectSkillModal = ({
                   )}
                 </div>
               </div>
-              {index !== allSkills.length - 1 && (
+              {index !== selectableSkills.length - 1 && (
                 <div className="h-px bg-[#F3F4F6] flex-shrink-0 mx-4">
                   <div className="h-px bg-[--dip-line-color-10] ml-[76px] flex-shrink-0" />
                 </div>

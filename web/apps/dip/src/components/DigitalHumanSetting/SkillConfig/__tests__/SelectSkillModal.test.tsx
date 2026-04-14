@@ -60,6 +60,12 @@ describe('DigitalHumanSetting/SkillConfig/SelectSkillModal', () => {
 
   const mockSkills: DigitalHumanSkill[] = [
     {
+      name: '内置技能',
+      description: '系统默认技能',
+      type: 'official',
+      built_in: true,
+    },
+    {
       name: '产品问答',
       description: '回答产品相关问题',
       type: 'official',
@@ -90,6 +96,7 @@ describe('DigitalHumanSetting/SkillConfig/SelectSkillModal', () => {
     expect(await screen.findByText('产品问答')).toBeInTheDocument()
     expect(screen.getByText('技术支持')).toBeInTheDocument()
     expect(screen.getByText('回答产品相关问题')).toBeInTheDocument()
+    expect(screen.queryByText('内置技能')).not.toBeInTheDocument()
   })
 
   it('显示默认选中的技能', async () => {
@@ -101,7 +108,7 @@ describe('DigitalHumanSetting/SkillConfig/SelectSkillModal', () => {
         onOk={mockOnOk}
         onCancel={mockOnCancel}
         onSubmit={mockOnSubmit}
-        defaultSelectedSkills={[mockSkills[0]]}
+        defaultSelectedSkills={[mockSkills[1]]}
       />,
     )
 
@@ -135,7 +142,7 @@ describe('DigitalHumanSetting/SkillConfig/SelectSkillModal', () => {
     fireEvent.click(productAddBtn)
 
     await waitFor(() => {
-      expect(mockOnOk).toHaveBeenCalledWith([mockSkills[0]])
+      expect(mockOnOk).toHaveBeenCalledWith([mockSkills[1]])
     })
 
     const productAddedBtn = screen.getByText(txt.added)
@@ -171,6 +178,7 @@ describe('DigitalHumanSetting/SkillConfig/SelectSkillModal', () => {
       () => {
         expect(screen.getByText('产品问答')).toBeInTheDocument()
         expect(screen.queryByText('技术支持')).not.toBeInTheDocument()
+        expect(screen.queryByText('内置技能')).not.toBeInTheDocument()
       },
       { timeout: 2000 },
     )
