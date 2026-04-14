@@ -6,7 +6,7 @@ export const normalizeMicroAppEntry = (entry: string): string =>
   entry.replace('ip:port', window.location.host)
 
 /**
- * 由业务菜单构造 CurrentMicroAppInfo
+ * 由菜单叶子项构造 CurrentMicroAppInfo（供 qiankun 容器使用）
  */
 export const buildMicroAppInfo = (
   menuKey: string,
