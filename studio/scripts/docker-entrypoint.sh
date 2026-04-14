@@ -12,4 +12,4 @@ cleanup() {
 
 trap cleanup EXIT INT TERM
 
-openclaw gateway
+openclaw gateway --allow-unconfigured
