@@ -31,7 +31,10 @@
       "dailyAt": "每日{time}",
       "today": "今天 {time}",
       "tomorrow": "明天 {time}",
-      "yesterday": "昨天 {time}"
+      "yesterday": "昨天 {time}",
+      "emptyPlanTitle": "暂无工作计划",
+      "emptyPlanSubDesc": "你可以先通过会话描述任务需求，系统会帮助你创建工作计划。\n创建成功后，计划会展示在这里。",
+      "emptyPlanCreateButton": "开启会话创建计划"
     },
     "detail": {
       "results": "成果",

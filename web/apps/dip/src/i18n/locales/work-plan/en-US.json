@@ -31,7 +31,10 @@
       "dailyAt": "Daily {time}",
       "today": "Today {time}",
       "tomorrow": "Tomorrow {time}",
-      "yesterday": "Yesterday {time}"
+      "yesterday": "Yesterday {time}",
+      "emptyPlanTitle": "No work plans yet",
+      "emptyPlanSubDesc": "Describe your task needs in a session first, and the system will help you create a work plan.\nAfter a plan is created, it will appear here.",
+      "emptyPlanCreateButton": "Start a session to create a plan"
     },
     "detail": {
       "results": "Results",

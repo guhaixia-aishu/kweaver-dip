@@ -38,7 +38,7 @@ const Details = () => {
   const [, messageContextHolder] = message.useMessage()
 
   const digitalHumanId = params.digitalHumanId
-  const [activeTab, setActiveTab] = useState<DigitalHumanDetailTab>('session')
+  const [activeTab, setActiveTab] = useState<DigitalHumanDetailTab>('plan')
 
   /** 管理员走全页配置 */
   useLayoutEffect(() => {
@@ -84,14 +84,14 @@ const Details = () => {
   const tabItems = useMemo(() => {
     return [
       {
-        key: 'session',
-        label: intl.get('digitalHuman.detail.tabSession'),
-        icon: <IconFont type="icon-dialog" />,
-      },
-      {
         key: 'plan',
         label: intl.get('digitalHuman.detail.tabPlan'),
         icon: <IconFont type="icon-plan" />,
+      },
+      {
+        key: 'session',
+        label: intl.get('digitalHuman.detail.tabSession'),
+        icon: <IconFont type="icon-dialog" />,
       },
       {
         key: 'config',
@@ -176,6 +176,7 @@ const Details = () => {
         <div className="flex-1 min-h-0 overflow-hidden flex flex-col pt-5 relative">
           <WorkPlanList
             source={{ mode: 'digitalHuman', digitalHumanId: digitalHumanId }}
+            onEmptyCreateClick={() => setActiveTab('session')}
             onPlanClick={(job) => {
               const from = `${location.pathname}${location.search}`
               navigate(

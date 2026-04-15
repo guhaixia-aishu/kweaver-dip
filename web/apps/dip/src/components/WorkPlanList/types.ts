@@ -25,6 +25,8 @@ export interface PlanListProps {
   searchValue?: string
   /** 点击计划行 */
   onPlanClick?: (job: CronJob) => void
+  /** 空列表「开启会话创建计划」按钮点击事件 */
+  onEmptyCreateClick?: () => void
 }
 
 export interface PlanListItemProps {

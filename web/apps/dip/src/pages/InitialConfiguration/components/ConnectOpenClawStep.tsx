@@ -7,7 +7,7 @@ import type { GuideInitializeRequest } from '@/apis/dip-studio/guide'
 import styles from './index.module.less'
 
 interface ConnectOpenClawStepProps {
-  loading: boolean
+  loading?: boolean
   submitError: string | null
   submitting: boolean
   form: FormInstance<GuideInitializeRequest>
