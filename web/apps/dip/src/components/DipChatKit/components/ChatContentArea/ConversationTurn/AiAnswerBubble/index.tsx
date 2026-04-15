@@ -240,9 +240,13 @@ const extractToolDuplicateCandidates = (events: DipChatKitAnswerEvent[]): string
   const candidateSet = new Set<string>()
   events.forEach((event) => {
     const text = normalizeComparableText(event.text || '')
-    if (!text) return
-    if (text.length < 16) return
-    candidateSet.add(text)
+    if (text.length >= 16) {
+      candidateSet.add(text)
+    }
+    const resultText = normalizeComparableText(event.resultText || '')
+    if (resultText.length >= 16) {
+      candidateSet.add(resultText)
+    }
   })
   return Array.from(candidateSet).sort((left, right) => right.length - left.length)
 }
@@ -503,22 +507,15 @@ const AiAnswerBubble: React.FC<AiAnswerBubbleProps> = ({
 
       const displayText = normalizeMarkdownText(children) || fileName
       return (
-        <span
+        <button
+          type="button"
           className={clsx(className, styles.markdownFileLink)}
-          role="button"
-          tabIndex={0}
           onClick={() => {
             openMarkdownFilePreview(fileName, hrefText || displayText)
           }}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-              event.preventDefault()
-              openMarkdownFilePreview(fileName, hrefText || displayText)
-            }
-          }}
         >
           {displayText}
-        </span>
+        </button>
       )
     }
 
@@ -535,16 +532,16 @@ const AiAnswerBubble: React.FC<AiAnswerBubbleProps> = ({
       const content = attrs['data-preview-content'] || normalizeMarkdownText(children)
 
       return (
-        <div
+        <button
+          type="button"
           className={styles.previewCard}
           onClick={() => {
             onOpenPreview(buildCardPreviewPayload(title, content))
           }}
-          role="presentation"
         >
           <span className={styles.previewCardTitle}>{title}</span>
           <span className={styles.previewCardDesc}>{content}</span>
-        </div>
+        </button>
       )
     }
 
@@ -615,9 +612,12 @@ const AiAnswerBubble: React.FC<AiAnswerBubbleProps> = ({
 
   const renderToolCard = (toolCard: DipChatKitToolCardItem) => {
     const hasText = Boolean(toolCard.text.trim())
+    const shouldHideStatusTag = !toolCard.isError && toolCard.status === 'completed' && hasText
+    const shouldShowStatusTag = !shouldHideStatusTag
     const showPreview = Boolean(toolCard.previewText)
     const showInline = Boolean(toolCard.inlineText)
-    const shouldRenderResultMarkdown = toolCard.kind === 'result' && hasText
+    const shouldRenderResultMarkdown =
+      hasText && (toolCard.kind === 'result' || toolCard.renderBodyMarkdown)
     const isOverflow = Boolean(overflowToolCards[toolCard.id])
     const isExpanded = Boolean(expandedToolCards[toolCard.id])
     const shouldCollapse = isOverflow && !isExpanded
@@ -665,8 +665,8 @@ const AiAnswerBubble: React.FC<AiAnswerBubbleProps> = ({
               </span>
             )}
           </div>
-          {toolCard.detail && <div className={styles.chatToolCardDetail}>{toolCard.detail}</div>}
-          {!hasText && (
+          {/* {toolCard.detail && <div className={styles.chatToolCardDetail}>{toolCard.detail}</div>} */}
+          {shouldShowStatusTag && (
             <div className={styles.chatToolCardStatusText}>
               <Tag color={statusTagColor}>{statusText}</Tag>
             </div>
@@ -797,7 +797,7 @@ const AiAnswerBubble: React.FC<AiAnswerBubbleProps> = ({
         className={styles.chatToolsCollapse}
         key={`${panelKey}_${keepExpandedUntilStreamDone ? 'streaming' : 'done'}`}
         ghost
-        expandIconPosition="start"
+        expandIconPlacement="start"
         defaultActiveKey={keepExpandedUntilStreamDone ? [panelKey] : []}
         onChange={() => {
           // Panels may mount lazily when opened; re-measure after open animation settles.

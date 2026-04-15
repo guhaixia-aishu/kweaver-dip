@@ -28,6 +28,7 @@ export interface DipChatKitAnswerEvent {
   type: DipChatKitAnswerEventType
   role: string
   text: string
+  resultText?: string
   toolName?: string
   toolCallId?: string
   isError?: boolean

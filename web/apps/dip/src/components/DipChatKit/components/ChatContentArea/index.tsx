@@ -160,7 +160,8 @@ const ChatContentArea: React.FC<ChatContentAreaProps> = ({
       typeof candidate.id === 'string' &&
       typeof candidate.toolName === 'string' &&
       typeof candidate.toolCallId === 'string' &&
-      typeof candidate.text === 'string'
+      typeof candidate.text === 'string' &&
+      typeof candidate.resultText === 'string'
     )
   }
 
@@ -173,6 +174,7 @@ const ChatContentArea: React.FC<ChatContentAreaProps> = ({
       type: 'toolCall',
       role: 'assistant',
       text: payload.text,
+      resultText: payload.resultText,
       toolName: payload.toolName,
       toolCallId: payload.toolCallId,
       isError: payload.isError,

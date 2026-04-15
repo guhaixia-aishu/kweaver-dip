@@ -284,6 +284,8 @@ const appendTurnAnswerEvent = (
             ? 'toolResult'
             : 'assistant',
         text: shouldUseResultText ? event.text : existedEvent.text || event.text,
+        resultText:
+          event.resultText !== undefined ? event.resultText : existedEvent.resultText,
         details: {
           ...(existedEvent.details || {}),
           ...(event.details || {}),
