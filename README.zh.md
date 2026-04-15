@@ -30,8 +30,9 @@ DIP Studio 运行依赖 OpenClaw。您可以选择在主机上自行部署 OpenC
 4. 执行 `openclaw gateway restart` 重启 OpenClaw 网关。
 5. 运行 `openclaw gateway status` 并记录网关监听地址，通常为：`ws://0.0.0.0:18789`。
 6. 确保运行 `deploy.sh` 的机器可以访问 OpenClaw 配置文件和工作空间目录。编辑 `deploy/release-manifests/<version>/kweaver-dip.yaml`：
- - `dip-studio.values.studio.envFilePath`: Studio ENV 配置文件主机路径
- - `dip-studio.values.studio.OpenClawRootDir`: .openclaw/ 主目录主机路径
+ - `dip-studio.values.studio.envFileHostPath`: Studio ENV 配置文件主机路径
+ - `dip-studio.values.studio.openClawHostPath`: .openclaw/ 主目录主机路径
+ - `dip-studio.values.studio.useExternalOpenClaw`: 是否使用自行部署的 OpenClaw
 
 #### 使用 KWeaver DIP OpenClaw
 
