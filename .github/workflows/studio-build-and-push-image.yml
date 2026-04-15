@@ -3,11 +3,15 @@ name: Build And Push Studio Image
 on:
   push:
     branches:
-      - main
-      - master
-      - codex/**
+      - "**"
     tags:
       - "v*"
+    paths:
+      - "studio/**"
+      - ".github/workflows/studio-build-and-push-image.yml"
+  pull_request:
+    branches:
+      - "**"
     paths:
       - "studio/**"
       - ".github/workflows/studio-build-and-push-image.yml"

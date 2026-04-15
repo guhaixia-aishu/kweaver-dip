@@ -240,7 +240,8 @@ describe("createChatAgentRouter", () => {
             }
           }
         ],
-        idempotencyKey: "generated-idempotency-key"
+        idempotencyKey: "generated-idempotency-key",
+        sessionLabel: "hello_generate"
       },
       "agent-1",
       expect.any(AbortSignal)
