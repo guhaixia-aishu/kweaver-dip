@@ -50,6 +50,11 @@ spec:
                 configMapKeyRef:
                   name: {{ .Chart.Name }}-config
                   key: KWEAVER_HYDRA_ADMIN_URL
+            - name: USE_EXTERNAL_OPENCLAW
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Chart.Name }}-config
+                  key: USE_EXTERNAL_OPENCLAW
           resources:
             {{- toYaml .Values.resources.studio | nindent 12 }}
           volumeMounts:
