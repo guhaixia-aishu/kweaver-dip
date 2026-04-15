@@ -4,17 +4,23 @@ import clsx from 'classnames'
 import { useState } from 'react'
 import intl from 'react-intl-universal'
 import AvatarIcon from '@/assets/images/sider/avatar.svg?react'
+import type { RouteModule } from '@/routes/types'
 import { useUserInfoStore } from '@/stores'
 import SystemSettingsModal from '../../../pages/InitialConfiguration/components/SystemSettingsModal'
 import IconFont from '../../IconFont'
 export interface UserMenuItemProps {
   /** 是否折叠 */
   collapsed: boolean
+  /** 模块 */
+  module?: RouteModule
 }
 
-export const UserMenuItem = ({ collapsed }: UserMenuItemProps) => {
+export const UserMenuItem = ({ collapsed, module }: UserMenuItemProps) => {
   const { userInfo, logout } = useUserInfoStore()
-  const showSystemSettings = useUserInfoStore((s) => s.isAdmin && s.modules.includes('studio'))
+  const showSystemSettings =
+    useUserInfoStore((s) => s.isAdmin && s.modules.includes('studio')) &&
+    module !== 'system' &&
+    module !== 'business'
   const [open, setOpen] = useState(false)
 
   const handleLogout = () => {

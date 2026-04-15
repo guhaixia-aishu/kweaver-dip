@@ -29,7 +29,7 @@ const SystemSider = ({ collapsed, onCollapse }: SystemSiderProps) => {
   const renderMenuIcon = (Icon?: SystemMenuIcon) =>
     Icon ? (
       <span className="inline-flex h-4 w-4 items-center justify-center">
-        <Icon />
+        <Icon className="w-4 h-4" />
       </span>
     ) : undefined
 
@@ -64,32 +64,38 @@ const SystemSider = ({ collapsed, onCollapse }: SystemSiderProps) => {
   }, [routeAncestorKeys])
 
   const menuItems = useMemo<MenuProps['items']>(() => {
-    const toAntMenuItem = (item: SystemMenuItem): NonNullable<MenuProps['items']>[number] => {
+    const toAntMenuItems = (item: SystemMenuItem): NonNullable<MenuProps['items']> => {
       if ('children' in item) {
         if (item.type === 'group') {
-          return {
-            type: 'group',
+          return [
+            {
+              key: `${item.key}-group-title`,
+              label: item.label,
+              type: 'group',
+            },
+            ...item.children.flatMap(toAntMenuItems),
+          ]
+        }
+        return [
+          {
             key: item.key,
             label: item.label,
-            children: item.children.map(toAntMenuItem),
-          }
-        }
-        return {
+            icon: renderMenuIcon(item.icon),
+            children: item.children.flatMap(toAntMenuItems),
+          },
+        ]
+      }
+      return [
+        {
           key: item.key,
           label: item.label,
           icon: renderMenuIcon(item.icon),
-          children: item.children.map(toAntMenuItem),
-        }
-      }
-      return {
-        key: item.key,
-        label: item.label,
-        icon: renderMenuIcon(item.icon),
-        onClick: () => navigate(item.path),
-      }
+          onClick: () => navigate(item.path),
+        },
+      ]
     }
 
-    return visibleSystemMenuItems.map(toAntMenuItem)
+    return visibleSystemMenuItems.flatMap(toAntMenuItems)
   }, [navigate, visibleSystemMenuItems])
 
   return (
@@ -135,7 +141,7 @@ const SystemSider = ({ collapsed, onCollapse }: SystemSiderProps) => {
       ) : (
         <div className="dip-sider-footer-row dip-sider-footer-row-horizontal shrink-0">
           <div className="min-w-0 flex-1">
-            <UserMenuItem collapsed={collapsed} />
+            <UserMenuItem collapsed={collapsed} module="system" />
           </div>
           <Tooltip title={intl.get('sider.collapse')} placement="right">
             <button

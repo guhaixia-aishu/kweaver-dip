@@ -102,7 +102,7 @@ const BusinessSider = ({ collapsed, onCollapse }: BusinessSiderProps) => {
             </Tooltip>
           </div>
           <div className="dip-sider-footer-row">
-            <UserMenuItem collapsed={collapsed} />
+            <UserMenuItem collapsed={collapsed} module="business" />
           </div>
         </div>
       ) : (
