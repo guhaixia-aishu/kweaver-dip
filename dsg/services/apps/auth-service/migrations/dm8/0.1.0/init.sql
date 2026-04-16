@@ -1,4 +1,4 @@
-SET SCHEMA af_main;
+SET SCHEMA kweaver;
 
 CREATE TABLE IF NOT EXISTS "auth_service_casbin_rule" (
   "id" BIGINT  NOT NULL IDENTITY(1, 1),

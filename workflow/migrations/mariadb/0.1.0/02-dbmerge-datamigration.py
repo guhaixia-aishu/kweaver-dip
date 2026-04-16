@@ -24,7 +24,7 @@ DB_CONFIG = {
 
 # 源库和目标库
 SOURCE_DATABASE = 'workflow'
-TARGET_DATABASE = 'adp'
+TARGET_DATABASE = 'kweaver'
 
 BATCH_SIZE = 2000
 TABLES_TO_MIGRATE = [

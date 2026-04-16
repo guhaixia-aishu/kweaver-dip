@@ -1,4 +1,4 @@
-SET SCHEMA af_cognitive_assistant;
+SET SCHEMA kweaver;
 
 
 CREATE TABLE IF NOT EXISTS "t_agent" (

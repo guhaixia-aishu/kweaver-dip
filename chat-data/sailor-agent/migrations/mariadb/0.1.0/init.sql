@@ -1,4 +1,4 @@
-USE af_cognitive_assistant;
+USE kweaver;
 
 
 CREATE TABLE IF NOT EXISTS `t_agent` (

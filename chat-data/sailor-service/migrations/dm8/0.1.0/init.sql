@@ -1,4 +1,4 @@
-SET SCHEMA af_cognitive_assistant;
+SET SCHEMA kweaver;
 
 CREATE TABLE if not exists "t_knowledge_network_info" (
     "m_id" BIGINT NOT NULl IDENTITY(1, 1),

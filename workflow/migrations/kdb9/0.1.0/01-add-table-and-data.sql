@@ -1,5 +1,5 @@
 
-SET SEARCH_PATH TO adp;
+SET SEARCH_PATH TO kweaver;
 
 
 CREATE TABLE IF NOT EXISTS `t_wf_activity_info_config`  (

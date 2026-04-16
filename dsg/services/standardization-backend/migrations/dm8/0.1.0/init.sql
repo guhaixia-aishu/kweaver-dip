@@ -1,4 +1,4 @@
-SET SCHEMA af_std;
+SET SCHEMA kweaver;
 
 CREATE TABLE IF NOT EXISTS "t_data_element_his" (
   "f_de_id" BIGINT NOT NULL DEFAULT 0,

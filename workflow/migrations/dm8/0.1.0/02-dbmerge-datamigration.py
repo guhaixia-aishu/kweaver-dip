@@ -22,7 +22,7 @@ DB_CONFIG = {
 
 # 源schema和目标schema
 SOURCE_SCHEMA = 'workflow'
-TARGET_SCHEMA = 'adp'
+TARGET_SCHEMA = 'kweaver'
 
 BATCH_SIZE = 2000
 TABLES_TO_MIGRATE = [

@@ -1,4 +1,4 @@
-USE af_cognitive_assistant;
+USE kweaver;
 
 create table if not exists `t_knowledge_network_info` (
     `m_id` bigint NOT NULL auto_increment comment '主键',

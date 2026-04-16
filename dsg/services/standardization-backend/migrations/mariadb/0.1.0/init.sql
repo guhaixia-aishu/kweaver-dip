@@ -1,4 +1,4 @@
-USE af_std;
+USE kweaver;
 
 -- af_std.t_data_element_his definition
 CREATE TABLE IF NOT EXISTS `t_data_element_his` (

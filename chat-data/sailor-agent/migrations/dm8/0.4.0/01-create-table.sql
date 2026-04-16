@@ -1,4 +1,4 @@
-SET SCHEMA af_cognitive_assistant;
+SET SCHEMA kweaver;
 
 CREATE TABLE  if not exists "t_memory_chunks" (
     "id"                 varchar(64 char)  not null  ,
