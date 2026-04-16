@@ -1,4 +1,4 @@
-USE af_configuration;
+USE kweaver;
 -- ALTER TABLE af_configuration.app COLLATE=utf8mb4_unicode_ci;
 -- ALTER TABLE af_configuration.app_history COLLATE=utf8mb4_unicode_ci;
 -- DROP index if exists unique_index_id_delete_at on app;

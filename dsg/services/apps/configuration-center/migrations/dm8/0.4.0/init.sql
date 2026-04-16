@@ -1,4 +1,4 @@
-SET SCHEMA af_configuration;
+SET SCHEMA kweaver;
 
 CREATE TABLE IF NOT EXISTS "configuration" (
     "key" VARCHAR(255 char) NOT NULL,

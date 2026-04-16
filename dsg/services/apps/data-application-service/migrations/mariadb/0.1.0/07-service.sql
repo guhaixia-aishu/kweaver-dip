@@ -1,4 +1,4 @@
-use data_application_service;
+USE kweaver;
 
 -- 为接口服务表(service)添加字段
 -- 添加来源类型字段

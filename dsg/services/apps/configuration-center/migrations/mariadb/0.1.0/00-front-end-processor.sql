@@ -1,4 +1,4 @@
-USE `af_configuration`;
+USE kweaver;
 
 -- 前置机
 CREATE TABLE IF NOT EXISTS `front_end_processors` (

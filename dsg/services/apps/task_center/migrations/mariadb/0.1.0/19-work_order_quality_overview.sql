@@ -1,4 +1,4 @@
-USE `af_tasks`;
+USE kweaver;
 
 -- ALTER TABLE `work_order` ADD COLUMN IF NOT EXISTS  `department_id` char(36) NULL COMMENT '所属部门id' after name;
 -- ALTER TABLE `work_order` ADD COLUMN IF NOT EXISTS  `data_source_department_id` char(36) NULL COMMENT '数源部门id(质量整改工单使用)' after department_id;

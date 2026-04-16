@@ -1,4 +1,4 @@
-USE af_data_catalog;
+USE kweaver;
 
 CREATE TABLE IF NOT EXISTS `t_system_operation_detail` (
      `id` char(36) NOT NULL COMMENT 'id,uuid',

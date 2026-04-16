@@ -1,4 +1,4 @@
-USE af_main;
+USE kweaver;
 CREATE TABLE IF NOT EXISTS `subject_domain` (
     `domain_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '雪花id',
     `id` char(36) NOT NULL COMMENT '对象id，uuid',

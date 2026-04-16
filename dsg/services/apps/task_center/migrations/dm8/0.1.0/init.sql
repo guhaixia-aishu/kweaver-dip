@@ -1,4 +1,4 @@
-SET SCHEMA af_tasks;
+SET SCHEMA kweaver;
 
 CREATE TABLE IF NOT EXISTS "operation_log" (
     "id" VARCHAR(36 char) NOT NULL,

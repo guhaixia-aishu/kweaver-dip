@@ -1,4 +1,4 @@
-use af_main;
+USE kweaver;
 CREATE TABLE IF NOT EXISTS `template_rule` (
      `id` bigint(20) NOT NULL COMMENT '主键',
      `rule_id` char(36) DEFAULT NULL COMMENT '规则id',

@@ -1,4 +1,4 @@
-use af_main;
+USE kweaver;
 -- 为datasource表添加hua_ao_id字段
 -- ALTER TABLE `datasource` ADD COLUMN IF NOT EXISTS `hua_ao_id` VARCHAR(128) DEFAULT NULL COMMENT '华傲（第三方）ID';
 

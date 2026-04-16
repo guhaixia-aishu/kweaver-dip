@@ -1,4 +1,4 @@
-USE af_data_catalog;
+USE kweaver;
 
 
 CREATE TABLE IF NOT EXISTS `audit_log`

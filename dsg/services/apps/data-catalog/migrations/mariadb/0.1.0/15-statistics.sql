@@ -1,4 +1,4 @@
-USE af_data_catalog;
+USE kweaver;
 
 CREATE TABLE IF NOT EXISTS `statistics_overview` (
      `id` char(38)  COMMENT '主键ID',

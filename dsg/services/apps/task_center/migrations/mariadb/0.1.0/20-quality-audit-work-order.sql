@@ -1,4 +1,4 @@
-USE `af_tasks`;
+USE kweaver;
 
 -- ALTER TABLE `work_order` MODIFY COLUMN IF EXISTS `remark` TEXT DEFAULT '' COMMENT '备注';
 --

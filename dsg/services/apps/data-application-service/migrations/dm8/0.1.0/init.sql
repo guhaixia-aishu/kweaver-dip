@@ -1,4 +1,4 @@
-SET SCHEMA data_application_service;
+SET SCHEMA kweaver;
 
 CREATE TABLE IF NOT EXISTS "app"
 (

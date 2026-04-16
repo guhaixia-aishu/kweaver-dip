@@ -1,4 +1,4 @@
-USE af_configuration;
+USE kweaver;
 
 
 -- 综合评价权重

@@ -1,4 +1,4 @@
-use af_main;
+USE kweaver;
 
 CREATE TABLE IF NOT EXISTS classification_rule_algorithm_relation (
 	classification_rule_algorithm_relation_id BIGINT(20) NOT NULL COMMENT '分类规则算法关系雪花id',

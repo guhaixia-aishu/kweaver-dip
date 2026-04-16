@@ -1,3 +1,3 @@
-use af_main;
+USE kweaver;
 
 -- ALTER TABLE `form_view` ADD COLUMN IF NOT EXISTS  `source_sign` int DEFAULT NULL COMMENT '来源标识';

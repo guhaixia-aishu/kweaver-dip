@@ -1,4 +1,4 @@
-USE af_main;
+USE kweaver;
 
 CREATE TABLE IF NOT EXISTS  `form_view` (
   `form_view_id` bigint NOT NULL COMMENT '数据表视图雪花id',

@@ -1,4 +1,4 @@
-USE `af_tasks`;
+USE kweaver;
 
 CREATE TABLE IF NOT EXISTS `tc_tenant_app` (
     `tenant_application_id` bigint(20) NOT NULL COMMENT '租户申请id, 雪花id',

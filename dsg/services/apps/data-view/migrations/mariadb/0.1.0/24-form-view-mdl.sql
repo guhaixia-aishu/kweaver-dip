@@ -1,4 +1,4 @@
-USE af_main;
+USE kweaver;
 
 -- ALTER TABLE `form_view` ADD COLUMN if not exists `mdl_id` VARCHAR(36) NULL DEFAULT NULL COMMENT '统一视图id';
 

@@ -1,4 +1,4 @@
-USE `af_tasks`;
+USE kweaver;
 
 CREATE TABLE IF NOT EXISTS `tc_tenant_app_db_account` (
     `database_account_id` bigint(20) NOT NULL COMMENT '数据库账号id',

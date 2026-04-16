@@ -1,4 +1,4 @@
-USE af_main;
+USE kweaver;
 
 
 -- ALTER TABLE `form_view` ADD COLUMN IF NOT EXISTS `update_cycle` INT(11) DEFAULT 0 COMMENT '更新周期' AFTER `mdl_id`;

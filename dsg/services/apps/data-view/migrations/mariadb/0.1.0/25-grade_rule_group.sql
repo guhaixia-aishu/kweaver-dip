@@ -1,4 +1,4 @@
-USE af_main;
+USE kweaver;
 
 -- ALTER TABLE `grade_rule` ADD COLUMN if not exists `group_id` char(36) DEFAULT '' COMMENT '所属规则组ID' AFTER `type`;
 

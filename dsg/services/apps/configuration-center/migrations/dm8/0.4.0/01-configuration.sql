@@ -1,4 +1,4 @@
-SET SCHEMA af_configuration;
+SET SCHEMA kweaver;
 
 INSERT INTO "configuration" ("key","value","type")
 SELECT 'digital_human', '1', '12'

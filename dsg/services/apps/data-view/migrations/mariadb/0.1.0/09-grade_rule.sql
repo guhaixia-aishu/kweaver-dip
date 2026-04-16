@@ -1,4 +1,4 @@
-use af_main;
+USE kweaver;
 
 CREATE TABLE IF NOT EXISTS grade_rule (
 	grade_rule_id BIGINT(20) NOT NULL COMMENT '分级规则雪花id',

@@ -1,4 +1,4 @@
-USE af_main;
+USE kweaver;
 
 CREATE TABLE IF NOT EXISTS `auth_service_casbin_rule` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,

@@ -1,4 +1,4 @@
-use af_main;
+USE kweaver;
 
 CREATE TABLE IF NOT EXISTS `white_list_policy` (
     `white_policy_id` bigint(20) NOT NULL COMMENT '白名单策略id 雪花id',

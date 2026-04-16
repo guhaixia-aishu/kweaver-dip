@@ -1,4 +1,4 @@
-use af_data_catalog;
+USE kweaver;
 
 
 create table if not EXISTS `t_data_push_model`(

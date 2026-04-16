@@ -1,4 +1,4 @@
-USE af_main;
+USE kweaver;
 
 CREATE TABLE IF NOT EXISTS `department_explore_report` (
     `id` BIGINT(20) NOT NULL COMMENT 'id,uuid',

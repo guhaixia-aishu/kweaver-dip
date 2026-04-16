@@ -1,4 +1,4 @@
-USE data_application_service;
+USE kweaver;
 
 CREATE TABLE IF NOT EXISTS `service_category_relation` (
      `id` BIGINT(20) NOT NULL COMMENT '唯一id，雪花算法',

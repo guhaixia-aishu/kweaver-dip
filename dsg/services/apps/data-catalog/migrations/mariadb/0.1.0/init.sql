@@ -1,4 +1,4 @@
-USE af_data_catalog;
+USE kweaver;
 
 -- af_data_catalog.t_business_logic_entity_by_business_domain definition
 

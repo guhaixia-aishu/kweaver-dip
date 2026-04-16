@@ -1,4 +1,4 @@
-USE `af_tasks`;
+USE kweaver;
 
 -- alter table t_fusion_field   modify  COLUMN IF EXISTS catalog_id varchar(36) null comment '数据资源目录ID';
 --

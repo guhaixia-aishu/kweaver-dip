@@ -1,4 +1,4 @@
-USE af_configuration;
+USE kweaver;
 
 INSERT  INTO `configuration`(`key`,`value`,`type`)
 SELECT 'third_party', 'false', '0'

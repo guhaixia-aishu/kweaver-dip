@@ -1,4 +1,4 @@
-use af_configuration;
+USE kweaver;
 
 -- ALTER TABLE permission_resources DROP COLUMN IF EXISTS `name`;
 -- ALTER TABLE permission_resources DROP COLUMN IF EXISTS `table`;

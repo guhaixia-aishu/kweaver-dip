@@ -1,4 +1,4 @@
-USE af_main;
+USE kweaver;
 -- ALTER TABLE `form_view` DROP COLUMN IF EXISTS `metadata_form_id`;
 -- ALTER TABLE `datasource` DROP COLUMN IF EXISTS `type`;
 

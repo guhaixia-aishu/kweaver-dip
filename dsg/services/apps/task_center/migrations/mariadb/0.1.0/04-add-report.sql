@@ -1,4 +1,4 @@
-USE af_tasks;
+USE kweaver;
 
 CREATE TABLE IF NOT EXISTS `data_research_report` (
    `data_research_report_id` bigint(20)  NOT NULL COMMENT '雪花id',

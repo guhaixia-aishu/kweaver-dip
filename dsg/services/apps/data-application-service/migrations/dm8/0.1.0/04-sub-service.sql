@@ -1,4 +1,4 @@
-SET SCHEMA data_application_service;
+SET SCHEMA kweaver;
 -- 子接口，接口限定规则
 CREATE TABLE IF NOT EXISTS "sub_service" (
                                              "snowflake_id"  BIGINT        NOT NULL ,

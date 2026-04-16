@@ -1,4 +1,4 @@
-USE af_tasks;
+USE kweaver;
 -- 用户通知
 CREATE TABLE  IF NOT EXISTS  `notifications` (
     `id`                        CHAR(36)    NOT NULL,

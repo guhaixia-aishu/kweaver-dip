@@ -1,4 +1,4 @@
-USE af_configuration;
+USE kweaver;
 
 -- ALTER TABLE `info_system` modify `created_at` datetime(3) NOT NULL DEFAULT current_timestamp(3) COMMENT '创建时间',
 -- modify `updated_at` datetime(3) NOT NULL DEFAULT current_timestamp(3)  COMMENT '更新时间';

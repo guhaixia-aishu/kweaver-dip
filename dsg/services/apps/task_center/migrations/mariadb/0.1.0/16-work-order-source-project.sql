@@ -1,4 +1,4 @@
-USE `af_tasks`;
+USE kweaver;
 
 -- ALTER TABLE `work_order`
 --     ADD COLUMN IF NOT EXISTS `node_id`  CHAR(36) DEFAULT NULL COMMENT '工单所属项目的运营流程节点 ID，仅当来源是项目时有值',

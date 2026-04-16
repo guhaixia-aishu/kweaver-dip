@@ -1,4 +1,4 @@
-USE af_main;
+USE kweaver;
 
 CREATE TABLE IF NOT EXISTS  `cdc_task` (
     `database` varchar(255) NOT NULL COMMENT '同步库名',
@@ -11,4 +11,4 @@ CREATE TABLE IF NOT EXISTS  `cdc_task` (
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-update af_main.cdc_task set group_id='af.auth-service' where  group_id='auth-service'
+update kweaver.cdc_task set group_id='kweaver.auth-service' where  group_id='auth-service'

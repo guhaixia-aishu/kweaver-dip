@@ -1,4 +1,4 @@
-USE data_application_service;
+USE kweaver;
 
 CREATE TABLE IF NOT EXISTS `app`
 (

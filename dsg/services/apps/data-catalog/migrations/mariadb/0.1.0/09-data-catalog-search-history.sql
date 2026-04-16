@@ -1,4 +1,4 @@
-use af_data_catalog;
+USE kweaver;
 
 CREATE TABLE IF NOT EXISTS `t_data_catalog_search_history` (
      `catalog_search_history_id` bigint(20) NOT NULL COMMENT '雪花id, 单目录搜索记录',

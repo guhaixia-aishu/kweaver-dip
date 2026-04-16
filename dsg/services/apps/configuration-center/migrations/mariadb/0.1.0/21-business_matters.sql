@@ -1,4 +1,4 @@
-USE af_configuration;
+USE kweaver;
 
 CREATE TABLE IF NOT EXISTS  `business_matters` (
     `id` bigint(20) unsigned NOT NULL COMMENT '雪花id',

@@ -1,4 +1,4 @@
-USE af_tasks;
+USE kweaver;
 
 -- 工单模板表
 CREATE TABLE IF NOT EXISTS `work_order_template` (

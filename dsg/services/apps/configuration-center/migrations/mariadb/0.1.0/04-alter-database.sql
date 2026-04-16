@@ -1,4 +1,4 @@
-USE af_configuration;
+USE kweaver;
 
 -- ALTER TABLE `user` ADD COLUMN IF NOT EXISTS `phone_number` VARCHAR(20) DEFAULT NULL COMMENT '手机号码';
 -- ALTER TABLE `user` ADD COLUMN IF NOT EXISTS `mail_address` VARCHAR(128) DEFAULT NULL COMMENT '邮箱地址';

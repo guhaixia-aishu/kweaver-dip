@@ -1,4 +1,4 @@
-USE af_configuration;
+USE kweaver;
 
 CREATE TABLE IF NOT EXISTS `t_cms_content` (
     `id` char(38) NOT NULL COMMENT '主键ID',
