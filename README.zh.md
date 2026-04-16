@@ -64,7 +64,11 @@ cd kweaver-dip/deploy
 # 2. 安装 KWeaver DIP
 sudo ./deploy.sh kweaver-dip install
 
-# 3. 安装 OpenClaw DIP 插件
+# 3. 安装 Kweaver-SDK
+# 如果您选择使用 KWeaver DIP 自带的 OpenClaw 可以跳过此步
+npm install -g @kweaver-ai/kweaver-sdk
+
+# 4. 安装 OpenClaw DIP 插件
 openclaw plugins install ./openclaw-extensions/dip
 ```
 
@@ -76,8 +80,8 @@ openclaw plugins install ./openclaw-extensions/dip
 默认账号：`admin`
 初始密码：`eisoo.com`
 
-### 初始化 KWeaver DIP OpenClaw
-<a id="kweaver-dip-onboard"></a>
+### 初始化 KWeaver DIP OpenClaw<a id="kweaver-dip-onboard"></a>
+
 如果您选择使用 KWeaver DIP 自带的 OpenClaw，请在完成部署后按以下流程配置 OpenClaw：
 
   - 在主机执行 `kubectl get pods -nkweaver | grep dip-studio`，复制 POD ID。
