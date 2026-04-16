@@ -13,7 +13,6 @@ import { PreviewDrawerContainerContext } from './previewDrawerContainerContext'
 import { TASKS_SCROLL_THRESHOLD_PX, type TasksPanelProps } from './types'
 import { useTaskRuns } from './useTaskRuns'
 
-const BANNER_DISMISS_KEY = 'dip-work-plan-tasks-plan-banner-dismissed'
 const PLAN_PREVIEW_SUBPATH = 'plan.md'
 const PLAN_PREVIEW_TITLE = intl.get('workPlan.detail.planDocTitle')
 
@@ -47,14 +46,6 @@ function TasksPanelInner({
 
   useEffect(() => () => handleListScroll.cancel(), [handleListScroll])
 
-  const [bannerDismissed] = useState(() => {
-    try {
-      return sessionStorage.getItem(BANNER_DISMISS_KEY) === '1'
-    } catch {
-      return false
-    }
-  })
-
   useEffect(() => {
     let cancelled = false
     const planIdTrimmed = planId?.trim()
@@ -71,7 +62,7 @@ function TasksPanelInner({
     if (!planIdTrimmed) {
       setPlanPreview({
         ...basePreview,
-        body: intl.get('workPlan.detail.noPlanDoc'),
+        body: intl.get('workPlan.detail.planDocNotGenerated'),
         error: null,
       })
       return
@@ -88,24 +79,16 @@ function TasksPanelInner({
             ...basePreview,
             body,
             error: null,
+            emptyText: body?.trim() ? undefined : intl.get('workPlan.detail.planDocNotGenerated'),
           })
         }
-      } catch (error: any) {
+      } catch {
         if (!cancelled) {
-          if (error.code === 'NOT_FOUND') {
-            setPlanPreview({
-              ...basePreview,
-              body: '',
-            })
-          } else {
-            const errorMessage =
-              error?.description || error?.message || intl.get('workPlan.detail.planDocLoadFailed')
-            setPlanPreview({
-              ...basePreview,
-              body: '',
-              error: errorMessage,
-            })
-          }
+          setPlanPreview({
+            ...basePreview,
+            body: '',
+            error: intl.get('workPlan.detail.planDocPreviewLoadFailed'),
+          })
         }
       }
     }
@@ -130,7 +113,7 @@ function TasksPanelInner({
         <div className="flex min-h-0 min-w-0 flex-1 flex-col border-r border-[--dip-border-color] bg-[#FAFAF9]">
           <ScrollBarContainer className="flex min-h-0 flex-1 flex-col">
             <div className="flex shrink-0 flex-col gap-4 px-5">
-              {!bannerDismissed ? (
+              {planPreview.body?.trim() ? (
                 <div className="flex items-start gap-2 mt-4 rounded-lg border border-[#d9f7be] px-3 py-[9px] bg-[--dip-white]">
                   <CheckCircleFilled
                     className="mt-0.5 shrink-0 text-base text-[#52c41a]"

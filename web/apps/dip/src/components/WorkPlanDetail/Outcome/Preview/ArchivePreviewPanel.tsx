@@ -127,8 +127,7 @@ const ArchivePreviewPanel = ({
           <div className="flex min-h-[200px] flex-1 items-center justify-center py-10">
             <Empty
               type="failed"
-              title={intl.get('workPlan.detail.previewFailed')}
-              desc={preview.error}
+              title={preview.error || intl.get('workPlan.detail.previewFailed')}
             />
           </div>
         ) : preview.viewer === 'pdf' && preview.blobUrl ? (
@@ -201,7 +200,7 @@ const ArchivePreviewPanel = ({
           </div>
         ) : preview.body === '' ? (
           <div className="flex min-h-[200px] flex-1 items-center justify-center py-10">
-            <Empty title={intl.get('workPlan.detail.noPreview')} />
+            <Empty title={preview.emptyText ?? intl.get('workPlan.detail.noPreview')} />
           </div>
         ) : (
           <pre className="m-0 whitespace-pre-wrap break-words text-[--dip-text-color]">

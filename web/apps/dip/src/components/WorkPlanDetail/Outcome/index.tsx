@@ -220,7 +220,7 @@ const ResultsPanel = ({
   if (!(dhId && sessionId)) {
     return (
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-6">
-        <Empty type="failed" title={intl.get('workPlan.common.loadFailed')} />
+        <Empty type="failed" title={intl.get('workPlan.detail.outcomeNotGenerated')} />
       </div>
     )
   }
@@ -233,10 +233,10 @@ const ResultsPanel = ({
     )
   }
 
-  if (rootError || !root) {
+  if (rootError) {
     return (
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-6">
-        <Empty title={intl.get('workPlan.common.noData')} />
+        <Empty type="failed" title={intl.get('workPlan.detail.outcomeLoadFailed')} />
       </div>
     )
   }
@@ -244,7 +244,7 @@ const ResultsPanel = ({
   if (dateKeys.length === 0) {
     return (
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-6">
-        <Empty title={intl.get('workPlan.common.noData')} />
+        <Empty title={intl.get('workPlan.detail.outcomeNotGenerated')} />
       </div>
     )
   }

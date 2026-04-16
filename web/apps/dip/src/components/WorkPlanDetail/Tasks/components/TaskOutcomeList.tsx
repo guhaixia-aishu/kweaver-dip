@@ -192,9 +192,8 @@ function TaskOutcomeListInner({ digitalHumanId, sessionId }: TaskOutcomeListProp
           }),
         )
         if (!cancelled) setEntries(nested.flat())
-      } catch (error: any) {
-        if (!cancelled)
-          setError(error?.description ?? intl.get('workPlan.detail.archiveFetchFailed'))
+      } catch {
+        if (!cancelled) setError(intl.get('workPlan.detail.taskOutcomeFetchFailed'))
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -206,7 +205,7 @@ function TaskOutcomeListInner({ digitalHumanId, sessionId }: TaskOutcomeListProp
   }, [dhId, sessionIdTrimmed])
 
   if (!canFetch) {
-    return <Empty title={intl.get('workPlan.detail.noOutcome')} />
+    return <Empty title={intl.get('workPlan.detail.taskOutcomeNotGenerated')} />
   }
   if (loading) {
     return (
@@ -216,10 +215,10 @@ function TaskOutcomeListInner({ digitalHumanId, sessionId }: TaskOutcomeListProp
     )
   }
   if (error) {
-    return <Empty type="failed" title={intl.get('workPlan.common.loadFailed')} desc={error} />
+    return <Empty type="failed" title={error} />
   }
   if (entries.length === 0) {
-    return <Empty title={intl.get('workPlan.detail.noOutcome')} />
+    return <Empty title={intl.get('workPlan.detail.taskOutcomeNotGenerated')} />
   }
   return (
     <>

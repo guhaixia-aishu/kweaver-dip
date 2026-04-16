@@ -39,37 +39,53 @@ const MicroAppComponent = ({ appBasicInfo, homeRoute, customProps }: MicroAppCom
   const appMenuRootRef = useRef<Map<string, ReactRoot>>(new Map())
   // 用于存储最新的 microAppProps，避免 useEffect 依赖整个对象导致无限循环
   const microAppPropsRef = useRef<MicroAppProps | null>(null)
+  const customPropsObj = customProps ?? {}
+  const hasCustomToken = Object.hasOwn(customPropsObj, 'token')
+  const hasCustomRoute = Object.hasOwn(customPropsObj, 'route')
+  const hasCustomUserid = Object.hasOwn(customPropsObj, 'userid')
 
   // 构建标准化的微应用 props（所有微应用统一使用此结构）
   const microAppProps: MicroAppProps = useMemo<any>(
     () => ({
       // ========== 认证相关 ==========
-      token: {
-        // 使用 getter，每次访问时都从 Cookie 读取最新值，无需更新 props
-        get accessToken() {
-          return getAccessToken()
-        },
-        refreshToken: httpConfig.refreshToken || (async () => ({ accessToken: '' })),
-        onTokenExpired: httpConfig.onTokenExpired,
-      },
+      ...(hasCustomToken
+        ? {}
+        : {
+            token: {
+              // 使用 getter，每次访问时都从 Cookie 读取最新值，无需更新 props
+              get accessToken() {
+                return getAccessToken()
+              },
+              refreshToken: httpConfig.refreshToken || (async () => ({ accessToken: '' })),
+              onTokenExpired: httpConfig.onTokenExpired,
+            },
+          }),
 
       // ========== 路由信息 ==========
-      route: {
-        basename: appBasicInfo.routeBasename,
-        homeRoute: homeRoute,
-      },
+      ...(hasCustomRoute
+        ? {}
+        : {
+            route: {
+              basename: appBasicInfo.routeBasename,
+              homeRoute: homeRoute,
+            },
+          }),
 
       // ========== 用户信息 ==========
-      user: {
-        id: userInfo?.id || '',
-        // 使用 getter，每次访问时都从 store 读取最新值，无需更新 props
-        get vision_name() {
-          return useUserInfoStore.getState().userInfo?.vision_name || ''
-        },
-        get account() {
-          return useUserInfoStore.getState().userInfo?.account || ''
-        },
-      },
+      ...(hasCustomUserid
+        ? {}
+        : {
+            user: {
+              id: userInfo?.id || '',
+              // 使用 getter，每次访问时都从 store 读取最新值，无需更新 props
+              get vision_name() {
+                return useUserInfoStore.getState().userInfo?.vision_name || ''
+              },
+              get account() {
+                return useUserInfoStore.getState().userInfo?.account || ''
+              },
+            },
+          }),
 
       // ========== 应用信息 ==========
       application: {
@@ -127,7 +143,14 @@ const MicroAppComponent = ({ appBasicInfo, homeRoute, customProps }: MicroAppCom
       // 业务侧扩展参数：透传给子应用
       ...customProps,
     }),
-    [appBasicInfo.routeBasename, userInfo?.id, customProps],
+    [
+      appBasicInfo.routeBasename,
+      userInfo?.id,
+      customProps,
+      hasCustomRoute,
+      hasCustomUserid,
+      hasCustomToken,
+    ],
   )
 
   // 更新 ref，确保 useEffect 能访问到最新的 props
