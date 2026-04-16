@@ -45,7 +45,7 @@ export const ExternalLinksSection = ({ collapsed, roleIds }: ExternalLinksMenuPr
         ssoSearchParams.set('refreshToken', refreshToken)
       }
     }
-    const businessNetworkHref = getFullPath(BUSINESS_NETWORK_BASE_PATH)
+    const ssoUrl = `${baseOrigin}/studio`;
 
     return [
       {
@@ -53,7 +53,7 @@ export const ExternalLinksSection = ({ collapsed, roleIds }: ExternalLinksMenuPr
         title: '全局业务知识网络',
         label: (
           <a
-            href={businessNetworkHref}
+            href={ssoUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1 justify-between"
@@ -80,7 +80,7 @@ export const ExternalLinksSection = ({ collapsed, roleIds }: ExternalLinksMenuPr
         ),
         icon: <SidebarSystemIcon />,
       },
-    ]
+    ];
   }, [roleIds])
 
   return (
