@@ -16,7 +16,7 @@ export type SystemMenuIcon = FunctionComponent<SVGProps<SVGSVGElement>>
 export interface SystemMenuLeafItem {
   key: string
   icon?: SystemMenuIcon
-  label: string
+  labelKey: string
   path: string
   page:
     | {
@@ -36,7 +36,7 @@ export interface SystemMenuLeafItem {
 export interface SystemMenuGroupItem {
   key: string
   icon?: SystemMenuIcon
-  label: string
+  labelKey: string
   type?: 'group'
   children: SystemMenuItem[]
 }
@@ -50,7 +50,7 @@ export const buildSystemWorkbenchPath = (suffix = ''): string =>
   `${SYSTEM_WORKBENCH_BASE_PATH}${suffix}`
 
 /**
- * business 菜单单一数据源：
+ * system 菜单单一数据源：
  * - Sider 渲染读取这里
  * - 路由注册也读取这里
  * 新增菜单时只改这一处。
@@ -58,17 +58,17 @@ export const buildSystemWorkbenchPath = (suffix = ''): string =>
 export const systemMenuItems: SystemMenuItem[] = [
   {
     key: 'information-security',
-    label: '信息安全管理',
+    labelKey: 'routes.systemMenu.information-security',
     type: 'group',
     children: [
       {
         key: 'auth',
-        label: '统一身份认证',
+        labelKey: 'routes.systemMenu.auth',
         icon: authIcon,
         children: [
           {
             key: 'user-org',
-            label: '账户',
+            labelKey: 'routes.systemMenu.user-org',
             path: buildSystemWorkbenchPath('/user-org'),
             page: {
               type: 'micro-app',
@@ -81,7 +81,7 @@ export const systemMenuItems: SystemMenuItem[] = [
           },
           {
             key: 'cert-manage',
-            label: '认证',
+            labelKey: 'routes.systemMenu.cert-manage',
             path: buildSystemWorkbenchPath('/cert-manage'),
             page: {
               type: 'micro-app',
@@ -96,12 +96,12 @@ export const systemMenuItems: SystemMenuItem[] = [
       },
       {
         key: 'security',
-        label: '角色与访问策略',
+        labelKey: 'routes.systemMenu.security',
         icon: rolePolicyIcon,
         children: [
           {
             key: 'role-manage',
-            label: '角色管理',
+            labelKey: 'routes.systemMenu.role-manage',
             path: buildSystemWorkbenchPath('/role-manage'),
             page: {
               type: 'micro-app',
@@ -116,12 +116,12 @@ export const systemMenuItems: SystemMenuItem[] = [
       },
       {
         key: 'audit',
-        label: '日志及审计',
+        labelKey: 'routes.systemMenu.audit',
         icon: auditIcon,
         children: [
           {
             key: 'auditlog',
-            label: '审计日志',
+            labelKey: 'routes.systemMenu.auditlog',
             path: buildSystemWorkbenchPath('/auditlog'),
             page: {
               type: 'micro-app',
@@ -138,12 +138,12 @@ export const systemMenuItems: SystemMenuItem[] = [
   },
   {
     key: 'model-authorization',
-    label: '模型',
+    labelKey: 'routes.systemMenu.model-authorization',
     type: 'group',
     children: [
       {
         key: 'model-manager',
-        label: '模型管理',
+        labelKey: 'routes.systemMenu.model-manager',
         icon: modelManagerIcon,
         path: buildSystemWorkbenchPath('/model-authorization/mf-model-manager/model/list2'),
         page: {
@@ -157,7 +157,7 @@ export const systemMenuItems: SystemMenuItem[] = [
       },
       {
         key: 'model-quota',
-        label: '配额管理',
+        labelKey: 'routes.systemMenu.model-quota',
         icon: modelQuotaIcon,
         path: buildSystemWorkbenchPath('/model-authorization/mf-model-manager/model/quota'),
         page: {
@@ -171,7 +171,7 @@ export const systemMenuItems: SystemMenuItem[] = [
       },
       {
         key: 'default-model',
-        label: '默认模型',
+        labelKey: 'routes.systemMenu.default-model',
         icon: defaultModelIcon,
         path: buildSystemWorkbenchPath('/model-authorization/mf-model-manager/model/default'),
         page: {
@@ -185,7 +185,7 @@ export const systemMenuItems: SystemMenuItem[] = [
       },
       {
         key: 'model-statistics',
-        label: '模型统计',
+        labelKey: 'routes.systemMenu.model-statistics',
         icon: modelStatisticsIcon,
         path: buildSystemWorkbenchPath('/model-authorization/mf-model-manager/model/statistics'),
         page: {
@@ -201,12 +201,12 @@ export const systemMenuItems: SystemMenuItem[] = [
   },
   {
     key: 'public-service',
-    label: '公共服务',
+    labelKey: 'routes.systemMenu.public-service',
     type: 'group',
     children: [
       {
         key: 'mailconfig',
-        label: '邮件服务',
+        labelKey: 'routes.systemMenu.mailconfig',
         icon: mailIcon,
         path: buildSystemWorkbenchPath('/mailconfig'),
         page: {
@@ -220,7 +220,7 @@ export const systemMenuItems: SystemMenuItem[] = [
       },
       {
         key: 'third-party-messaging-plugin',
-        label: '第三方消息插件',
+        labelKey: 'routes.systemMenu.third-party-messaging-plugin',
         icon: thirdPartyMessagingPluginIcon,
         path: buildSystemWorkbenchPath('/third-party-messaging-plugin'),
         page: {

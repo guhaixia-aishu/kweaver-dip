@@ -28,6 +28,9 @@ import initialConfiguration_tw from './initial-configuration/zh-TW.json'
 import login_en from './login/en-US.json'
 import login_zh from './login/zh-CN.json'
 import login_tw from './login/zh-TW.json'
+import application_en from './application/en-US.json'
+import application_zh from './application/zh-CN.json'
+import application_tw from './application/zh-TW.json'
 import routes_en from './routes/en-US.json'
 import routes_zh from './routes/zh-CN.json'
 import routes_tw from './routes/zh-TW.json'
@@ -48,6 +51,7 @@ const zh_CN = {
   ...home_zh,
   ...initialConfiguration_zh,
   ...login_zh,
+  ...application_zh,
   ...routes_zh,
   ...aiPromptInput_zh,
   ...dataAgent_zh,
@@ -65,6 +69,7 @@ const zh_TW = {
   ...home_tw,
   ...initialConfiguration_tw,
   ...login_tw,
+  ...application_tw,
   ...routes_tw,
   ...aiPromptInput_tw,
   ...dataAgent_tw,
@@ -82,6 +87,7 @@ const en_US = {
   ...home_en,
   ...initialConfiguration_en,
   ...login_en,
+  ...application_en,
   ...routes_en,
   ...aiPromptInput_en,
   ...dataAgent_en,

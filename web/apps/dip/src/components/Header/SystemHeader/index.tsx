@@ -1,10 +1,12 @@
 import { useCallback, useMemo } from 'react'
+import intl from 'react-intl-universal'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
   SYSTEM_WORKBENCH_BASE_PATH,
   systemLeafMenuItems,
 } from '@/components/Sider/SystemSider/menus'
 import type { RouteConfig } from '@/routes/types'
+import { getRouteLabel, routeHasDisplayLabel } from '@/routes/utils'
 import { useLanguageStore, useOEMConfigStore } from '@/stores'
 import type { BreadcrumbItem } from '@/utils/micro-app/globalState'
 import { Breadcrumb } from '../components/Breadcrumb'
@@ -34,7 +36,7 @@ const SystemHeader = () => {
     if (matchedSystemMenu) {
       return {
         key: matchedSystemMenu.key,
-        label: matchedSystemMenu.label,
+        labelKey: matchedSystemMenu.labelKey,
         path: matchedSystemMenu.path.replace(/^\//, ''),
         sidebarMode: 'hidden',
       } as RouteConfig
@@ -51,21 +53,21 @@ const SystemHeader = () => {
     const items: BreadcrumbItem[] = [
       {
         key: 'section-system',
-        name: '系统工作台',
+        name: intl.get('sider.externalSystemWorkbench'),
         path: SYSTEM_WORKBENCH_BASE_PATH,
       },
     ]
 
-    if (currentRoute?.label) {
+    if (currentRoute && routeHasDisplayLabel(currentRoute)) {
       items.push({
         key: currentRoute.key || `route-${currentRoute.path}`,
-        name: currentRoute.label,
+        name: getRouteLabel(currentRoute),
         path: currentRoute.path ? `/${currentRoute.path}` : undefined,
       })
     }
 
     return items
-  }, [currentRoute])
+  }, [currentRoute, language])
 
   const handleBreadcrumbNavigate = useCallback(
     (item: BreadcrumbItem) => {

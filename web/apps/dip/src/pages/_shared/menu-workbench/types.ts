@@ -10,7 +10,7 @@ export interface NavigateToMicroWidgetParams {
 /** 菜单叶子项（Business / System 工作台菜单与路由解析） */
 export interface MenuWorkbenchLeafItem {
   key: string
-  label: string
+  labelKey: string
   path: string
   page:
     | { type: 'micro-app'; app: { name: string; entry: string } }

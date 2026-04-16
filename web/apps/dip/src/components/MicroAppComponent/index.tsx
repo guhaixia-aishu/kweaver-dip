@@ -1,5 +1,6 @@
 import { Button, Spin } from 'antd'
 import { loadMicroApp, type MicroApp as QiankunMicroApp } from 'qiankun'
+import intl from 'react-intl-universal'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Root as ReactRoot } from 'react-dom/client'
 import { createRoot } from 'react-dom/client'
@@ -372,10 +373,14 @@ const MicroAppComponent = ({ appBasicInfo, homeRoute, customProps }: MicroAppCom
           // desc="微应用加载失败"
           subDesc={
             <div className="mt-4 text-center">
-              <div className="mb-2 text-sm text-gray-600">应用名称: {failureInfo.appName}</div>
-              <div className="mb-4 text-sm text-red-600">错误信息: {errorMessage}</div>
+              <div className="mb-2 text-sm text-gray-600">
+                {intl.get('application.loader.appNameLabel')}: {failureInfo.appName}
+              </div>
+              <div className="mb-4 text-sm text-red-600">
+                {intl.get('application.loader.errorLabel')}: {errorMessage}
+              </div>
               <Button type="primary" onClick={handleRetry}>
-                重试
+                {intl.get('application.retry')}
               </Button>
             </div>
           }

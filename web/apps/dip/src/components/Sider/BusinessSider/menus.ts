@@ -1,7 +1,7 @@
 export interface BusinessMenuLeafItem {
   key: string
   icon?: string
-  label: string
+  labelKey: string
   path: string
   page:
     | {
@@ -20,7 +20,7 @@ export interface BusinessMenuLeafItem {
 export interface BusinessMenuGroupItem {
   key: string
   icon?: string
-  label: string
+  labelKey: string
   children: BusinessMenuItem[]
 }
 
@@ -40,7 +40,7 @@ export const businessMenuItems: BusinessMenuItem[] = [
   {
     key: 'ontology',
     icon: 'icon-DomainBKN',
-    label: '领域业务知识网络',
+    labelKey: 'routes.businessMenu.ontology',
     path: buildBusinessNetworkPath('/vega/ontology'),
     page: {
       type: 'micro-app',
@@ -53,11 +53,11 @@ export const businessMenuItems: BusinessMenuItem[] = [
   {
     key: 'vega',
     icon: 'icon-SharedBKN',
-    label: '通用业务知识网络',
+    labelKey: 'routes.businessMenu.vega',
     children: [
       {
         key: 'dataConnection',
-        label: '数据连接',
+        labelKey: 'routes.businessMenu.dataConnection',
         path: buildBusinessNetworkPath('/vega/data-connect'),
         page: {
           type: 'micro-app',
@@ -69,11 +69,11 @@ export const businessMenuItems: BusinessMenuItem[] = [
       },
       {
         key: 'dataView',
-        label: '数据视图',
+        labelKey: 'routes.businessMenu.dataView',
         children: [
           {
             key: 'atomicDataView',
-            label: '原子视图',
+            labelKey: 'routes.businessMenu.atomicDataView',
             path: buildBusinessNetworkPath('/vega/atom-data-view'),
             page: {
               type: 'micro-app',
@@ -85,7 +85,7 @@ export const businessMenuItems: BusinessMenuItem[] = [
           },
           {
             key: 'customDataView',
-            label: '自定义视图',
+            labelKey: 'routes.businessMenu.customDataView',
             path: buildBusinessNetworkPath('/vega/custom-data-view'),
             page: {
               type: 'micro-app',
@@ -99,11 +99,11 @@ export const businessMenuItems: BusinessMenuItem[] = [
       },
       {
         key: 'dataModel',
-        label: '数据模型',
+        labelKey: 'routes.businessMenu.dataModel',
         children: [
           {
             key: 'metricModel',
-            label: '指标模型',
+            labelKey: 'routes.businessMenu.metricModel',
             path: buildBusinessNetworkPath('/vega/metric-model'),
             page: {
               type: 'micro-app',
@@ -120,11 +120,11 @@ export const businessMenuItems: BusinessMenuItem[] = [
   {
     key: 'decision-agent',
     icon: 'icon-agent-factory',
-    label: '决策智能体',
+    labelKey: 'routes.businessMenu.decision-agent',
     children: [
       {
         key: 'myAgents',
-        label: '开发',
+        labelKey: 'routes.businessMenu.myAgents',
         path: buildBusinessNetworkPath('/my-agents'),
         page: {
           type: 'micro-app',
@@ -136,7 +136,7 @@ export const businessMenuItems: BusinessMenuItem[] = [
       },
       {
         key: 'agent-square',
-        label: '广场',
+        labelKey: 'routes.businessMenu.agent-square',
         path: buildBusinessNetworkPath('/agent-square'),
         page: {
           type: 'micro-app',
@@ -151,11 +151,11 @@ export const businessMenuItems: BusinessMenuItem[] = [
   {
     key: 'execution-factory',
     icon: 'icon-operator-factory',
-    label: '执行工厂',
+    labelKey: 'routes.businessMenu.execution-factory',
     children: [
       {
         key: 'executionManagement',
-        label: '执行单元管理',
+        labelKey: 'routes.businessMenu.executionManagement',
         path: buildBusinessNetworkPath('/execution-management'),
         page: {
           type: 'micro-app',
@@ -167,7 +167,7 @@ export const businessMenuItems: BusinessMenuItem[] = [
       },
       {
         key: 'allExecutions',
-        label: '全部执行单元',
+        labelKey: 'routes.businessMenu.allExecutions',
         path: buildBusinessNetworkPath('/all-executions'),
         page: {
           type: 'micro-app',
@@ -182,11 +182,11 @@ export const businessMenuItems: BusinessMenuItem[] = [
   {
     key: 'autoflow',
     icon: 'icon-workflow',
-    label: 'Autoflow',
+    labelKey: 'routes.businessMenu.autoflow',
     children: [
       {
         key: 'dataflow',
-        label: '数据流',
+        labelKey: 'routes.businessMenu.dataflow',
         path: buildBusinessNetworkPath('/dataflow'),
         page: {
           type: 'micro-app',
@@ -198,7 +198,7 @@ export const businessMenuItems: BusinessMenuItem[] = [
       },
       {
         key: 'workflow',
-        label: '工作流',
+        labelKey: 'routes.businessMenu.workflow',
         path: buildBusinessNetworkPath('/workflow'),
         page: {
           type: 'micro-app',

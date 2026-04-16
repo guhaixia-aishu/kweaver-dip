@@ -290,7 +290,7 @@ export const routeConfigs: RouteConfig[] = [
   {
     path: SYSTEM_WORKBENCH_BASE_PATH.replace(/^\//, ''),
     key: 'system-workbench',
-    label: '系统工作台',
+    labelKey: 'sider.externalSystemWorkbench',
     element: <SystemWorkbench />,
     sidebarMode: 'menu',
     handle: {
@@ -303,7 +303,7 @@ export const routeConfigs: RouteConfig[] = [
       {
         path: normalizedPath,
         key: item.key,
-        label: item.label,
+        labelKey: item.labelKey,
         element: <SystemWorkbench />,
         sidebarMode: 'menu',
         handle: {
@@ -328,7 +328,7 @@ export const routeConfigs: RouteConfig[] = [
       {
         path: normalizedPath,
         key: item.key,
-        label: item.label,
+        labelKey: item.labelKey,
         element: <BusinessNetwork />,
         sidebarMode: 'menu',
         handle: {
@@ -338,7 +338,7 @@ export const routeConfigs: RouteConfig[] = [
       {
         path: `${normalizedPath}/*`,
         key: `${item.key}-nested`,
-        label: item.label,
+        labelKey: item.labelKey,
         element: <BusinessNetwork />,
         sidebarMode: 'menu',
         handle: {

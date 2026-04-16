@@ -3,6 +3,7 @@ import { Menu, Tooltip } from 'antd'
 import { useEffect, useMemo, useState } from 'react'
 import intl from 'react-intl-universal'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useLanguageStore } from '@/stores'
 import IconFont from '../../IconFont'
 import { UserMenuItem } from '../components/UserMenuItem'
 import styles from './index.module.less'
@@ -22,6 +23,7 @@ interface BusinessSiderProps {
 const BusinessSider = ({ collapsed, onCollapse }: BusinessSiderProps) => {
   const navigate = useNavigate()
   const location = useLocation()
+  const { language } = useLanguageStore()
   const renderMenuIcon = (iconType?: string) =>
     iconType ? (
       <span className="inline-flex h-4 w-4 items-center justify-center">
@@ -49,21 +51,21 @@ const BusinessSider = ({ collapsed, onCollapse }: BusinessSiderProps) => {
       if ('children' in item) {
         return {
           key: item.key,
-          label: item.label,
+          label: intl.get(item.labelKey),
           icon: renderMenuIcon(item.icon),
           children: item.children.map(toAntMenuItem),
         }
       }
       return {
         key: item.key,
-        label: item.label,
+        label: intl.get(item.labelKey),
         icon: renderMenuIcon(item.icon),
         onClick: () => navigate(item.path),
       }
     }
 
     return businessMenuItems.map(toAntMenuItem)
-  }, [navigate])
+  }, [navigate, language])
 
   return (
     <div className="flex flex-col h-full px-0 pt-4 pb-1 overflow-hidden">

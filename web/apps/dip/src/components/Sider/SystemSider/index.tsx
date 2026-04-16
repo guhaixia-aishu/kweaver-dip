@@ -3,7 +3,7 @@ import { Menu, Tooltip } from 'antd'
 import { useEffect, useMemo, useState } from 'react'
 import intl from 'react-intl-universal'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { useUserInfoStore } from '@/stores'
+import { useLanguageStore, useUserInfoStore } from '@/stores'
 import IconFont from '../../IconFont'
 import { UserMenuItem } from '../components/UserMenuItem'
 import styles from './index.module.less'
@@ -25,6 +25,7 @@ const SystemSider = ({ collapsed, onCollapse }: SystemSiderProps) => {
   const navigate = useNavigate()
   const location = useLocation()
   const { userInfo } = useUserInfoStore()
+  const { language } = useLanguageStore()
   const roleFlags = userInfo?.roles ?? {}
   const renderMenuIcon = (Icon?: SystemMenuIcon) =>
     Icon ? (
@@ -70,7 +71,7 @@ const SystemSider = ({ collapsed, onCollapse }: SystemSiderProps) => {
           return [
             {
               key: `${item.key}-group-title`,
-              label: item.label,
+              label: intl.get(item.labelKey),
               type: 'group',
             },
             ...item.children.flatMap(toAntMenuItems),
@@ -79,7 +80,7 @@ const SystemSider = ({ collapsed, onCollapse }: SystemSiderProps) => {
         return [
           {
             key: item.key,
-            label: item.label,
+            label: intl.get(item.labelKey),
             icon: renderMenuIcon(item.icon),
             children: item.children.flatMap(toAntMenuItems),
           },
@@ -88,7 +89,7 @@ const SystemSider = ({ collapsed, onCollapse }: SystemSiderProps) => {
       return [
         {
           key: item.key,
-          label: item.label,
+          label: intl.get(item.labelKey),
           icon: renderMenuIcon(item.icon),
           onClick: () => navigate(item.path),
         },
@@ -96,7 +97,7 @@ const SystemSider = ({ collapsed, onCollapse }: SystemSiderProps) => {
     }
 
     return visibleSystemMenuItems.flatMap(toAntMenuItems)
-  }, [navigate, visibleSystemMenuItems])
+  }, [navigate, visibleSystemMenuItems, language])
 
   return (
     <div className="flex flex-col h-full px-0 pt-4 pb-1 overflow-hidden">
