@@ -91,7 +91,9 @@ const OntologyConfig = ({ appKey }: OntologyConfigProps) => {
                       title={item.name}
                     >
                       {item.name ||
-                        intl.get('application.config.ontologyNameFallback', { id: String(item.id) })}
+                        intl.get('application.config.ontologyNameFallback', {
+                          id: String(item.id),
+                        })}
                     </div>
                     {/* <Tag
                       icon={isConfigured ? <CheckCircleOutlined /> : <InfoCircleOutlined />}

@@ -125,7 +125,11 @@ const ArchivePreviewPanel = ({
           </div>
         ) : preview.error ? (
           <div className="flex min-h-[200px] flex-1 items-center justify-center py-10">
-            <Empty type="failed" title={intl.get('workPlan.detail.previewFailed')} desc={preview.error} />
+            <Empty
+              type="failed"
+              title={intl.get('workPlan.detail.previewFailed')}
+              desc={preview.error}
+            />
           </div>
         ) : preview.viewer === 'pdf' && preview.blobUrl ? (
           <iframe

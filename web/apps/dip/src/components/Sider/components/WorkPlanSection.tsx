@@ -47,12 +47,18 @@ export const WorkPlanSection = ({
       return { prefix: intl.get('sider.workPlan.statusError'), colorClass: 'text-[#ff4d4f]' }
     }
     if (status === 'skipped') {
-      return { prefix: intl.get('sider.workPlan.statusSkipped'), colorClass: 'text-[rgba(0,0,0,0.65)]' }
+      return {
+        prefix: intl.get('sider.workPlan.statusSkipped'),
+        colorClass: 'text-[rgba(0,0,0,0.65)]',
+      }
     }
     if (status === 'disabled') {
       return { prefix: intl.get('sider.workPlan.statusDisabled'), colorClass: 'text-[#D48806]' }
     }
-    return { prefix: intl.get('sider.workPlan.statusPending'), colorClass: 'text-[rgba(0,0,0,0.65)]' }
+    return {
+      prefix: intl.get('sider.workPlan.statusPending'),
+      colorClass: 'text-[rgba(0,0,0,0.65)]',
+    }
   }
 
   const handleDeletePlan = (id: string) => {

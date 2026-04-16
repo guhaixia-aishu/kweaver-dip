@@ -5,12 +5,12 @@ vi.mock('../UploadSkill', () => ({
 vi.mock('../UploadSkill.module.less', () => ({ default: {} }))
 
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import intl from 'react-intl-universal'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { DigitalHumanSkill } from '@/apis'
 import { getEnabledSkills } from '@/apis'
 import type { GetEnabledSkillsParams } from '@/apis/dip-studio/skills'
 import SelectSkillModal from '../SelectSkillModal'
-import intl from 'react-intl-universal'
 
 const mockOnOk = vi.fn()
 const mockOnCancel = vi.fn()

@@ -192,9 +192,15 @@ export const useDigitalHumanStore = create<DigitalHumanState>()((set) => ({
   syncBuiltInSkills: (builtInSkills) =>
     set((state) => {
       const nextSkills = mergeSkillsByName(state.skills, builtInSkills)
-      const nextDetailSkills = mergeSkillsByName(state.detail?.skills ?? defaultSkills, builtInSkills)
+      const nextDetailSkills = mergeSkillsByName(
+        state.detail?.skills ?? defaultSkills,
+        builtInSkills,
+      )
 
-      if (nextSkills === state.skills && nextDetailSkills === (state.detail?.skills ?? defaultSkills)) {
+      if (
+        nextSkills === state.skills &&
+        nextDetailSkills === (state.detail?.skills ?? defaultSkills)
+      ) {
         return state
       }
 

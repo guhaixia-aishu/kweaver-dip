@@ -139,14 +139,6 @@ function TasksPanelInner({
                   <p className="m-0 min-w-0 flex-1 text-sm leading-[1.57] text-[--dip-text-color]">
                     {intl.get('workPlan.detail.bannerTip')}
                   </p>
-                  {/* <button
-                  type="button"
-                  className="flex h-[22px] w-[22px] shrink-0 cursor-pointer items-center justify-center rounded border-0 bg-transparent p-0 text-[--dip-text-color-45] transition-colors hover:bg-[--dip-hover-bg-color] hover:text-[--dip-text-color]"
-                  aria-label="关闭提示"
-                  onClick={dismissBanner}
-                >
-                  <IconFont type="icon-close" />
-                </button> */}
                 </div>
               ) : null}
             </div>

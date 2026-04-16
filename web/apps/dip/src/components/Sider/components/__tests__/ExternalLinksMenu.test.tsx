@@ -1,6 +1,6 @@
-import type { UserInfo } from '@/apis'
 import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { UserInfo } from '@/apis'
 import { BUSINESS_NETWORK_BASE_PATH } from '@/components/Sider/BusinessSider/menus'
 import { SYSTEM_WORKBENCH_BASE_PATH } from '@/components/Sider/SystemSider/menus'
 import { getFullPath } from '@/utils/config'

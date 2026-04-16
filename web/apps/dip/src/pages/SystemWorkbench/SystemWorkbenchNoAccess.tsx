@@ -1,32 +1,32 @@
-import { Result } from 'antd';
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import NoAccessIcon from '@/assets/images/abnormal/403.svg?react';
-import { useGlobalLayoutStore } from '@/stores/globalLayoutStore';
+import { Result } from 'antd'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import NoAccessIcon from '@/assets/images/abnormal/403.svg?react'
+import { useGlobalLayoutStore } from '@/stores/globalLayoutStore'
 
-const REDIRECT_SECONDS = 5;
+const REDIRECT_SECONDS = 5
 
 /**
  * 无系统工作台权限：说明 + 倒计时后回到应用根路径（由路由解析到默认首页）
  */
 const SystemWorkbenchNoAccess = () => {
-  const navigate = useNavigate();
-  const setSystemWorkbenchNoAccessUi = useGlobalLayoutStore(s => s.setSystemWorkbenchNoAccessUi);
-  const [secondsLeft, setSecondsLeft] = useState(REDIRECT_SECONDS);
+  const navigate = useNavigate()
+  const setSystemWorkbenchNoAccessUi = useGlobalLayoutStore((s) => s.setSystemWorkbenchNoAccessUi)
+  const [secondsLeft, setSecondsLeft] = useState(REDIRECT_SECONDS)
 
   useEffect(() => {
-    setSystemWorkbenchNoAccessUi(true);
-    return () => setSystemWorkbenchNoAccessUi(false);
-  }, [setSystemWorkbenchNoAccessUi]);
+    setSystemWorkbenchNoAccessUi(true)
+    return () => setSystemWorkbenchNoAccessUi(false)
+  }, [setSystemWorkbenchNoAccessUi])
 
   useEffect(() => {
     if (secondsLeft <= 0) {
-      navigate('/', { replace: true });
-      return;
+      navigate('/', { replace: true })
+      return
     }
-    const t = window.setTimeout(() => setSecondsLeft(s => s - 1), 1000);
-    return () => window.clearTimeout(t);
-  }, [secondsLeft, navigate]);
+    const t = window.setTimeout(() => setSecondsLeft((s) => s - 1), 1000)
+    return () => window.clearTimeout(t)
+  }, [secondsLeft, navigate])
 
   return (
     <div className="w-full h-full flex items-center justify-center">
@@ -43,7 +43,7 @@ const SystemWorkbenchNoAccess = () => {
         }
       />
     </div>
-  );
-};
+  )
+}
 
-export default SystemWorkbenchNoAccess;
+export default SystemWorkbenchNoAccess

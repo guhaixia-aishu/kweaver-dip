@@ -1,7 +1,7 @@
 import { Button, Flex, Table, Tooltip } from 'antd'
 import { memo, useEffect, useMemo, useState } from 'react'
 import intl from 'react-intl-universal'
-import { getEnabledSkills, type DigitalHumanSkill } from '@/apis'
+import { type DigitalHumanSkill, getEnabledSkills } from '@/apis'
 import type { AiPromptSubmitPayload } from '@/components/DipChatKit/components/AiPromptInput/types.ts'
 import Empty from '@/components/Empty'
 import IconFont from '@/components/IconFont'
@@ -99,7 +99,9 @@ const SkillConfig = ({ readonly }: SkillConfigProps) => {
               <span title={text} className="truncate">
                 {text || '--'}
               </span>
-              <span className="text-xs text-[#A0A0A9] font-normal flex-shrink-0">@{tagLabel(record)}</span>
+              <span className="text-xs text-[#A0A0A9] font-normal flex-shrink-0">
+                @{tagLabel(record)}
+              </span>
             </div>
           )
         },
@@ -148,7 +150,9 @@ const SkillConfig = ({ readonly }: SkillConfigProps) => {
           <div className="font-medium text-[--dip-text-color]">
             {intl.get('digitalHuman.setting.menuSkill')}
           </div>
-          <div className="text-[--dip-text-color-45]">{intl.get('digitalHuman.skill.sectionDesc')}</div>
+          <div className="text-[--dip-text-color-45]">
+            {intl.get('digitalHuman.skill.sectionDesc')}
+          </div>
         </div>
         {skills.length > 0 && !readonly && (
           <div className="flex items-end gap-x-3">

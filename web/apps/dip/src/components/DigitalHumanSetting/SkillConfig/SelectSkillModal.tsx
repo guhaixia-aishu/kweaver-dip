@@ -81,7 +81,9 @@ const SelectSkillModal = ({
   const listError = error
 
   const selectableSkillNames = new Set(selectableSkills.map((skill) => skill.name))
-  const selectedCount = selectedSkills.filter((skill) => selectableSkillNames.has(skill.name)).length
+  const selectedCount = selectedSkills.filter((skill) =>
+    selectableSkillNames.has(skill.name),
+  ).length
   const maxSelectCount = selectableSkills.length
 
   const toggleSelect = (skill: DigitalHumanSkill) => {
@@ -111,7 +113,11 @@ const SelectSkillModal = ({
       return (
         <Empty
           type="failed"
-          title={typeof listError === 'string' ? listError : intl.get('digitalHuman.skillModal.loadFailed')}
+          title={
+            typeof listError === 'string'
+              ? listError
+              : intl.get('digitalHuman.skillModal.loadFailed')
+          }
         />
       )
     }

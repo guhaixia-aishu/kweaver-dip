@@ -1,31 +1,34 @@
-import { loadMicroApp } from 'qiankun';
-import type { UserInfo } from '@/apis/dip-hub/user';
-import { businessLeafMenuItems } from '@/components/Sider/BusinessSider/menus';
-import { getMenuWorkbenchBasePathByMicroWidgetName } from '@/pages/_shared/menu-workbench/getBasePathByMicroWidgetName';
-import { buildMicroWidgetUserInfoPayload, mapWorkbenchLanguage } from '@/pages/_shared/menu-workbench/isfUserContext';
-import { createMenuWorkbenchToastApi } from '@/pages/_shared/menu-workbench/micro-app-toast';
-import type { NavigateToMicroWidgetParams } from '@/pages/_shared/menu-workbench/types';
-import { themeColors } from '@/styles/themeColors';
-import { getAccessToken, getRefreshToken, httpConfig } from '@/utils/http/token-config';
+import { loadMicroApp } from 'qiankun'
+import type { UserInfo } from '@/apis/dip-hub/user'
+import { businessLeafMenuItems } from '@/components/Sider/BusinessSider/menus'
+import { getMenuWorkbenchBasePathByMicroWidgetName } from '@/pages/_shared/menu-workbench/getBasePathByMicroWidgetName'
+import {
+  buildMicroWidgetUserInfoPayload,
+  mapWorkbenchLanguage,
+} from '@/pages/_shared/menu-workbench/isfUserContext'
+import { createMenuWorkbenchToastApi } from '@/pages/_shared/menu-workbench/micro-app-toast'
+import type { NavigateToMicroWidgetParams } from '@/pages/_shared/menu-workbench/types'
+import { themeColors } from '@/styles/themeColors'
+import { getAccessToken, getRefreshToken, httpConfig } from '@/utils/http/token-config'
 
-export type { NavigateToMicroWidgetParams };
+export type { NavigateToMicroWidgetParams }
 
 interface BuildBusinessMicroAppPropsOptions {
-  basePath: string;
-  language: string;
-  userInfo?: UserInfo;
-  navigateToMicroWidget: (params: NavigateToMicroWidgetParams) => void;
-  toggleSideBarShow: (show: boolean) => void;
-  navigate: (path: string) => void;
-  changeCustomPathComponent: (param: { label: string } | null) => void;
+  basePath: string
+  language: string
+  userInfo?: UserInfo
+  navigateToMicroWidget: (params: NavigateToMicroWidgetParams) => void
+  toggleSideBarShow: (show: boolean) => void
+  navigate: (path: string) => void
+  changeCustomPathComponent: (param: { label: string } | null) => void
 }
 
 /** 如 /dip-hub/business-network/vega/xxx → /dip-hub/business-network/vega */
 const normalizeVegaBasePath = (basePath: string): string => {
-  if (!basePath.includes('/vega/')) return basePath;
-  const idx = basePath.indexOf('/vega/');
-  return basePath.slice(0, idx + '/vega'.length);
-};
+  if (!basePath.includes('/vega/')) return basePath
+  const idx = basePath.indexOf('/vega/')
+  return basePath.slice(0, idx + '/vega'.length)
+}
 
 const plugins = {
   'operator-flow-detail': {
@@ -112,7 +115,7 @@ const plugins = {
       entry: '//ip:port/workflow-manage-client/index.html',
     },
   },
-};
+}
 
 /** 构建业务微应用 props */
 export const buildBusinessMicroAppProps = ({
@@ -124,10 +127,10 @@ export const buildBusinessMicroAppProps = ({
   navigate,
   changeCustomPathComponent,
 }: BuildBusinessMicroAppPropsOptions) => {
-  const resolvedBasePath = normalizeVegaBasePath(basePath);
-  const userInfoPayload = buildMicroWidgetUserInfoPayload(userInfo);
-  const lang = mapWorkbenchLanguage(language);
-  const theme = themeColors.primary;
+  const resolvedBasePath = normalizeVegaBasePath(basePath)
+  const userInfoPayload = buildMicroWidgetUserInfoPayload(userInfo)
+  const lang = mapWorkbenchLanguage(language)
+  const theme = themeColors.primary
 
   return {
     lang,
@@ -146,8 +149,8 @@ export const buildBusinessMicroAppProps = ({
         const config = {
           location: window.location,
           as_access_prefix: '',
-        };
-        return config;
+        }
+        return config
       },
       getTheme: {
         normal: theme,
@@ -160,8 +163,8 @@ export const buildBusinessMicroAppProps = ({
         normalRgba: '18,110,227',
       },
       getMicroWidgetByName: (name: string) => {
-        const plugin = plugins[name as keyof typeof plugins];
-        if (!plugin) return undefined;
+        const plugin = plugins[name as keyof typeof plugins]
+        if (!plugin) return undefined
 
         return {
           ...plugin,
@@ -169,10 +172,10 @@ export const buildBusinessMicroAppProps = ({
             ...plugin.subapp,
             entry: plugin.subapp.entry.replace('ip:port', window.location.host),
           },
-        };
+        }
       },
       getMicroWidgets() {
-        return plugins;
+        return plugins
       },
       userInfo: userInfoPayload,
     },
@@ -184,10 +187,10 @@ export const buildBusinessMicroAppProps = ({
       refreshOauth2Token: httpConfig.refreshToken || (async () => ({ accessToken: '' })),
       getToken: {
         get access_token() {
-          return getAccessToken();
+          return getAccessToken()
         },
         get refresh_token() {
-          return getRefreshToken();
+          return getRefreshToken()
         },
         id_token: '',
       },
@@ -197,7 +200,7 @@ export const buildBusinessMicroAppProps = ({
     history: {
       getBasePath: resolvedBasePath,
       async getBasePathByName(microWidgetName: string) {
-        return getMenuWorkbenchBasePathByMicroWidgetName(businessLeafMenuItems, microWidgetName);
+        return getMenuWorkbenchBasePathByMicroWidgetName(businessLeafMenuItems, microWidgetName)
       },
       navigateToMicroWidget,
     },
@@ -208,5 +211,5 @@ export const buildBusinessMicroAppProps = ({
     oemConfigs: {
       theme,
     },
-  };
-};
+  }
+}

@@ -6,26 +6,26 @@ export type UserRole =
   | 'org_audit'
   | 'sys_admin'
   | 'audit_admin'
-  | 'sec_admin';
+  | 'sec_admin'
 
 /** 用户信息 */
 export interface UserInfo {
   /** 用户ID */
-  id: string;
+  id: string
   /** 账号 */
-  account: string;
+  account: string
   /** 显示名称 */
-  vision_name: string;
+  vision_name: string
   /** 邮箱 */
-  email?: string;
+  email?: string
   /** 角色 */
-  roles?: Record<UserRole, boolean>;
+  roles?: Record<UserRole, boolean>
 }
 
 /** 角色对象 */
 export interface RoleInfo {
   /** 角色ID */
-  role_id: string;
+  role_id: string
   /** 角色名称 */
-  role_name: string;
+  role_name: string
 }

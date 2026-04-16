@@ -142,7 +142,9 @@ const MyApp = () => {
           <span className="text-2xl font-bold text-[--dip-text-color-75]">
             {intl.get('application.myApp.title')}
           </span>
-          <span className="text-[--dip-text-color-65]">{intl.get('application.myApp.subtitle')}</span>
+          <span className="text-[--dip-text-color-65]">
+            {intl.get('application.myApp.subtitle')}
+          </span>
         </div>
         {(hasLoadedData || searchValue) && (
           <div className="flex items-center gap-x-2">

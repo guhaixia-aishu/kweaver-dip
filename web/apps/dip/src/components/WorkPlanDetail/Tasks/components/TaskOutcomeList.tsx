@@ -53,7 +53,10 @@ function renderFileTypeMeta(fileName: string) {
   const iconClassName = 'text-[--dip-text-color-45]'
 
   if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg', 'ico', 'avif'].includes(ext)) {
-    return { icon: <FileImageOutlined className={iconClassName} />, label: intl.get('workPlan.detail.fileTypeImage') }
+    return {
+      icon: <FileImageOutlined className={iconClassName} />,
+      label: intl.get('workPlan.detail.fileTypeImage'),
+    }
   }
   if (ext === 'pdf') {
     return { icon: <FilePdfOutlined className={iconClassName} />, label: 'PDF' }
@@ -65,13 +68,22 @@ function renderFileTypeMeta(fileName: string) {
     return { icon: <FileExcelOutlined className={iconClassName} />, label: 'Excel' }
   }
   if (['zip', 'rar', '7z', 'tar', 'gz', 'tgz'].includes(ext)) {
-    return { icon: <FileZipOutlined className={iconClassName} />, label: intl.get('workPlan.detail.fileTypeArchive') }
+    return {
+      icon: <FileZipOutlined className={iconClassName} />,
+      label: intl.get('workPlan.detail.fileTypeArchive'),
+    }
   }
   if (['mp4', 'webm', 'mov', 'm4v', 'ogv'].includes(ext)) {
-    return { icon: <VideoCameraOutlined className={iconClassName} />, label: intl.get('workPlan.detail.fileTypeVideo') }
+    return {
+      icon: <VideoCameraOutlined className={iconClassName} />,
+      label: intl.get('workPlan.detail.fileTypeVideo'),
+    }
   }
   if (['mp3', 'wav', 'aac', 'flac', 'm4a', 'opus', 'oga', 'weba'].includes(ext)) {
-    return { icon: <AudioOutlined className={iconClassName} />, label: intl.get('workPlan.detail.fileTypeAudio') }
+    return {
+      icon: <AudioOutlined className={iconClassName} />,
+      label: intl.get('workPlan.detail.fileTypeAudio'),
+    }
   }
   if (['md', 'mdx', 'markdown'].includes(ext)) {
     return { icon: <FileMarkdownOutlined className={iconClassName} />, label: 'Markdown' }
@@ -181,7 +193,8 @@ function TaskOutcomeListInner({ digitalHumanId, sessionId }: TaskOutcomeListProp
         )
         if (!cancelled) setEntries(nested.flat())
       } catch (error: any) {
-        if (!cancelled) setError(error?.description ?? intl.get('workPlan.detail.archiveFetchFailed'))
+        if (!cancelled)
+          setError(error?.description ?? intl.get('workPlan.detail.archiveFetchFailed'))
       } finally {
         if (!cancelled) setLoading(false)
       }
