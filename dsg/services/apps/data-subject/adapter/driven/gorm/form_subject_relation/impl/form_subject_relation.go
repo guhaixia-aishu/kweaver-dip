@@ -3,8 +3,8 @@ package impl
 import (
 	"context"
 
-	repo "github.com/kweaver-ai/dsg/services/apps/data-subject/adapter/driven/gorm/form_subject_relation"
-	"github.com/kweaver-ai/dsg/services/apps/data-subject/infrastructure/db/model"
+	repo "github.com/kweaver-ai/kweaver-dip/dsg/services/apps/data-subject/adapter/driven/gorm/form_subject_relation"
+	"github.com/kweaver-ai/kweaver-dip/dsg/services/apps/data-subject/infrastructure/db/model"
 	"gorm.io/gorm"
 )
 

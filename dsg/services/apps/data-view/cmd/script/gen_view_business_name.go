@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	virtualization_engine "github.com/kweaver-ai/dsg/services/apps/data-view/adapter/driven/rest/virtualization_engine/impl"
-	"github.com/kweaver-ai/dsg/services/apps/data-view/infrastructure/db/model"
+	virtualization_engine "github.com/kweaver-ai/kweaver-dip/dsg/services/apps/data-view/adapter/driven/rest/virtualization_engine/impl"
+	"github.com/kweaver-ai/kweaver-dip/dsg/services/apps/data-view/infrastructure/db/model"
 	"github.com/kweaver-ai/idrm-go-frame/core/logx/zapx"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/log"

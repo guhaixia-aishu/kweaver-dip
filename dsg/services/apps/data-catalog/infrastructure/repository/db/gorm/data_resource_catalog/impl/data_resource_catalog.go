@@ -10,19 +10,19 @@ import (
 
 	"github.com/kweaver-ai/idrm-go-frame/core/store/gormx"
 
-	"github.com/kweaver-ai/dsg/services/apps/data-catalog/domain/data_comprehension"
+	"github.com/kweaver-ai/kweaver-dip/dsg/services/apps/data-catalog/domain/data_comprehension"
 
 	"github.com/samber/lo"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 
-	"github.com/kweaver-ai/dsg/services/apps/data-catalog/common/constant"
-	"github.com/kweaver-ai/dsg/services/apps/data-catalog/common/errorcode"
-	"github.com/kweaver-ai/dsg/services/apps/data-catalog/common/models/request"
-	"github.com/kweaver-ai/dsg/services/apps/data-catalog/common/util"
-	domain "github.com/kweaver-ai/dsg/services/apps/data-catalog/domain/data_resource_catalog"
-	"github.com/kweaver-ai/dsg/services/apps/data-catalog/infrastructure/repository/db/gorm/data_resource_catalog"
-	"github.com/kweaver-ai/dsg/services/apps/data-catalog/infrastructure/repository/db/model"
+	"github.com/kweaver-ai/kweaver-dip/dsg/services/apps/data-catalog/common/constant"
+	"github.com/kweaver-ai/kweaver-dip/dsg/services/apps/data-catalog/common/errorcode"
+	"github.com/kweaver-ai/kweaver-dip/dsg/services/apps/data-catalog/common/models/request"
+	"github.com/kweaver-ai/kweaver-dip/dsg/services/apps/data-catalog/common/util"
+	domain "github.com/kweaver-ai/kweaver-dip/dsg/services/apps/data-catalog/domain/data_resource_catalog"
+	"github.com/kweaver-ai/kweaver-dip/dsg/services/apps/data-catalog/infrastructure/repository/db/gorm/data_resource_catalog"
+	"github.com/kweaver-ai/kweaver-dip/dsg/services/apps/data-catalog/infrastructure/repository/db/model"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/log"
 )
 

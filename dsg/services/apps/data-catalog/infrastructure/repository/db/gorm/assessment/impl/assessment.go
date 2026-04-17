@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kweaver-ai/dsg/services/apps/data-catalog/common/errorcode"
-	"github.com/kweaver-ai/dsg/services/apps/data-catalog/common/util"
-	"github.com/kweaver-ai/dsg/services/apps/data-catalog/domain/assessment"
-	iface "github.com/kweaver-ai/dsg/services/apps/data-catalog/infrastructure/repository/db/gorm/assessment"
+	"github.com/kweaver-ai/kweaver-dip/dsg/services/apps/data-catalog/common/errorcode"
+	"github.com/kweaver-ai/kweaver-dip/dsg/services/apps/data-catalog/common/util"
+	"github.com/kweaver-ai/kweaver-dip/dsg/services/apps/data-catalog/domain/assessment"
+	iface "github.com/kweaver-ai/kweaver-dip/dsg/services/apps/data-catalog/infrastructure/repository/db/gorm/assessment"
 	"gorm.io/gorm"
 )
 

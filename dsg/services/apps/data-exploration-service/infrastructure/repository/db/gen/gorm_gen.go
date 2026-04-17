@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/kweaver-ai/dsg/services/apps/data-exploration-service/infrastructure/repository/db/gen/custom_method"
+	"github.com/kweaver-ai/kweaver-dip/dsg/services/apps/data-exploration-service/infrastructure/repository/db/gen/custom_method"
 	"github.com/samber/lo"
 	"gorm.io/driver/mysql"
 	"gorm.io/gen"

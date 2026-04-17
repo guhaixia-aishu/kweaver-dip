@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/kweaver-ai/dsg/services/apps/data-catalog/domain/assessment"
+	"github.com/kweaver-ai/kweaver-dip/dsg/services/apps/data-catalog/domain/assessment"
 	"gorm.io/gorm"
 )
 

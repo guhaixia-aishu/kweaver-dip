@@ -5,14 +5,14 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/kweaver-ai/dsg/services/apps/configuration-center/adapter/driven/gorm/audit_policy"
-	"github.com/kweaver-ai/dsg/services/apps/configuration-center/common/errorcode"
-	"github.com/kweaver-ai/dsg/services/apps/configuration-center/common/util"
-	"github.com/kweaver-ai/dsg/services/apps/configuration-center/infrastructure/repository/db/model"
+	"github.com/kweaver-ai/kweaver-dip/dsg/services/apps/configuration-center/adapter/driven/gorm/audit_policy"
+	"github.com/kweaver-ai/kweaver-dip/dsg/services/apps/configuration-center/common/errorcode"
+	"github.com/kweaver-ai/kweaver-dip/dsg/services/apps/configuration-center/common/util"
+	"github.com/kweaver-ai/kweaver-dip/dsg/services/apps/configuration-center/infrastructure/repository/db/model"
 	"github.com/kweaver-ai/idrm-go-frame/core/store/gormx"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/log"
 
-	domain_audit_policy "github.com/kweaver-ai/dsg/services/apps/configuration-center/domain/audit_policy"
+	domain_audit_policy "github.com/kweaver-ai/kweaver-dip/dsg/services/apps/configuration-center/domain/audit_policy"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )

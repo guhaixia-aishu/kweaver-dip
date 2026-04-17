@@ -5,7 +5,7 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/kweaver-ai/dsg/services/apps/task_center/infrastructure/repository/db"
+	"github.com/kweaver-ai/kweaver-dip/dsg/services/apps/task_center/infrastructure/repository/db"
 	"gorm.io/gorm"
 )
 

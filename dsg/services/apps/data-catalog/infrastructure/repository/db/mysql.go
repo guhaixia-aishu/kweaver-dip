@@ -1,7 +1,7 @@
 package db
 
 import (
-	"github.com/kweaver-ai/dsg/services/apps/data-catalog/common/settings"
+	"github.com/kweaver-ai/kweaver-dip/dsg/services/apps/data-catalog/common/settings"
 	"github.com/kweaver-ai/idrm-go-frame/core/telemetry/log"
 	"github.com/uptrace/opentelemetry-go-extra/otelgorm"
 	"gorm.io/gorm"

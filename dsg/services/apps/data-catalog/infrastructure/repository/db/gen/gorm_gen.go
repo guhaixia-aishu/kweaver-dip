@@ -14,7 +14,7 @@ import (
 
 	"github.com/samber/lo"
 
-	"github.com/kweaver-ai/dsg/services/apps/data-catalog/infrastructure/repository/db/gen/custom_method"
+	"github.com/kweaver-ai/kweaver-dip/dsg/services/apps/data-catalog/infrastructure/repository/db/gen/custom_method"
 	"gorm.io/driver/mysql"
 	"gorm.io/gen"
 	"gorm.io/gorm"

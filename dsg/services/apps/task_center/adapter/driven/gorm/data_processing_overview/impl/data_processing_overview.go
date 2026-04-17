@@ -6,11 +6,11 @@ import (
 	"fmt"
 
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/kweaver-ai/dsg/services/apps/task_center/adapter/driven/gorm/data_processing_overview"
-	"github.com/kweaver-ai/dsg/services/apps/task_center/common/util"
-	domain "github.com/kweaver-ai/dsg/services/apps/task_center/domain/data_processing_overview"
-	"github.com/kweaver-ai/dsg/services/apps/task_center/infrastructure/repository/db"
-	"github.com/kweaver-ai/dsg/services/apps/task_center/infrastructure/repository/db/model"
+	"github.com/kweaver-ai/kweaver-dip/dsg/services/apps/task_center/adapter/driven/gorm/data_processing_overview"
+	"github.com/kweaver-ai/kweaver-dip/dsg/services/apps/task_center/common/util"
+	domain "github.com/kweaver-ai/kweaver-dip/dsg/services/apps/task_center/domain/data_processing_overview"
+	"github.com/kweaver-ai/kweaver-dip/dsg/services/apps/task_center/infrastructure/repository/db"
+	"github.com/kweaver-ai/kweaver-dip/dsg/services/apps/task_center/infrastructure/repository/db/model"
 	"gorm.io/gorm"
 )
 
