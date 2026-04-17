@@ -12,7 +12,7 @@ dependencies:
 releases:
   dip-data-migrator:
     chart: dip-data-migrator
-    version: 0.4.0-main.20260416.4.9fd9eb7
+    version: 0.4.0-main.20260417.2.9fd9eb7
     stage: pre
   business-system-service:
     chart: business-system-service
@@ -37,7 +37,7 @@ releases:
     version: 0.5.1-main.git-671eead
   workflow:
     chart: workflow
-    version: 0.3.0-main.git-git+275d6df.1795340
+    version: 0.3.0-main.git-git+37cf114.1795485
   workflow-manage-client:
     chart: workflow-manage-client
     version: 0.5.0-main.git-84bea21
