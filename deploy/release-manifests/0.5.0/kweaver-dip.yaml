@@ -12,7 +12,7 @@ dependencies:
 releases:
   dip-data-migrator:
     chart: dip-data-migrator
-    version: 0.4.0-main.20260414.1.9fd9eb7
+    version: 0.4.0-main.20260416.4.9fd9eb7
     stage: pre
   deploy-web:
     chart: deploy-web
@@ -60,7 +60,7 @@ releases:
     - studio-web
   workflow:
     chart: workflow
-    version: 0.3.0
+    version: 0.3.0-main.git-git+f2eaf91
   workflow-manage-client:
     chart: workflow-manage-client
     version: 0.5.0-main.git-84bea21
@@ -81,7 +81,7 @@ releases:
     - studio-web
   auth-service:
     chart: auth-service
-    version: 0.4.0-main.20260402.1
+    version: 0.4.0-main.20260416.1
   basic-search:
     chart: basic-search
     version: 0.4.0-main.20260331.1
@@ -111,19 +111,19 @@ releases:
     version: 0.4.0-main.20260403.1
   sailor:
     chart: sailor
-    version: 0.4.0-main.20260402.2
+    version: 0.4.0-main.20260416.2
   sailor-agent:
     chart: sailor-agent
-    version: 0.4.0-main.20260402.5
+    version: 0.4.0-main.20260416.3
   sailor-service:
     chart: sailor-service
-    version: 0.4.0-main.20260331.7
+    version: 0.4.0-main.20260416.1
   session:
     chart: session
     version: 0.4.0-main.20260403.2
   standardization:
     chart: standardization
-    version: 0.4.0-main.20260402.13
+    version: 0.4.0-main.20260416.2
   task-center:
     chart: task-center
     version: 0.4.0-main.20260403.1
