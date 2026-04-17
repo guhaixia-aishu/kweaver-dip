@@ -67,7 +67,7 @@ func (r *repo) GetByCodes(tx *gorm.DB, ctx context.Context, codes []string, uid 
 		Select 
 			id, code, expired_at 
 		From 
-			af_data_catalog.t_user_data_catalog_rel 
+			kweaver.t_user_data_catalog_rel 
 		Where
 			code in (?)
 		And

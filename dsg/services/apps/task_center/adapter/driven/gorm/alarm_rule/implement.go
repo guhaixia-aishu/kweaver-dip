@@ -19,7 +19,7 @@ func New(data *db.Data) Interface { return &Client{DB: data.DB} }
 // 获取，根据类型
 func (c *Client) GetByType(ctx context.Context, t model.AlarmRuleType) (*model.AlarmRule, error) {
 	var result model.AlarmRule
-	if err := c.DB.WithContext(ctx).Table("af_configuration."+model.TableNameAlarmRule).
+	if err := c.DB.WithContext(ctx).Table("kweaver."+model.TableNameAlarmRule).
 		Where("type=?", t).
 		Take(&result).Error; err != nil {
 		return nil, err

@@ -552,7 +552,7 @@ func (e *ExplorationDomainImpl) SyncExecExplore(ctx context.Context, task *model
 		tableInfo.Columns = res
 	}
 
-	if err = e.data.DB.WithContext(ctx).Table("af_main.form_view").Select("mdl_id").Where("id = ?", exploreReq.TableId).Take(&exploreReq.MdlId).Error; err != nil {
+	if err = e.data.DB.WithContext(ctx).Table("kweaver.form_view").Select("mdl_id").Where("id = ?", exploreReq.TableId).Take(&exploreReq.MdlId).Error; err != nil {
 		return "mdl_id not found", err
 	}
 

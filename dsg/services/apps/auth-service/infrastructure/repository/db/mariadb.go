@@ -19,7 +19,7 @@ type DatabaseAFDataModel gorm.DB
 func NewDatabaseAFDataModel(s *settings.Settings) (*DatabaseAFDataModel, error) {
 	opt := &options.DBOptions{}
 	copier.Copy(opt, s.Database)
-	opt.Database = "af_data_model"
+	opt.Database = "kweaver"
 	db, err := opt.NewClient()
 	return (*DatabaseAFDataModel)(db), err
 }
@@ -43,7 +43,7 @@ func (db *GormDBConfigurationCenter) DB() *gorm.DB {
 func NewConfigurationCenterDB(s *settings.Settings) (*GormDBConfigurationCenter, error) {
 	opt := &options.DBOptions{}
 	copier.Copy(opt, s.Database)
-	opt.Database = "af_configuration"
+	opt.Database = "kweaver"
 	db, err := opt.NewClient()
 	return (*GormDBConfigurationCenter)(db), err
 }

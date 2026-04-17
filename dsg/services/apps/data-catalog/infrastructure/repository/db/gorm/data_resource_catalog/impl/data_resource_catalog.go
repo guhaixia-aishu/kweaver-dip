@@ -2477,12 +2477,12 @@ func (d *catalogRepo) DataUnderstandDepartDetailOverview(ctx context.Context, re
 
 }
 func (d *catalogRepo) GetReportByViewIds(ctx context.Context, viewId ...string) (report []*data_resource_catalog.Report, err error) {
-	err = d.db.WithContext(ctx).Table("af_data_exploration.t_report").Where("f_table_id in ? and f_latest =1 and f_status = 3", viewId).Find(&report).Error
+	err = d.db.WithContext(ctx).Table("kweaver.t_report").Where("f_table_id in ? and f_latest =1 and f_status = 3", viewId).Find(&report).Error
 	return
 }
 func (d *catalogRepo) GetApplyDepartmentNum(ctx context.Context, catalogIDS []uint64) (count []*data_resource_catalog.GetApplyDepartmentNumRes, err error) {
 	sql := `
-		SELECT i.res_id id ,count(distinct apply_org_code) count from af_demand_management.t_share_apply_res_item  i inner join af_demand_management.t_share_apply a on i.share_apply_id =a.id where i.res_type=1 and a.status =12 and analysed_flag =true and implemented_flag =true and i.analysis_id is null and i.res_id in ? group by i.res_id  
+		SELECT i.res_id id ,count(distinct apply_org_code) count from kweaver.t_share_apply_res_item  i inner join kweaver.t_share_apply a on i.share_apply_id =a.id where i.res_type=1 and a.status =12 and analysed_flag =true and implemented_flag =true and i.analysis_id is null and i.res_id in ? group by i.res_id  
 	`
 	if err = d.db.WithContext(ctx).Raw(sql, catalogIDS).Scan(&count).Error; err != nil {
 		return

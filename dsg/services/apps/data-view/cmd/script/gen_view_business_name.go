@@ -89,7 +89,7 @@ func gen(ctx context.Context, querySql string, page int) {
 		log.Infof("【All Finish】 ：%d", page*1000)
 		return
 	}
-	db, err := gorm.Open(mysql.Open(fmt.Sprintf("%s@(%s)/af_main?charset=utf8mb4&parseTime=true",
+	db, err := gorm.Open(mysql.Open(fmt.Sprintf("%s@(%s)/kweaver?charset=utf8mb4&parseTime=true",
 		dbAuth,
 		dbHost)))
 	if err != nil {

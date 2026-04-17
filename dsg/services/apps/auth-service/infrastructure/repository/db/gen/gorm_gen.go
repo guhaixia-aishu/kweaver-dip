@@ -38,7 +38,7 @@ func main() {
 	flag.Parse()
 
 	if len(dsn) == 0 {
-		dsn = "root:xxx@(10.4.108.86:3330)/af_main?charset=utf8mb4&parseTime=True&loc=Local"
+		dsn = "root:xxx@(10.4.108.86:3330)/kweaver?charset=utf8mb4&parseTime=True&loc=Local"
 	}
 
 	if len(dsn) == 0 {

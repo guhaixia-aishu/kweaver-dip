@@ -2,7 +2,7 @@ package af_configuration
 
 import "gorm.io/gorm"
 
-const DatabaseName = "af_configuration"
+const DatabaseName = "kweaver"
 
 type Client struct {
 	DB *gorm.DB

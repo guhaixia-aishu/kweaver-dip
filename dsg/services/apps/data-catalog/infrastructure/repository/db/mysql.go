@@ -39,7 +39,7 @@ func NewData(config *settings.Config) (*Data, func(), error) {
 	// af_configuration
 	{
 		opts := config.Database
-		opts.Database = "af_configuration"
+		opts.Database = "kweaver"
 		db, err := opts.NewClient()
 		if err != nil {
 			return nil, func() {}, err
@@ -50,7 +50,7 @@ func NewData(config *settings.Config) (*Data, func(), error) {
 	// af_main
 	{
 		opts := config.Database
-		opts.Database = "af_main"
+		opts.Database = "kweaver"
 		db, err := opts.NewClient()
 		if err != nil {
 			return nil, func() {}, err

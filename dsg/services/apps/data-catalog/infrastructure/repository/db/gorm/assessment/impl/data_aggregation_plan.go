@@ -35,7 +35,7 @@ type DataAggregationPlan struct {
 }
 
 func (DataAggregationPlan) TableName() string {
-	return "af_tasks.data_aggregation_plan"
+	return "kweaver.data_aggregation_plan"
 }
 
 // 根据ID列表批量获取数据归集计划信息

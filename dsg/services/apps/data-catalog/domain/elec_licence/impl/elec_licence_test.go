@@ -16,7 +16,7 @@ import (
 )
 
 func TestElecLicenceDomain_aaa(t *testing.T) {
-	db, err := gorm.Open(mysql.Open("root:***@(10.4.109.185:3330)/af_data_catalog?charset=utf8mb4&parseTime=True&loc=Local"))
+	db, err := gorm.Open(mysql.Open("root:***@(10.4.109.185:3330)/kweaver?charset=utf8mb4&parseTime=True&loc=Local"))
 	if err != nil {
 		panic(fmt.Errorf("cannot establish db connection: %w", err))
 	}
@@ -44,7 +44,7 @@ func TestElecLicenceDomain_aaa(t *testing.T) {
 }
 
 func TestElecLicenceDomain_create(t *testing.T) {
-	db, err := gorm.Open(mysql.Open("root:***@(10.4.109.185:3330)/af_data_catalog?charset=utf8mb4&parseTime=True&loc=Local"))
+	db, err := gorm.Open(mysql.Open("root:***@(10.4.109.185:3330)/kweaver?charset=utf8mb4&parseTime=True&loc=Local"))
 	if err != nil {
 		panic(fmt.Errorf("cannot establish db connection: %w", err))
 	}
@@ -57,7 +57,7 @@ func TestElecLicenceDomain_create(t *testing.T) {
 }
 
 func TestElecLicenceDomain_bbbe(t *testing.T) {
-	db, err := gorm.Open(mysql.Open("root:***@(10.4.109.185:3330)/af_data_catalog?charset=utf8mb4&parseTime=True&loc=Local"))
+	db, err := gorm.Open(mysql.Open("root:***@(10.4.109.185:3330)/kweaver?charset=utf8mb4&parseTime=True&loc=Local"))
 	if err != nil {
 		panic(fmt.Errorf("cannot establish db connection: %w", err))
 	}

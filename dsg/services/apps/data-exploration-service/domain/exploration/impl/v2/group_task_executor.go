@@ -164,7 +164,7 @@ func (g *groupManager) start() error {
 		return err
 	}
 
-	if err = g.e.data.DB.WithContext(g.ctx).Table("af_main.form_view").Select("mdl_id").Where("id = ?", g.group.TableID).Take(&mdlID).Error; err != nil {
+	if err = g.e.data.DB.WithContext(g.ctx).Table("kweaver.form_view").Select("mdl_id").Where("id = ?", g.group.TableID).Take(&mdlID).Error; err != nil {
 		close(g.tChan)
 		<-g.groupTaskExecutor.gChan
 		g.e.mtx.Release(g.ctx, g.l)

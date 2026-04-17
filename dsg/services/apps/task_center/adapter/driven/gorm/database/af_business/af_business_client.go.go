@@ -33,7 +33,7 @@ func (c *AFBusinessClient) User() UserInterface {
 }
 
 func New(db *gorm.DB) *AFBusinessClient {
-	return NewWithDBName(db, "af_business")
+	return NewWithDBName(db, "kweaver")
 }
 
 func NewWithDBName(db *gorm.DB, dbName string) *AFBusinessClient {

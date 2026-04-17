@@ -62,7 +62,7 @@ func Test_roleRepo_UserInRole(t *testing.T) {
 func Test_roleRepo_GetUserRoleIDs(t *testing.T) {
 	// testdata
 	const (
-		dsn    = "username:password@tcp(localhost:3306)/af_configuration?charset=utf8mb4&parseTime=True&loc=Local"
+		dsn    = "username:password@tcp(localhost:3306)/kweaver?charset=utf8mb4&parseTime=True&loc=Local"
 		userID = "41646000-5329-11ef-9021-629b89708d2f"
 	)
 
