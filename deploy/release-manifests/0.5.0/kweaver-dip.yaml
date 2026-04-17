@@ -45,7 +45,7 @@ releases:
     - studio-web
   agent-web:
     chart: agent-web
-    version: 0.5.1-main.git-671eead
+    version: 0.5.1-main.git-a89f3eb
     dependsOn:
     - studio-web
   flow-web:
@@ -76,7 +76,7 @@ releases:
     version: 0.5.0-main.20260417.2
   dip-frontend:
     chart: dip-frontend
-    version: 0.5.0-main.6b0935a
+    version: 0.5.0-main.a31e1ea
     dependsOn:
     - studio-web
   auth-service:
