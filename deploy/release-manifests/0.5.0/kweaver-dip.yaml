@@ -46,7 +46,7 @@ releases:
     version: 0.5.0-main.git-84bea21
   anyfabric-frontend:
     chart: anyfabric-frontend
-    version: 0.4.0-main.20260403.2
+    version: 0.5.0-main.20260417.2
   dip-frontend:
     chart: dip-frontend
     version: 0.5.0-main.a31e1ea
