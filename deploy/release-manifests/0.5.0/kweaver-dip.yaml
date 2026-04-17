@@ -60,7 +60,7 @@ releases:
     - studio-web
   workflow:
     chart: workflow
-    version: 0.3.0-main.git-git+f2eaf91
+    version: 0.3.0-main.git-git+275d6df.1795340
   workflow-manage-client:
     chart: workflow-manage-client
     version: 0.5.0-main.git-84bea21
@@ -81,7 +81,7 @@ releases:
     - studio-web
   auth-service:
     chart: auth-service
-    version: 0.4.0-main.20260416.1
+    version: 0.4.0-main.20260417.1
   basic-search:
     chart: basic-search
     version: 0.4.0-main.20260331.1
@@ -114,10 +114,10 @@ releases:
     version: 0.4.0-main.20260416.2
   sailor-agent:
     chart: sailor-agent
-    version: 0.4.0-main.20260416.3
+    version: 0.4.0-main.20260417.3
   sailor-service:
     chart: sailor-service
-    version: 0.4.0-main.20260416.1
+    version: 0.4.0-main.20260417.1
   session:
     chart: session
     version: 0.4.0-main.20260403.2
