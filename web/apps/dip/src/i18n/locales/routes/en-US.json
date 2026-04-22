@@ -46,6 +46,7 @@
       "audit": "Logging and audit",
       "auditlog": "Audit log",
       "model-authorization": "Models",
+      "prompt": "Prompt",
       "model-manager": "Model management",
       "model-quota": "Quota management",
       "default-model": "Default model",

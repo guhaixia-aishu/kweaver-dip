@@ -8,6 +8,7 @@ import modelManagerIcon from '@/assets/icons/model-manager.svg?react'
 import modelQuotaIcon from '@/assets/icons/model-quota.svg?react'
 import modelStatisticsIcon from '@/assets/icons/model-statistics.svg?react'
 import rolePolicyIcon from '@/assets/icons/role-policy.svg?react'
+import promptProjectIcon from '@/assets/icons/prompt-project.svg?react'
 // import thirdPartyMessagingPluginIcon from '@/assets/icons/third-party-messaging-plugin.svg?react'
 
 /** 与 `*.svg?react` 默认导出一致，用于侧栏菜单 SVG 图标 */
@@ -142,6 +143,20 @@ export const systemMenuItems: SystemMenuItem[] = [
     type: 'group',
     children: [
       {
+        key: 'mf-model-manager/prompt/list1',
+        labelKey: 'routes.systemMenu.prompt',
+        icon: promptProjectIcon,
+        path: buildSystemWorkbenchPath('/model-authorization/mf-model-manager/prompt/list1'),
+        page: {
+          type: 'micro-app',
+          app: {
+            name: 'mf-model-manager/prompt/list1',
+            entry: '//ip:port/mf-model-manager/index.html',
+          },
+        },
+        roles: ['super_admin', 'sys_admin'],
+      },
+      {
         key: 'model-manager',
         labelKey: 'routes.systemMenu.model-manager',
         icon: modelManagerIcon,
@@ -243,7 +258,7 @@ export const systemLeafMenuItems: SystemMenuLeafItem[] = flattenLeafItems(system
 
 const hasAnyAllowedRole = (
   itemRoles: UserRole[] | undefined,
-  roleFlags: SystemRoleFlags,
+  roleFlags: SystemRoleFlags
 ): boolean => {
   if (!itemRoles || itemRoles.length === 0) {
     return true
@@ -253,7 +268,7 @@ const hasAnyAllowedRole = (
 
 export const filterSystemMenuItemsByRoles = (
   items: SystemMenuItem[],
-  roleFlags: SystemRoleFlags,
+  roleFlags: SystemRoleFlags
 ): SystemMenuItem[] =>
   items.reduce<SystemMenuItem[]>((acc, item) => {
     if ('children' in item) {
@@ -273,7 +288,7 @@ export const filterSystemMenuItemsByRoles = (
 const findAncestorKeysByPath = (
   items: SystemMenuItem[],
   pathname: string,
-  parentKeys: string[] = [],
+  parentKeys: string[] = []
 ): string[] => {
   for (const item of items) {
     if ('children' in item) {
@@ -293,7 +308,7 @@ const findAncestorKeysByPath = (
 
 export const getSystemWorkbenchAncestorKeysByPath = (
   pathname: string,
-  items: SystemMenuItem[] = systemMenuItems,
+  items: SystemMenuItem[] = systemMenuItems
 ): string[] => findAncestorKeysByPath(items, pathname)
 
 export const defaultSystemMenuItem = systemLeafMenuItems[0]

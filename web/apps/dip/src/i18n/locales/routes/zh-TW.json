@@ -46,6 +46,7 @@
       "audit": "日誌及稽核",
       "auditlog": "稽核日誌",
       "model-authorization": "模型",
+      "prompt": "提示詞",
       "model-manager": "模型管理",
       "model-quota": "配額管理",
       "default-model": "預設模型",
