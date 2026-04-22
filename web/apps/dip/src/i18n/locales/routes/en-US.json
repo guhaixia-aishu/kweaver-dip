@@ -33,6 +33,11 @@
       "autoflow": "Autoflow",
       "dataflow": "Data flow",
       "workflow": "Workflow",
+      "aiEvaluation": "AI Evaluation",
+      "board": "Leaderboard",
+      "evaluationData": "Evaluation Data",
+      "indicator": "Evaluation Metrics",
+      "effectEvaluation": "Effect Evaluation",
       "knowledgeItems": "Knowledge Items",
       "dataSemanticGovernance": "Data semantic governance"
     },

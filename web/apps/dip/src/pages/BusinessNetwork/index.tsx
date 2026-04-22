@@ -29,7 +29,7 @@ const BusinessNetwork = () => {
 
   const navigateToMicroWidget = useMemo(
     () => createNavigateToMicroWidgetHandler(businessLeafMenuItems, navigate),
-    [navigate],
+    [navigate]
   )
 
   const customProps = useMemo(() => {
@@ -75,7 +75,7 @@ const BusinessNetwork = () => {
     location.pathname,
     BUSINESS_NETWORK_BASE_PATH,
     defaultBusinessMenuItem.path,
-    navigate,
+    navigate
   )
 
   return (
@@ -87,7 +87,7 @@ const BusinessNetwork = () => {
         sectionBasePath={BUSINESS_NETWORK_BASE_PATH}
         microAppScopeClassName={styles.microAppScope}
         componentRegistry={businessComponentPageRegistry}
-        duplicateLoadGuardBasenameIncludes={['/vega/', '/mdl/']}
+        duplicateLoadGuardBasenameIncludes={['/vega/', '/mdl/', '/aievla/']}
       />
     </div>
   )

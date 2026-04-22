@@ -33,6 +33,11 @@
       "autoflow": "Autoflow",
       "dataflow": "数据流",
       "workflow": "工作流",
+      "aiEvaluation": "智能评测",
+      "board": "榜单",
+      "evaluationData": "评测数据",
+      "indicator": "评测指标",
+      "effectEvaluation": "效果测评",
       "knowledgeItems": "知识条目",
       "dataSemanticGovernance": "数据语义治理"
     },
