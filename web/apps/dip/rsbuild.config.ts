@@ -1,26 +1,26 @@
-import { defineConfig } from '@rsbuild/core';
-import { pluginReact } from '@rsbuild/plugin-react';
-import { pluginLess } from '@rsbuild/plugin-less';
-import { pluginSvgr } from '@rsbuild/plugin-svgr';
-import { Agent as HttpsAgent } from 'https';
-import { rsbuildMiddlewarePlugin } from './rsbuild-plugin-middleware';
+import { defineConfig } from '@rsbuild/core'
+import { pluginReact } from '@rsbuild/plugin-react'
+import { pluginLess } from '@rsbuild/plugin-less'
+import { pluginSvgr } from '@rsbuild/plugin-svgr'
+import { Agent as HttpsAgent } from 'https'
+import { rsbuildMiddlewarePlugin } from './rsbuild-plugin-middleware'
 
 // 开发环境代理到 HTTPS 后端时，使用自定义 Agent 忽略自签名证书校验，避免 ECONNRESET
-const isHttpsTarget = process.env.DEBUG_ORIGIN?.startsWith('https://');
-const proxyAgent = isHttpsTarget ? new HttpsAgent({ rejectUnauthorized: false }) : undefined;
+const isHttpsTarget = process.env.DEBUG_ORIGIN?.startsWith('https://')
+const proxyAgent = isHttpsTarget ? new HttpsAgent({ rejectUnauthorized: false }) : undefined
 
 const proxyBase = {
   target: process.env.DEBUG_ORIGIN,
   changeOrigin: true,
   secure: false,
   ...(proxyAgent && { agent: proxyAgent }),
-};
+}
 
 // Docs: https://rsbuild.rs/config/
 // 确保 assetPrefix 始终以 / 结尾，而 BASE_PATH 不带尾部斜杠
-const rawPublicPath = process.env.PUBLIC_PATH || '/dip-hub/';
-const assetPrefix = rawPublicPath.endsWith('/') ? rawPublicPath : `${rawPublicPath}/`;
-const basePath = assetPrefix.endsWith('/') ? assetPrefix.slice(0, -1) : assetPrefix;
+const rawPublicPath = process.env.PUBLIC_PATH || '/dip-hub/'
+const assetPrefix = rawPublicPath.endsWith('/') ? rawPublicPath : `${rawPublicPath}/`
+const basePath = assetPrefix.endsWith('/') ? assetPrefix.slice(0, -1) : assetPrefix
 
 export default defineConfig({
   output: {
@@ -55,6 +55,7 @@ export default defineConfig({
     // 配置代理，解决远程微应用 CORS 问题
     proxy: {
       // 子应用代理
+      '/aievla': proxyBase,
       '/anyfabric': proxyBase,
       '/isfweb': proxyBase,
       '/mf-model-manager': proxyBase,
@@ -82,13 +83,15 @@ export default defineConfig({
       '/api/policy-management': proxyBase,
       '/api/license': proxyBase,
       '/api/thirdparty-message-plugin': proxyBase,
+      '/api/dataset-manager': proxyBase,
+      '/api/benchmark-manager': proxyBase,
       // 开发环境：将 API 请求代理到远程服务器
       // 登录相关路由由中间件插件处理，不走代理
       '/api/dip-hub': {
         ...proxyBase,
         // 排除登录相关路由，这些由中间件插件处理
         bypass(req) {
-          const url = req.url || '';
+          const url = req.url || ''
           if (
             url.includes('/v1/login') ||
             url.includes('/v1/logout') ||
@@ -96,9 +99,9 @@ export default defineConfig({
             url.includes('/v1/logout/callback')
           ) {
             // 返回 false 表示不使用代理，由中间件处理
-            return false;
+            return false
           }
-          return undefined; // 其他路由继续使用代理
+          return undefined // 其他路由继续使用代理
         },
       },
       '/api/dip-studio': proxyBase,
@@ -139,4 +142,4 @@ export default defineConfig({
     },
     extensions: ['.tsx', '.ts', '.jsx', '.js', '.json'],
   },
-});
+})
