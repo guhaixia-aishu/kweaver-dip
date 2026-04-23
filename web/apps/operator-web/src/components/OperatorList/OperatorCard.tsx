@@ -13,6 +13,7 @@ import McpIcon from '@/assets/images/mcp.svg';
 import OperatorDropdown from '../Operator/OperatorDropdown';
 import ToolDropdown from '../Tool/ToolDropdown';
 import McpDropdown from '../MCP/McpDropdown';
+import SkillDropdown from '../Skill/SkillDropdown';
 import StatusTag from '../OperatorList/StatusTag';
 import { useNavigate } from 'react-router-dom';
 import styles from './OperatorCard.module.less';
@@ -25,6 +26,20 @@ const CardTag = ({ children }: { children: React.ReactNode }) => (
     <div className={styles['card-tag']}>{children}</div>
   </Tooltip>
 );
+
+const skillIconColors = ['#126EE3', '#13A8A8', '#52C41A', '#FA8C16', '#EB2F96', '#722ED1', '#2F54EB', '#D46B08'];
+
+const getSkillIconInfo = (name?: string) => {
+  const displayName = (name || 'Skill').trim() || 'Skill';
+  const chars = Array.from(displayName);
+  const firstChar = chars[0] || 'S';
+  const colorIndex = chars.reduce((sum, char) => sum + char.charCodeAt(0), 0) % skillIconColors.length;
+
+  return {
+    firstChar,
+    backgroundColor: skillIconColors[colorIndex],
+  };
+};
 
 const OperatorCard: React.FC<{
   params: any;
@@ -63,7 +78,12 @@ const OperatorCard: React.FC<{
   }, [columns]);
 
   const handlePreview = (record: any) => {
-    const { operator_id, mcp_id, box_id } = record;
+    const {
+      operator_id,
+      mcp_id,
+      box_id,
+      // skill_id
+    } = record;
     const type = isPluginMarket ? OperateTypeEnum.View : OperateTypeEnum.Edit;
     if (activeTab === OperatorTypeEnum.ToolBox) {
       navigate(`/tool-detail?box_id=${box_id}&action=${type}`);
@@ -74,6 +94,9 @@ const OperatorCard: React.FC<{
     if (activeTab === OperatorTypeEnum.MCP) {
       navigate(`/mcp-detail?mcp_id=${mcp_id}&action=${type}`);
     }
+    // if (activeTab === OperatorTypeEnum.Skill) {
+    //   navigate(`/skill-detail?skill_id=${skill_id}&action=${type}`);
+    // }
   };
 
   return (
@@ -106,8 +129,15 @@ const OperatorCard: React.FC<{
           {/* 卡片网格 */}
           <Row gutter={[gutter, gutter]}>
             {(operatorList?.length ? operatorList : loading ? loadingList : [])?.map((item: any) => (
-              <Col key={item.id} {...getResponsiveProps()}>
-                <Card hoverable className="operator-list-content-card" loading={loading}>
+              <Col
+                key={item.id || item.skill_id || item.operator_id || item.mcp_id || item.box_id}
+                {...getResponsiveProps()}
+              >
+                <Card
+                  hoverable={activeTab !== OperatorTypeEnum.Skill}
+                  className="operator-list-content-card"
+                  loading={loading}
+                >
                   <div>
                     <div
                       style={{
@@ -117,6 +147,29 @@ const OperatorCard: React.FC<{
                       onClick={() => handlePreview(item)}
                     >
                       <div className="dip-position-r">
+                        {activeTab === OperatorTypeEnum.Skill &&
+                          (() => {
+                            const skillIconInfo = getSkillIconInfo(item.name);
+                            return (
+                              <div
+                                style={{
+                                  width: '38px',
+                                  height: '38px',
+                                  borderRadius: '8px',
+                                  background: skillIconInfo.backgroundColor,
+                                  color: '#fff',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '18px',
+                                  fontWeight: 600,
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {skillIconInfo.firstChar}
+                              </div>
+                            );
+                          })()}
                         {activeTab === OperatorTypeEnum.ToolBox && (
                           <ToolIcon style={{ width: '38px', height: '38px', borderRadius: '8px' }} />
                         )}
@@ -194,6 +247,9 @@ const OperatorCard: React.FC<{
                           )}
                           {activeTab === OperatorTypeEnum.Operator && (
                             <OperatorDropdown params={{ ...params, record: item }} fetchInfo={fetchInfo} />
+                          )}
+                          {activeTab === OperatorTypeEnum.Skill && (
+                            <SkillDropdown params={{ ...params, record: item }} fetchInfo={fetchInfo} />
                           )}
                         </div>
                       )}

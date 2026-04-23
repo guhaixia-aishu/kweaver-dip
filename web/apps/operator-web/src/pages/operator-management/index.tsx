@@ -8,6 +8,7 @@ const routeComponents = {
   OperatorList: lazy(() => import('@/components/OperatorList')),
   ToolDetail: lazy(() => import('@/components/Tool/ToolDetail')),
   McpDetail: lazy(() => import('@/components/MCP/McpDetail')),
+  SkillDetail: lazy(() => import('@/components/Skill/SkillDetail')),
   OperatorDetailFlow: lazy(() => import('@/components/MyOperator/OperatorDetailFlow')),
   OperatorDetail: lazy(() => import('@/components/Operator/OperatorDetail')),
   IDEWorkspace: lazy(() => import('@/components/IDEWorkspace')),
@@ -30,6 +31,10 @@ const routes = [
     path: '/mcp-detail',
     element: <routeComponents.McpDetail />,
   },
+  // {
+  //   path: '/skill-detail',
+  //   element: <routeComponents.SkillDetail />,
+  // },
   {
     path: '/details/:id',
     element: <routeComponents.OperatorDetailFlow />,
