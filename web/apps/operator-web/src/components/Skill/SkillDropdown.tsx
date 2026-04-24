@@ -1,7 +1,7 @@
 ﻿import { useState } from 'react';
 import { Button, Dropdown, Menu, message } from 'antd';
 import { EllipsisOutlined } from '@ant-design/icons';
-// import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { delSkill, putSkillStatus } from '@/apis/agent-operator-integration';
 import { postResourceOperation } from '@/apis/authorization';
 import { useMicroWidgetProps } from '@/hooks';
@@ -9,7 +9,7 @@ import { confirmModal } from '@/utils/modal';
 import PermConfigMenu from '@/components/OperatorList/PermConfigMenu';
 import { PublishedPermModal } from '@/components/OperatorList/PublishedPermModal';
 import {
-  // OperateTypeEnum,
+  OperateTypeEnum,
   OperatorStatusType,
   OperatorTypeEnum,
   PermConfigTypeEnum,
@@ -17,14 +17,14 @@ import {
 import SkillDownloadButton from './SkillDownloadButton';
 
 const SkillDropdown: React.FC<{ params: any; fetchInfo: () => void }> = ({ params, fetchInfo }) => {
-  const { activeTab, record } = params;
-  // const navigate = useNavigate();
+  const { activeTab, record, enableSkillDetail = false } = params;
+  const navigate = useNavigate();
   const microWidgetProps = useMicroWidgetProps();
   const [permissionCheckInfo, setPermissionCheckInfo] = useState<Array<PermConfigTypeEnum>>();
 
-  // const handlePreview = (type: string) => {
-  //   navigate(`/skill-detail?skill_id=${record?.skill_id}&action=${type}`);
-  // };
+  const handlePreview = (type: string) => {
+    navigate(`/skill-detail?skill_id=${record?.skill_id}&action=${type}`);
+  };
 
   const handleStatus = async (status: string, successText: string) => {
     try {
@@ -97,9 +97,9 @@ const SkillDropdown: React.FC<{ params: any; fetchInfo: () => void }> = ({ param
       trigger={['click']}
       overlay={
         <Menu>
-          {/* {permissionCheckInfo?.includes(PermConfigTypeEnum.View) && (
+          {enableSkillDetail && permissionCheckInfo?.includes(PermConfigTypeEnum.View) && (
             <Menu.Item onClick={() => handlePreview(OperateTypeEnum.Edit)}>查看</Menu.Item>
-          )} */}
+          )}
 
           {permissionCheckInfo?.includes(PermConfigTypeEnum.View) && (
             <Menu.Item>

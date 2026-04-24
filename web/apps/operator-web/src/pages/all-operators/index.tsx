@@ -28,10 +28,10 @@ const routes = [
     path: '/mcp-detail',
     element: <routeComponents.McpDetail />,
   },
-  // {
-  //   path: '/skill-detail',
-  //   element: <routeComponents.SkillDetail />,
-  // },
+  {
+    path: '/skill-detail',
+    element: <routeComponents.SkillDetail />,
+  },
   {
     path: '/details/:id',
     element: <routeComponents.OperatorDetailFlow />,

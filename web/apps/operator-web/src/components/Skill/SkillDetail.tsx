@@ -1,21 +1,19 @@
 ﻿import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Alert, Empty, Layout, Skeleton, Tree, Typography, message } from 'antd';
-import { FileTextOutlined, FolderOpenOutlined } from '@ant-design/icons';
+import { Alert, Button, Empty, Layout, Modal, Skeleton, Tree, Typography, message } from 'antd';
+import { ArrowsAltOutlined, FileTextOutlined, FolderOpenOutlined } from '@ant-design/icons';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import emptyImage from '@/assets/images/empty2.png';
 import '@/components/Operator/style.less';
 import styles from './SkillDetail.module.less';
-import {
-  getSkillContent,
-  getSkillInfo,
-  getSkillMarketInfo,
-  readSkillFile,
-} from '@/apis/agent-operator-integration';
+import { getSkillContent, getSkillInfo, getSkillMarketInfo, readSkillFile } from '@/apis/agent-operator-integration';
 import { postResourceOperation } from '@/apis/authorization';
 import DetailHeader from '@/components/OperatorList/DetailHeader';
 import { OperateTypeEnum, OperatorTypeEnum, PermConfigTypeEnum } from '@/components/OperatorList/types';
 import {
   buildSkillTreeData,
+  fetchRemoteBlob,
   fetchRemoteText,
   findSkillTreeNode,
   type SkillFileSummary,
@@ -25,6 +23,69 @@ import {
 
 const { Sider, Content } = Layout;
 const { Paragraph, Text } = Typography;
+type PreviewType = 'markdown' | 'text' | 'image' | 'unsupported';
+
+const markdownExtensions = new Set(['md', 'markdown', 'mdown', 'mkd']);
+const imageExtensions = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg']);
+const textExtensions = new Set([
+  'txt',
+  'json',
+  'yaml',
+  'yml',
+  'js',
+  'jsx',
+  'ts',
+  'tsx',
+  'css',
+  'less',
+  'scss',
+  'html',
+  'xml',
+  'py',
+  'java',
+  'go',
+  'rs',
+  'sh',
+  'sql',
+  'log',
+  'toml',
+  'ini',
+  'conf',
+  'env',
+]);
+
+const getFileExtension = (filePath = '') => filePath.split('.').pop()?.toLowerCase() || '';
+
+const resolvePreviewType = (node?: SkillTreeNode): PreviewType => {
+  const relPath = node?.rel_path || 'SKILL.md';
+  const mimeType = (node?.mime_type || (relPath === 'SKILL.md' ? 'text/markdown' : '')).toLowerCase();
+  const extension = getFileExtension(relPath);
+
+  if (mimeType === 'text/markdown' || markdownExtensions.has(extension)) {
+    return 'markdown';
+  }
+
+  if (mimeType.startsWith('image/') || imageExtensions.has(extension)) {
+    return 'image';
+  }
+
+  if (
+    mimeType.startsWith('text/') ||
+    mimeType.includes('json') ||
+    mimeType.includes('xml') ||
+    mimeType.includes('javascript') ||
+    textExtensions.has(extension)
+  ) {
+    return 'text';
+  }
+
+  return 'unsupported';
+};
+
+const markdownComponents = {
+  a: (props: React.ComponentProps<'a'>) => <a {...props} target="_blank" rel="noreferrer" />,
+  img: (props: React.ComponentProps<'img'>) => <img {...props} alt={props.alt ?? ''} loading="lazy" />,
+};
 
 export default function SkillDetail() {
   const [searchParams] = useSearchParams();
@@ -36,11 +97,23 @@ export default function SkillDetail() {
   const [selectedKey, setSelectedKey] = useState<string>('file:SKILL.md');
   const [contentManifest, setContentManifest] = useState<any>({});
   const [contentValue, setContentValue] = useState('');
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [isViewerExpanded, setIsViewerExpanded] = useState(false);
   const [contentLoading, setContentLoading] = useState(false);
   const [contentError, setContentError] = useState('');
   const [detailLoading, setDetailLoading] = useState(true);
 
   const selectedNode = useMemo(() => findSkillTreeNode(treeData, selectedKey), [treeData, selectedKey]);
+  const previewType = useMemo(() => resolvePreviewType(selectedNode), [selectedNode]);
+  const canExpandViewer = selectedNode?.nodeType !== 'directory' && previewType !== 'unsupported';
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   useEffect(() => {
     fetchSkillInfo();
@@ -52,6 +125,8 @@ export default function SkillDetail() {
     if (!selectedNode && selectedKey !== 'file:SKILL.md') {
       return;
     }
+
+    if (!contentManifest?.url) return;
 
     loadSelectedContent();
   }, [selectedNode, selectedKey, contentManifest?.url, skillId]);
@@ -115,11 +190,13 @@ export default function SkillDetail() {
     if (targetNode.nodeType === 'directory') {
       setContentError('');
       setContentValue('');
+      setPreviewUrl('');
       return;
     }
 
     setContentLoading(true);
     setContentError('');
+    setContentValue('');
     try {
       let url = '';
       if (targetNode.rel_path === 'SKILL.md') {
@@ -133,15 +210,89 @@ export default function SkillDetail() {
         throw new Error('文件地址不存在');
       }
 
-      const text = await fetchRemoteText(url);
-      setContentValue(text);
+      if (previewType === 'markdown' || previewType === 'text') {
+        const text = await fetchRemoteText(url);
+        setPreviewUrl('');
+        setContentValue(text);
+      } else if (previewType === 'image') {
+        const blob = await fetchRemoteBlob(url);
+        setPreviewUrl(URL.createObjectURL(blob));
+      } else {
+        setPreviewUrl('');
+      }
     } catch (error: any) {
       setContentValue('');
+      setPreviewUrl('');
       setContentError(error?.description || error?.message || '文件内容加载失败');
     } finally {
       setContentLoading(false);
     }
   };
+
+  const renderPreviewEmpty = (description: string) => (
+    <div className={styles.previewEmpty}>
+      <Empty image={<img src={emptyImage} alt="empty" className={styles.emptyImage} />} description={description} />
+    </div>
+  );
+
+  const viewerContent =
+    selectedNode?.nodeType === 'directory' ? (
+      renderPreviewEmpty('右侧为预览区，请选择文件进行预览')
+    ) : (
+      <Skeleton active loading={detailLoading || contentLoading}>
+        {contentError ? (
+          <Alert type="error" showIcon message={contentError} />
+        ) : (
+          <>
+            {previewType === 'markdown' ? (
+              <div className={styles.markdown}>
+                <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                  {contentValue || ''}
+                </ReactMarkdown>
+              </div>
+            ) : null}
+            {previewType === 'text' ? (
+              <Paragraph className={styles.code}>
+                <pre>{contentValue || ''}</pre>
+              </Paragraph>
+            ) : null}
+            {previewType === 'image' ? (
+              <div className={styles.mediaPreview}>
+                {previewUrl ? (
+                  <img className={styles.mediaImage} src={previewUrl} alt={selectedNode?.title || 'preview'} />
+                ) : (
+                  <Empty description="图片加载中" />
+                )}
+              </div>
+            ) : null}
+            {previewType === 'unsupported' ? renderPreviewEmpty('当前文件暂不支持在线预览') : null}
+          </>
+        )}
+      </Skeleton>
+    );
+
+  const viewerPanel = (
+    <div className={`${styles.viewer} ${isViewerExpanded ? styles.viewerExpanded : ''}`}>
+      <div className={styles.viewerHeader}>
+        <div className={styles.viewerTitle}>
+          <Text strong className={styles.viewerTitleText} title={selectedNode?.title || ''}>
+            {selectedNode?.title || ''}
+          </Text>
+        </div>
+        <div className={styles.viewerActions}>
+          {canExpandViewer && !isViewerExpanded && (
+            <Button
+              type="text"
+              className={styles.expandButton}
+              icon={<ArrowsAltOutlined />}
+              onClick={() => setIsViewerExpanded(value => !value)}
+            />
+          )}
+        </div>
+      </div>
+      {viewerContent}
+    </div>
+  );
 
   return (
     <div className="operator-detail">
@@ -158,7 +309,7 @@ export default function SkillDetail() {
         <Sider width={360} className="operator-detail-sider">
           <div className="operator-detail-sider-content">
             <Text strong>
-              <FolderOpenOutlined /> 文件
+              <FolderOpenOutlined /> 文件列表
             </Text>
           </div>
           <div className={styles.tree}>
@@ -170,6 +321,11 @@ export default function SkillDetail() {
                 selectedKeys={[selectedKey]}
                 treeData={treeData.map(node => ({
                   ...node,
+                  title: (
+                    <span className={styles.treeNodeTitle} title={node.title}>
+                      <span className={styles.treeNodeTitleText}>{node.title}</span>
+                    </span>
+                  ),
                   icon: node.nodeType === 'directory' ? <FolderOpenOutlined /> : <FileTextOutlined />,
                 }))}
                 onSelect={keys => {
@@ -186,33 +342,18 @@ export default function SkillDetail() {
             )}
           </div>
         </Sider>
-        <Content className={styles.content}>
-          <div className={styles.viewer}>
-            <div className={styles.viewerHeader}>
-              <Text strong>{selectedNode?.title || 'SKILL.md'}</Text>
-              {selectedNode?.nodeType === 'directory' && <Text type="secondary">预览区</Text>}
-            </div>
-            {selectedNode?.nodeType === 'directory' ? (
-              <div className={styles.previewEmpty}>
-                <Empty
-                  image={<img src={emptyImage} alt="empty" className={styles.emptyImage} />}
-                  description="右侧为预览区，请选择文件进行预览"
-                />
-              </div>
-            ) : (
-              <Skeleton active loading={detailLoading || contentLoading}>
-                {contentError ? (
-                  <Alert type="error" showIcon message={contentError} />
-                ) : (
-                  <Paragraph className={styles.code}>
-                    <pre>{contentValue || ''}</pre>
-                  </Paragraph>
-                )}
-              </Skeleton>
-            )}
-          </div>
-        </Content>
+        <Content className={styles.content}>{viewerPanel}</Content>
       </Layout>
+      <Modal
+        open={isViewerExpanded}
+        onCancel={() => setIsViewerExpanded(false)}
+        footer={null}
+        width="80vw"
+        centered
+        destroyOnHidden={false}
+      >
+        <div className={styles.viewerModalBody}>{viewerPanel}</div>
+      </Modal>
     </div>
   );
 }

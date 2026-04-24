@@ -117,3 +117,15 @@ export const fetchRemoteText = async (url: string): Promise<string> => {
 
   return response.text();
 };
+
+export const fetchRemoteBlob = async (url: string): Promise<Blob> => {
+  const response = await fetch(url, {
+    headers: getCommonHttpHeaders(),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Request failed: ${response.status}`);
+  }
+
+  return response.blob();
+};

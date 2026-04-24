@@ -90,7 +90,7 @@ const OperatorList: React.FC<{ isPluginMarket?: boolean }> = ({ isPluginMarket =
       ].filter(
         option =>
           !(
-            [OperatorTypeEnum.ToolBox, OperatorTypeEnum.Skill].includes(activeTab as OperatorTypeEnum) &&
+            [OperatorTypeEnum.ToolBox].includes(activeTab as OperatorTypeEnum) &&
             option.value === OperatorStatusType.Editing
           )
       ),
@@ -324,7 +324,7 @@ const OperatorList: React.FC<{ isPluginMarket?: boolean }> = ({ isPluginMarket =
         <div style={{ height: !isPluginMarket ? 'calc(100vh - 195px)' : 'calc(100vh - 145px)' }}>
           <OperatorCard
             loading={loading}
-            params={{ activeTab, isPluginMarket }}
+            params={{ activeTab, isPluginMarket, enableSkillDetail: isPluginMarket }}
             fetchInfo={fetchInfo}
             hasMore={hasMore}
             operatorList={operatorList}
