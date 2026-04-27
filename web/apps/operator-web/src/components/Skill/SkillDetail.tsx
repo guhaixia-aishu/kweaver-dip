@@ -336,7 +336,7 @@ export default function SkillDetail() {
               />
             ) : (
               <Empty
-                image={<img src={emptyImage} alt="empty" className={styles.emptyImage} />}
+                image={<img src={emptyImage} alt="empty" style={{ width: 128 }} />}
                 description="暂无文件"
               />
             )}

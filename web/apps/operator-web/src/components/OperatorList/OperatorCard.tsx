@@ -10,6 +10,7 @@ import BuiltInIcon from '@/assets/images/built-in.svg';
 import { OperateTypeEnum, OperatorTypeEnum } from './types';
 import OperatorIcon from '@/assets/images/operator.svg';
 import McpIcon from '@/assets/images/mcp.svg';
+import SkillIcon from '@/assets/images/skill.svg'
 import OperatorDropdown from '../Operator/OperatorDropdown';
 import ToolDropdown from '../Tool/ToolDropdown';
 import McpDropdown from '../MCP/McpDropdown';
@@ -26,20 +27,6 @@ const CardTag = ({ children }: { children: React.ReactNode }) => (
     <div className={styles['card-tag']}>{children}</div>
   </Tooltip>
 );
-
-const skillIconColors = ['#126EE3', '#13A8A8', '#52C41A', '#FA8C16', '#EB2F96', '#722ED1', '#2F54EB', '#D46B08'];
-
-const getSkillIconInfo = (name?: string) => {
-  const displayName = (name || 'Skill').trim() || 'Skill';
-  const chars = Array.from(displayName);
-  const firstChar = chars[0] || 'S';
-  const colorIndex = chars.reduce((sum, char) => sum + char.charCodeAt(0), 0) % skillIconColors.length;
-
-  return {
-    firstChar,
-    backgroundColor: skillIconColors[colorIndex],
-  };
-};
 
 const OperatorCard: React.FC<{
   params: any;
@@ -152,29 +139,6 @@ const OperatorCard: React.FC<{
                       }}
                     >
                       <div className="dip-position-r">
-                        {activeTab === OperatorTypeEnum.Skill &&
-                          (() => {
-                            const skillIconInfo = getSkillIconInfo(item.name);
-                            return (
-                              <div
-                                style={{
-                                  width: '38px',
-                                  height: '38px',
-                                  borderRadius: '8px',
-                                  background: skillIconInfo.backgroundColor,
-                                  color: '#fff',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  fontSize: '18px',
-                                  fontWeight: 600,
-                                  flexShrink: 0,
-                                }}
-                              >
-                                {skillIconInfo.firstChar}
-                              </div>
-                            );
-                          })()}
                         {activeTab === OperatorTypeEnum.ToolBox && (
                           <ToolIcon style={{ width: '38px', height: '38px', borderRadius: '8px' }} />
                         )}
@@ -183,6 +147,9 @@ const OperatorCard: React.FC<{
                         )}
                         {activeTab === OperatorTypeEnum.Operator && (
                           <OperatorIcon style={{ width: '38px', height: '38px', borderRadius: '8px' }} />
+                        )}
+                        {activeTab === OperatorTypeEnum.Skill && (
+                          <SkillIcon style={{ width: '38px', height: '38px', borderRadius: '8px' }} />
                         )}
                         {[OperatorTypeEnum.ToolBox, OperatorTypeEnum.Operator].includes(activeTab) && (
                           <CardTag>{metadataTypeMap[item.metadata_type]}</CardTag>
