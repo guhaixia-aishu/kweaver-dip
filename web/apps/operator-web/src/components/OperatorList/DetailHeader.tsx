@@ -8,6 +8,7 @@ import ToolIcon from '@/assets/images/tool-icon.svg';
 import ToolBgPng from '@/assets/images/tool-bg.png';
 import OperatorBgPng from '@/assets/images/operator-bg.png';
 import MCPBgPng from '@/assets/images/mcp-bg.png';
+import SkillBgPng from '@/assets/images/skill-bg.png';
 import { MetadataTypeEnum } from '@/apis/agent-operator-integration/type';
 import { OperateTypeEnum, OperatorTypeEnum } from './types';
 import StatusTag from './StatusTag';
@@ -52,7 +53,7 @@ export default function DetailHeader({
               : type === OperatorTypeEnum.MCP
                 ? { backgroundImage: `url(${MCPBgPng})` }
                 : type === OperatorTypeEnum.Skill
-                  ? { backgroundImage: `url(${OperatorBgPng})` }
+                  ? { backgroundImage: `url(${SkillBgPng})` }
                 : {}
         }
       >
