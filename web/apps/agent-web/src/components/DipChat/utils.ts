@@ -1,15 +1,18 @@
-import _ from 'lodash';
+﻿import _ from 'lodash';
 import { nanoid } from 'nanoid';
 import type {
   ConversationItemType,
   DipChatItemContentProgressType,
   DipChatItemContentType,
+  TodoRunningProcessBlockType,
+  TodoRunningProcessItemType,
 } from '@/components/DipChat/interface';
 import type { EChartsOption } from 'echarts';
 import type { TableColumnsType } from 'antd';
 import dayjs from 'dayjs';
 import { isJSONString } from '@/utils/handle-function';
 import { removeInvalidCodeBlocks } from '@/components/Markdown/utils';
+import intl from 'react-intl-universal';
 
 /** 获取引用的数据 */
 export const getCitesData = (other_variables: any) => {
@@ -29,7 +32,7 @@ export const getCitesData = (other_variables: any) => {
   }
 };
 
-const chartConfig2Echarts = (chartResult: any) => {
+export const chartConfig2Echarts = (chartResult: any) => {
   const { chart_config, data } = chartResult || {};
   let options: EChartsOption = {};
   const chartType = _.get(chart_config, 'chart_type', '');
@@ -91,8 +94,10 @@ const chartConfig2Echarts = (chartResult: any) => {
   // 饼图
   if (chartType === 'Pie') {
     const {
-      chart_config: { colorField, angleField },
+      chart_config: { colorField: rawColorField, angleField: rawAngleField, xField, yField },
     } = chartResult;
+    const colorField = rawColorField || xField;
+    const angleField = rawAngleField || yField;
     const pieData: any = [];
     data.forEach((item: any) => {
       pieData.push({
@@ -134,8 +139,10 @@ const chartConfig2Echarts = (chartResult: any) => {
   // 圆环
   if (chartType === 'Circle') {
     const {
-      chart_config: { colorField, angleField },
+      chart_config: { colorField: rawColorField, angleField: rawAngleField, xField, yField },
     } = chartResult;
+    const colorField = rawColorField || xField;
+    const angleField = rawAngleField || yField;
     const pieData: any = [];
     data.forEach((item: any) => {
       pieData.push({
@@ -161,7 +168,7 @@ const chartConfig2Echarts = (chartResult: any) => {
           name: angleField,
           data: pieData,
           type: 'pie',
-          radius: '55%',
+          radius: ['40%', '55%'],
           center: ['40%', '50%'],
           emphasis: {
             itemStyle: {
@@ -231,6 +238,20 @@ const chartConfig2Echarts = (chartResult: any) => {
     // }
   }
   return options;
+};
+
+export const buildChartToolEchartsOptions = (chartResult: any, chartType?: string) => {
+  if (_.isEmpty(chartResult)) {
+    return {};
+  }
+
+  if (!chartType) {
+    return chartConfig2Echarts(chartResult);
+  }
+
+  const nextChartResult = _.cloneDeep(chartResult);
+  _.set(nextChartResult, ['chart_config', 'chart_type'], chartType);
+  return chartConfig2Echarts(nextChartResult);
 };
 
 const getTableColumnByTableData = (tableData: any) => {
@@ -311,7 +332,7 @@ const ngqlData2TableData = (data: any) => {
   };
 };
 
-/** 处理大模型回答的markdown字符串中异常的字符 */
+/** 处理大模型回答的markdown字符串中异常的字符*/
 const filterLLMAnswerExceptionText = (markdownText: string, filterEmptyCode: boolean = false): string => {
   if (markdownText) {
     // console.log('llm-处理之前的结果');
@@ -335,6 +356,372 @@ const llmTextCiteTransform = (text: string) => {
 };
 
 /** 后端数据获取前端渲染需要的聊天项的content */
+const normalizeTodoTaskCollection = (tasks: any) => {
+  if (Array.isArray(tasks)) {
+    return tasks.filter(Boolean);
+  }
+  if (_.isPlainObject(tasks) && !_.isEmpty(tasks)) {
+    return [tasks];
+  }
+  return [];
+};
+
+const getTodoTaskIds = (tasks: any) =>
+  normalizeTodoTaskCollection(tasks)
+    .map(task => task?.id)
+    .filter((id): id is number | string => typeof id === 'number' || typeof id === 'string');
+
+const getTodoTaskStatusMap = (tasks: any) => {
+  const statusMap = new Map<number | string, string>();
+
+  normalizeTodoTaskCollection(tasks).forEach(task => {
+    const taskId = task?.id;
+    if ((typeof taskId === 'number' || typeof taskId === 'string') && task?.status) {
+      statusMap.set(taskId, task.status);
+    }
+  });
+
+  return statusMap;
+};
+
+const TODO_TASK_START_REGEXP = /\*\*start_task_(\d+)\*\*|start_task_(\d+)/i;
+const TODO_TASK_END_REGEXP = /\*\*end_task_(\d+)\*\*|end_task_(\d+)/i;
+
+const transformLlmAnswerText = (text: string, filterEmptyCode: boolean = false) =>
+  llmTextCiteTransform(filterLLMAnswerExceptionText(text, filterEmptyCode));
+
+const extractTodoTaskMarker = (text: string, markerType: 'start' | 'end') => {
+  if (!text) {
+    return null;
+  }
+
+  const regexp = markerType === 'start' ? TODO_TASK_START_REGEXP : TODO_TASK_END_REGEXP;
+  const matched = regexp.exec(text);
+  if (!matched) {
+    return null;
+  }
+
+  const taskId = matched[1] || matched[2];
+  if (!taskId) {
+    return null;
+  }
+
+  return {
+    taskId,
+    markerStartIndex: matched.index ?? 0,
+    contentStartIndex: (matched.index ?? 0) + matched[0].length,
+  };
+};
+
+const mergeTodoRunningProcessContent = (
+  currentContent: string = '',
+  nextContent: string = '',
+  replace: boolean = false
+) => {
+  const normalizedCurrentContent = currentContent.trim();
+  const normalizedNextContent = nextContent.trim();
+
+  if (!normalizedNextContent) {
+    return normalizedCurrentContent;
+  }
+
+  if (replace || !normalizedCurrentContent) {
+    return normalizedNextContent;
+  }
+
+  return `${normalizedCurrentContent}\n\n${normalizedNextContent}`;
+};
+
+const getNormalizedTodoRunningProcessBlocks = (processItem: any): TodoRunningProcessBlockType[] => {
+  if (Array.isArray(processItem?.blocks)) {
+    return processItem.blocks.filter(Boolean);
+  }
+
+  if (typeof processItem?.content === 'string' && processItem.content.trim()) {
+    return [
+      {
+        id: nanoid(),
+        type: 'llm',
+        content: processItem.content.trim(),
+      },
+    ];
+  }
+
+  return [];
+};
+
+const appendTodoRunningProcessLlmBlock = (
+  currentBlocks: TodoRunningProcessBlockType[] = [],
+  nextContent: string,
+  replace: boolean = false
+) => {
+  const normalizedNextContent = nextContent.trim();
+  if (!normalizedNextContent) {
+    return currentBlocks;
+  }
+
+  const nextBlocks = [...currentBlocks];
+  const lastBlock = nextBlocks[nextBlocks.length - 1];
+
+  if (replace && lastBlock?.type === 'llm') {
+    lastBlock.content = normalizedNextContent;
+    return nextBlocks;
+  }
+
+  if (lastBlock?.type === 'llm') {
+    lastBlock.content = mergeTodoRunningProcessContent(lastBlock.content, normalizedNextContent, false);
+    return nextBlocks;
+  }
+
+  nextBlocks.push({
+    id: nanoid(),
+    type: 'llm',
+    content: normalizedNextContent,
+  });
+
+  return nextBlocks;
+};
+
+const pushLlmProgressItem = (
+  progressItems: DipChatItemContentProgressType[],
+  progressStatus: 'processing' | 'completed' | 'failed',
+  llmAnswerText: string,
+  thinking: string,
+  consumeTime: string,
+  consumeTokens: number
+) => {
+  if (!llmAnswerText?.trim()) {
+    return;
+  }
+
+  progressItems.push({
+    status: progressStatus,
+    type: 'llm',
+    llmResult: {
+      text: llmAnswerText,
+      thinking,
+    },
+    consumeTime,
+    consumeTokens,
+  });
+};
+
+const appendLastProgressItemToTodoRunningProcess = (
+  progressItems: DipChatItemContentProgressType[],
+  taskId: number | string
+) => {
+  const lastProgressItem = progressItems[progressItems.length - 1];
+  if (!lastProgressItem || lastProgressItem.type === 'llm' || !lastProgressItem.skillInfo) {
+    return false;
+  }
+
+  return updateTodoRunningProcess(progressItems, taskId, '', {
+    blockType: 'skill',
+    skillBlock: {
+      id: nanoid(),
+      type: 'skill',
+      title: lastProgressItem.title,
+      status: lastProgressItem.status,
+      consumeTime: lastProgressItem.consumeTime,
+      skillInfo: lastProgressItem.skillInfo,
+      progressIndex: progressItems.length - 1,
+    },
+  });
+};
+
+const getTodoListResult = (result: any) => {
+  const tasks = Array.isArray(result?.tasks)
+    ? result.tasks
+        .filter((task: any) => task && task.task)
+        .map((task: any) => ({
+          id: task.id ?? nanoid(),
+          title: task.title,
+          task: task.task,
+          blockedBy: Array.isArray(task.blockedBy) ? task.blockedBy : [],
+          status: task.status ?? 'pending',
+        }))
+    : [];
+
+  return {
+    sessionId: result?.session_id,
+    status: result?.status,
+    tasks,
+    runnableTaskIds: getTodoTaskIds(result?.runnable_tasks),
+    completedTaskIds: getTodoTaskIds(result?.completed_tasks),
+    blockedTaskIds: getTodoTaskIds(result?.blocked_tasks),
+    blockedTaskStatusMap: getTodoTaskStatusMap(result?.blocked_tasks),
+  };
+};
+
+const getInitialTodoTasks = (tasks: any[] = []) =>
+  tasks.map(task => ({
+    ...task,
+    status: 'pending',
+  }));
+const getLatestTodoListProgressItem = (progressItems: DipChatItemContentProgressType[]) => {
+  const matchedIndex = _.findLastIndex(progressItems, item => item.type === 'todo_list_tool');
+  if (matchedIndex === -1) {
+    return null;
+  }
+  return {
+    matchedIndex,
+    item: progressItems[matchedIndex] as DipChatItemContentProgressType,
+  };
+};
+
+const updateTodoRunningProcess = (
+  progressItems: DipChatItemContentProgressType[],
+  taskId: number | string,
+  content: string,
+  options: {
+    completed?: boolean;
+    replace?: boolean;
+    blockType?: 'llm' | 'skill';
+    skillBlock?: TodoRunningProcessBlockType;
+  } = {}
+) => {
+  const matchedTodoListProgress = getLatestTodoListProgressItem(progressItems);
+
+  if (!matchedTodoListProgress) {
+    return false;
+  }
+
+  const { matchedIndex } = matchedTodoListProgress;
+  const currentItem: any = matchedTodoListProgress.item;
+  const runningProcesses = Array.isArray(currentItem.todoListResult?.runningProcesses)
+    ? [...currentItem.todoListResult.runningProcesses]
+    : [];
+  const processIndex = runningProcesses.findIndex(processItem => String(processItem?.taskId) === String(taskId));
+  const currentProcessItem = processIndex > -1 ? runningProcesses[processIndex] : null;
+  const currentBlocks = getNormalizedTodoRunningProcessBlocks(currentProcessItem);
+  let nextBlocks = currentBlocks;
+
+  if (options.blockType === 'skill') {
+    if (options.skillBlock) {
+      nextBlocks = [...currentBlocks, options.skillBlock];
+    }
+  } else {
+    nextBlocks = appendTodoRunningProcessLlmBlock(currentBlocks, content, options.replace);
+  }
+
+  const nextProcessItem: TodoRunningProcessItemType = {
+    taskId,
+    blocks: nextBlocks,
+    completed: options.completed ?? currentProcessItem?.completed ?? false,
+  };
+
+  if (processIndex > -1) {
+    runningProcesses[processIndex] = nextProcessItem;
+  } else if (nextProcessItem.blocks.length) {
+    runningProcesses.push(nextProcessItem);
+  }
+
+  progressItems[matchedIndex] = {
+    ...currentItem,
+    todoListResult: {
+      ...currentItem.todoListResult,
+      runningProcesses,
+    },
+  } as DipChatItemContentProgressType;
+
+  return true;
+};
+
+const mergeTodoTasks = (
+  currentTasks: any[] = [],
+  nextTasks: any[] = [],
+  updateSource: 'todo_list_tool' | 'task_manager_tool',
+  runnableTaskIds: Array<number | string> = [],
+  blockedTaskStatusMap: Map<number | string, string> = new Map()
+) => {
+  if (!nextTasks.length) {
+    return currentTasks;
+  }
+
+  const maxLength = Math.max(currentTasks.length, nextTasks.length);
+  const runnableTaskIdSet = new Set(runnableTaskIds);
+
+  return Array.from({ length: maxLength }, (_, index) => {
+    const currentTask = currentTasks[index];
+    const nextTask = nextTasks[index];
+
+    if (!nextTask) {
+      return currentTask;
+    }
+
+    const mergedTask = {
+      ...currentTask,
+      ...nextTask,
+    };
+
+    if (nextTask.status && nextTask.status !== 'pending') {
+      mergedTask.status = nextTask.status;
+    } else if (updateSource === 'task_manager_tool') {
+      if (runnableTaskIdSet.has(mergedTask.id)) {
+        mergedTask.status = 'running';
+      } else if (blockedTaskStatusMap.get(mergedTask.id) === 'failed') {
+        mergedTask.status = 'failed';
+      } else {
+        mergedTask.status = 'pending';
+      }
+    } else {
+      mergedTask.status = currentTask?.status ?? nextTask.status ?? 'pending';
+    }
+
+    return mergedTask;
+  }).filter(Boolean);
+};
+
+const updateTodoProgressItem = (
+  progressItems: DipChatItemContentProgressType[],
+  todoListResult: ReturnType<typeof getTodoListResult>,
+  commonSkillRes: Record<string, any>,
+  updateSource: 'todo_list_tool' | 'task_manager_tool'
+) => {
+  const matchedTodoListProgress = getLatestTodoListProgressItem(progressItems);
+
+  if (!matchedTodoListProgress) {
+    return false;
+  }
+
+  const { matchedIndex } = matchedTodoListProgress;
+  const currentItem: any = matchedTodoListProgress.item;
+  const currentTasks = currentItem.todoListResult?.tasks || [];
+  const mergedTasks = mergeTodoTasks(
+    currentTasks,
+    todoListResult.tasks || [],
+    updateSource,
+    todoListResult.runnableTaskIds || [],
+    todoListResult.blockedTaskStatusMap || new Map()
+  );
+  const nextItem = {
+    ...currentItem,
+    ...commonSkillRes,
+    hiddenInMainPanel: false,
+    title: currentItem.title || intl.get('dipChat.taskPlanning'),
+    todoListResult: {
+      ...currentItem.todoListResult,
+      ...todoListResult,
+      hasTaskManagerUpdate: currentItem.todoListResult?.hasTaskManagerUpdate || updateSource === 'task_manager_tool',
+      taskManagerCompleted:
+        currentItem.todoListResult?.taskManagerCompleted ||
+        (updateSource === 'task_manager_tool' && todoListResult.status === 'completed'),
+      tasks: mergedTasks,
+    },
+  } as DipChatItemContentProgressType;
+
+  const shouldMoveToCurrentPosition =
+    updateSource === 'todo_list_tool' && !currentTasks.length && mergedTasks.length > 0;
+
+  if (shouldMoveToCurrentPosition) {
+    progressItems.splice(matchedIndex, 1);
+    progressItems.push(nextItem);
+  } else {
+    progressItems[matchedIndex] = nextItem;
+  }
+
+  return true;
+};
 export const getChatItemContent = (message: any): DipChatItemContentType => {
   const { content } = message || {};
   let ext: any;
@@ -344,6 +731,7 @@ export const getChatItemContent = (message: any): DipChatItemContentType => {
     ext = message.ext;
   }
   const res: DipChatItemContentProgressType[] = [];
+  let activeTodoRunningTaskId: number | string | null = null;
   let cites = [];
   if (!_.isEmpty(content)) {
     // 获取数据范围
@@ -365,17 +753,66 @@ export const getChatItemContent = (message: any): DipChatItemContentType => {
         }
         // 说明是大模型的回答，只取最终结果
         if (stage === 'llm') {
+          const llmAnswer = progressItem.answer || '';
+          const consumeTime = (end_time - start_time).toFixed(2);
+          const consumeTokens = _.get(token_usage, 'total_tokens', 0);
+          const startTaskMarker = extractTodoTaskMarker(llmAnswer, 'start');
+          if (startTaskMarker) {
+            const normalContent = transformLlmAnswerText(
+              llmAnswer.slice(0, startTaskMarker.markerStartIndex),
+              status === 'completed'
+            );
+            const runningProcessContent = transformLlmAnswerText(
+              llmAnswer.slice(startTaskMarker.contentStartIndex),
+              status === 'completed'
+            );
+            if (updateTodoRunningProcess(res, startTaskMarker.taskId, runningProcessContent, { replace: true })) {
+              pushLlmProgressItem(res, status, normalContent, progressItem.think, consumeTime, consumeTokens);
+              activeTodoRunningTaskId = startTaskMarker.taskId;
+              continue;
+            }
+          }
+          if (activeTodoRunningTaskId !== null) {
+            const endTaskMarker = extractTodoTaskMarker(llmAnswer, 'end');
+            const isCurrentTaskCompleted =
+              endTaskMarker && String(endTaskMarker.taskId) === String(activeTodoRunningTaskId);
+            const runningProcessAnswerText =
+              endTaskMarker && isCurrentTaskCompleted ? llmAnswer.slice(0, endTaskMarker.markerStartIndex) : llmAnswer;
+            const normalAnswerText =
+              endTaskMarker && isCurrentTaskCompleted ? llmAnswer.slice(endTaskMarker.contentStartIndex) : '';
+
+            if (
+              updateTodoRunningProcess(
+                res,
+                activeTodoRunningTaskId,
+                transformLlmAnswerText(runningProcessAnswerText, status === 'completed'),
+                { completed: Boolean(isCurrentTaskCompleted) }
+              )
+            ) {
+              if (isCurrentTaskCompleted) {
+                activeTodoRunningTaskId = null;
+              }
+
+              pushLlmProgressItem(
+                res,
+                status,
+                transformLlmAnswerText(normalAnswerText, status === 'completed'),
+                progressItem.think,
+                consumeTime,
+                consumeTokens
+              );
+              continue;
+            }
+          }
           res.push({
             status,
             type: 'llm',
             llmResult: {
-              text:
-                progressItem.answer &&
-                llmTextCiteTransform(filterLLMAnswerExceptionText(progressItem.answer, status === 'completed')),
+              text: llmAnswer && transformLlmAnswerText(llmAnswer, status === 'completed'),
               thinking: progressItem.think,
             },
-            consumeTime: (end_time - start_time).toFixed(2),
-            consumeTokens: _.get(token_usage, 'total_tokens', 0),
+            consumeTime,
+            consumeTokens,
             // cachedTokens: _.get(token_usage, 'prompt_token_details.cached_tokens', 0),
           });
           continue;
@@ -421,7 +858,55 @@ export const getChatItemContent = (message: any): DipChatItemContentType => {
             status,
             originalAnswer: answer,
             skillInfo,
+            hiddenInMainPanel: activeTodoRunningTaskId !== null,
           };
+          const appendSkillToRunningProcessIfNeeded = () => {
+            if (activeTodoRunningTaskId === null) {
+              return;
+            }
+            appendLastProgressItemToTodoRunningProcess(res, activeTodoRunningTaskId);
+          };
+          if (name === 'task_manager_tool' || name === 'ask_manager_tool') {
+            const taskManagerResult = !_.isEmpty(result) ? result : !_.isEmpty(full_result) ? full_result : answer;
+            const todoListResult = getTodoListResult(taskManagerResult);
+            updateTodoProgressItem(
+              res,
+              todoListResult,
+              { ...commonSkillRes, originalAnswer: null },
+              'task_manager_tool'
+            );
+            continue;
+          }
+
+          if (name === 'todo_list_tool') {
+            const todoListResult = getTodoListResult(
+              !_.isEmpty(result) ? result : !_.isEmpty(full_result) ? full_result : answer
+            );
+            if (
+              !updateTodoProgressItem(
+                res,
+                todoListResult,
+                { ...commonSkillRes, originalAnswer: null },
+                'todo_list_tool'
+              )
+            ) {
+              res.push({
+                title: intl.get('dipChat.taskPlanning'),
+                type: 'todo_list_tool',
+                ...commonSkillRes,
+                hiddenInMainPanel: false,
+                originalAnswer: null,
+                todoListResult: {
+                  ...todoListResult,
+                  hasTaskManagerUpdate: false,
+                  taskManagerCompleted: false,
+                  runningProcesses: [],
+                  tasks: getInitialTodoTasks(todoListResult.tasks || []),
+                },
+              });
+            }
+            continue;
+          }
 
           if (name === 'text2metric') {
             let title = defaultTitle;
@@ -444,6 +929,7 @@ export const getChatItemContent = (message: any): DipChatItemContentType => {
               },
               ...commonSkillRes,
             });
+            appendSkillToRunningProcessIfNeeded();
             continue;
           }
           if (name === 'text2sql' || name === 'sql_helper') {
@@ -472,6 +958,7 @@ export const getChatItemContent = (message: any): DipChatItemContentType => {
               },
               ...commonSkillRes,
             });
+            appendSkillToRunningProcessIfNeeded();
             continue;
           }
           if (name === 'json2plot') {
@@ -494,9 +981,15 @@ export const getChatItemContent = (message: any): DipChatItemContentType => {
                 echartsOptions,
                 tableColumns: getTableColumnByTableData(tableData),
                 tableData,
+                rawChartResult: {
+                  chart_config: _.get(finalResult, ['chart_config'], {}),
+                  data: tableData,
+                  title: titleRes || title,
+                },
               },
               ...commonSkillRes,
             });
+            appendSkillToRunningProcessIfNeeded();
             continue;
           }
           if (sandboxName.includes(name)) {
@@ -532,6 +1025,7 @@ export const getChatItemContent = (message: any): DipChatItemContentType => {
               },
               ...commonSkillRes,
             });
+            appendSkillToRunningProcessIfNeeded();
             continue;
           }
           if (name === 'text2ngql') {
@@ -557,6 +1051,7 @@ export const getChatItemContent = (message: any): DipChatItemContentType => {
               },
               ...commonSkillRes,
             });
+            appendSkillToRunningProcessIfNeeded();
             continue;
           }
           if (name === 'doc_qa') {
@@ -591,6 +1086,7 @@ export const getChatItemContent = (message: any): DipChatItemContentType => {
               ...commonSkillRes,
               originalAnswer: null,
             });
+            appendSkillToRunningProcessIfNeeded();
             continue;
           }
           if (name === 'zhipu_search_tool') {
@@ -617,6 +1113,7 @@ export const getChatItemContent = (message: any): DipChatItemContentType => {
               ...commonSkillRes,
               originalAnswer: null,
             });
+            appendSkillToRunningProcessIfNeeded();
             continue;
           }
           if (name === 'online_search_cite_tool') {
@@ -630,6 +1127,7 @@ export const getChatItemContent = (message: any): DipChatItemContentType => {
               ...commonSkillRes,
               originalAnswer: null,
             });
+            appendSkillToRunningProcessIfNeeded();
             continue;
           }
           if (!notShowResultToolName.includes(name)) {
@@ -664,6 +1162,7 @@ export const getChatItemContent = (message: any): DipChatItemContentType => {
                 ...commonSkillRes,
                 originalAnswer: null,
               });
+              appendSkillToRunningProcessIfNeeded();
             }
           }
         }

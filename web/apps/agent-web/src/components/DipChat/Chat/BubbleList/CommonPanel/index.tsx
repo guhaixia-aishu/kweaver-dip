@@ -17,7 +17,9 @@ import CommonToolPanel from './CommonToolPanel';
 import DocQaToolPanel from './DocQaToolPanel';
 import NetSearchToolPanel from './NetSearchToolPanel';
 import MetricToolPanel from './MetricToolPanel';
+import TodoListToolPanel from './TodoListToolPanel';
 import AgentIcon from '@/components/AgentIcon';
+import { useMemo } from 'react';
 import { nanoid } from 'nanoid';
 import intl from 'react-intl-universal';
 import LLMPanel from './LLMPanel';
@@ -32,7 +34,20 @@ const CommonPanel = ({ chatItemIndex, readOnly }: any) => {
   const chatItem = chatList[chatItemIndex];
   const { generating, interrupt, cancel } = chatItem;
   const content: DipChatItemContentType = chatItem.content || { progress: [], cites: {}, related_queries: [] };
-  const skeletonLoading = !content?.progress?.length && streamGenerating && chatItemIndex === chatList.length - 1;
+  const visibleProgressItems = useMemo(
+    () =>
+      (content.progress ?? [])
+        .map((item, progressIndex) => ({
+          item,
+          progressIndex,
+        }))
+        .filter(({ item }) => !item.hiddenInMainPanel),
+    [content.progress]
+  );
+  const historyProgressItems = useMemo(() => visibleProgressItems.slice(0, -1), [visibleProgressItems]);
+  const currentProgressItem = visibleProgressItems[visibleProgressItems.length - 1];
+  const skeletonLoading = !visibleProgressItems.length && streamGenerating && chatItemIndex === chatList.length - 1;
+
   const renderFooter = () => {
     if (!generating && !readOnly) {
       return <PanelFooter className="dip-mt-8" chatItemIndex={chatItemIndex} />;
@@ -141,6 +156,121 @@ const CommonPanel = ({ chatItemIndex, readOnly }: any) => {
     }
   };
 
+  const renderProgressItem = (item: DipChatItemContentProgressType, progressIndex: number) => {
+    switch (item.type) {
+      case 'metric_tool':
+        return (
+          <MetricToolPanel
+            key={progressIndex}
+            chatItemIndex={chatItemIndex}
+            progressIndex={progressIndex}
+            progressItem={item}
+            readOnly={readOnly}
+          />
+        );
+      case 'sql_tool':
+        return (
+          <SqlToolPanel
+            key={progressIndex}
+            chatItemIndex={chatItemIndex}
+            progressIndex={progressIndex}
+            progressItem={item}
+            readOnly={readOnly}
+          />
+        );
+      case 'chart_tool':
+        return (
+          <ChartToolPanel
+            key={progressIndex}
+            chatItemIndex={chatItemIndex}
+            progressIndex={progressIndex}
+            progressItem={item}
+            readOnly={readOnly}
+          />
+        );
+      case 'code_tool':
+        return (
+          <CodeToolPanel
+            key={progressIndex}
+            chatItemIndex={chatItemIndex}
+            progressIndex={progressIndex}
+            progressItem={item}
+            readOnly={readOnly}
+          />
+        );
+      case 'ngql_tool':
+        return (
+          <NGQLToolPanel
+            key={progressIndex}
+            chatItemIndex={chatItemIndex}
+            progressIndex={progressIndex}
+            progressItem={item}
+            readOnly={readOnly}
+          />
+        );
+      case 'docQa_tool':
+        return (
+          <DocQaToolPanel
+            key={progressIndex}
+            chatItemIndex={chatItemIndex}
+            progressIndex={progressIndex}
+            progressItem={item}
+            readOnly={readOnly}
+          />
+        );
+      case 'common_tool':
+        return (
+          <CommonToolPanel
+            key={progressIndex}
+            chatItemIndex={chatItemIndex}
+            progressIndex={progressIndex}
+            progressItem={item}
+            readOnly={readOnly}
+          />
+        );
+      case 'task_manager_tool':
+      case 'todo_list_tool':
+        return (
+          <TodoListToolPanel
+            key={progressIndex}
+            progressItem={item}
+            chatItemIndex={chatItemIndex}
+            readOnly={readOnly}
+          />
+        );
+      case 'net_search_tool':
+        return (
+          <NetSearchToolPanel
+            key={progressIndex}
+            chatItemIndex={chatItemIndex}
+            progressIndex={progressIndex}
+            progressItem={item}
+            readOnly={readOnly}
+          />
+        );
+      default: {
+        const loading = streamGenerating && chatItemIndex === chatList.length - 1 && !item.llmResult?.text;
+        const { netSearchResult } =
+          content.progress.find(
+            progressItem =>
+              progressItem.type === 'net_search_tool' && progressItem.skillInfo?.name === 'online_search_cite_tool'
+          ) || {};
+        return (
+          <div key={progressIndex}>
+            {renderDeepThink(item.llmResult?.thinking || '', loading)}
+            <LLMPanel
+              isLLMProcess={!item.llmResult?.thinking && !item.llmResult?.text}
+              status={item.status}
+              text={item.llmResult?.text}
+              cites={netSearchResult?.cites ?? []}
+              consumeTime={item.consumeTime}
+            />
+          </div>
+        );
+      }
+    }
+  };
+
   const renderContent = () => {
     if (skeletonLoading) {
       return (
@@ -208,123 +338,19 @@ const CommonPanel = ({ chatItemIndex, readOnly }: any) => {
         {renderIcon()}
         <div className={classNames('dip-ml-16 dip-flex-item-full-width')}>
           {renderCites()}
-          {content.progress?.map((item: DipChatItemContentProgressType, progressIndex: number) => {
-            let toolResult: any;
-            switch (item.type) {
-              case 'metric_tool':
-                toolResult = (
-                  <MetricToolPanel
-                    key={progressIndex}
-                    chatItemIndex={chatItemIndex}
-                    progressIndex={progressIndex}
-                    progressItem={item}
-                    readOnly={readOnly}
-                  />
-                );
-                break;
-              case 'sql_tool':
-                toolResult = (
-                  <SqlToolPanel
-                    key={progressIndex}
-                    chatItemIndex={chatItemIndex}
-                    progressIndex={progressIndex}
-                    progressItem={item}
-                    readOnly={readOnly}
-                  />
-                );
-                break;
-              case 'chart_tool':
-                toolResult = (
-                  <ChartToolPanel
-                    key={progressIndex}
-                    chatItemIndex={chatItemIndex}
-                    progressIndex={progressIndex}
-                    progressItem={item}
-                    readOnly={readOnly}
-                  />
-                );
-                break;
-              case 'code_tool':
-                toolResult = (
-                  <CodeToolPanel
-                    key={progressIndex}
-                    chatItemIndex={chatItemIndex}
-                    progressIndex={progressIndex}
-                    progressItem={item}
-                    readOnly={readOnly}
-                  />
-                );
-                break;
-              case 'ngql_tool':
-                toolResult = (
-                  <NGQLToolPanel
-                    key={progressIndex}
-                    chatItemIndex={chatItemIndex}
-                    progressIndex={progressIndex}
-                    progressItem={item}
-                    readOnly={readOnly}
-                  />
-                );
-                break;
-              case 'docQa_tool':
-                toolResult = (
-                  <DocQaToolPanel
-                    key={progressIndex}
-                    chatItemIndex={chatItemIndex}
-                    progressIndex={progressIndex}
-                    progressItem={item}
-                    readOnly={readOnly}
-                  />
-                );
-                break;
-              case 'common_tool':
-                toolResult = (
-                  <CommonToolPanel
-                    key={progressIndex}
-                    chatItemIndex={chatItemIndex}
-                    progressIndex={progressIndex}
-                    progressItem={item}
-                    readOnly={readOnly}
-                  />
-                );
-                break;
-              case 'net_search_tool':
-                toolResult = (
-                  <NetSearchToolPanel
-                    key={progressIndex}
-                    chatItemIndex={chatItemIndex}
-                    progressIndex={progressIndex}
-                    progressItem={item}
-                    readOnly={readOnly}
-                  />
-                );
-                break;
-              default: {
-                const loading = streamGenerating && chatItemIndex === chatList.length - 1 && !item.llmResult?.text;
-                const { netSearchResult } =
-                  content.progress.find(
-                    progressItem =>
-                      progressItem.type === 'net_search_tool' &&
-                      progressItem.skillInfo?.name === 'online_search_cite_tool'
-                  ) || {};
-                toolResult = (
-                  <div key={progressIndex}>
-                    {renderDeepThink(item.llmResult?.thinking || '', loading)}
-                    <LLMPanel
-                      isLLMProcess={!item.llmResult?.thinking && !item.llmResult?.text}
-                      status={item.status}
-                      text={item.llmResult?.text}
-                      cites={netSearchResult?.cites ?? []}
-                      consumeTime={item.consumeTime}
-                    />
-                  </div>
-                );
-                break;
-              }
-            }
-
-            return toolResult;
-          })}
+          {historyProgressItems.length > 0 && (
+            <div className="dip-mb-8">
+              {historyProgressItems.map(({ item, progressIndex }, historyIndex: number) => (
+                <div
+                  key={`history-progress-item-${progressIndex}`}
+                  className={classNames({ 'dip-mb-8': historyIndex !== historyProgressItems.length - 1 })}
+                >
+                  {renderProgressItem(item, progressIndex)}
+                </div>
+              ))}
+            </div>
+          )}
+          {currentProgressItem ? renderProgressItem(currentProgressItem.item, currentProgressItem.progressIndex) : null}
           {renderInterrupt()}
           {renderStopGenerate()}
           {renderFooter()}

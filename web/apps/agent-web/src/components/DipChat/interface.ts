@@ -12,6 +12,47 @@ type ToolArgsType = {
   type: 'string';
 };
 
+export type TodoRunningProcessBlockType =
+  | {
+      id: string;
+      type: 'llm';
+      content: string;
+    }
+  | {
+      id: string;
+      type: 'skill';
+      title?: string;
+      status: string;
+      consumeTime?: string;
+      skillInfo?: any;
+      progressIndex?: number;
+    };
+
+export type TodoRunningProcessItemType = {
+  taskId: number | string;
+  blocks: TodoRunningProcessBlockType[];
+  completed?: boolean;
+};
+
+export type TodoListResultType = {
+  sessionId?: string;
+  status?: string;
+  tasks?: Array<{
+    id: number | string;
+    title?: string;
+    task: string;
+    blockedBy: Array<number | string>;
+    status: string;
+  }>;
+  runnableTaskIds?: Array<number | string>;
+  completedTaskIds?: Array<number | string>;
+  blockedTaskIds?: Array<number | string>;
+  blockedTaskStatusMap?: Map<number | string, string>;
+  hasTaskManagerUpdate?: boolean;
+  taskManagerCompleted?: boolean;
+  runningProcesses?: TodoRunningProcessItemType[];
+};
+
 export type InterruptDataType = {
   handle: any;
   data: {
@@ -34,10 +75,13 @@ export type DipChatItemContentProgressType = {
   consumeTime: string; // 耗时
   consumeTokens?: string; // tokens消耗
   cachedTokens?: string; // 提示词命中缓存token数量
+  hiddenInMainPanel?: boolean;
   type:
     | 'llm'
     | 'docQa_tool'
     | 'common_tool'
+    | 'task_manager_tool'
+    | 'todo_list_tool'
     | 'sql_tool'
     | 'chart_tool'
     | 'code_tool'
@@ -60,6 +104,11 @@ export type DipChatItemContentProgressType = {
     echartsOptions: EChartsOption;
     tableColumns: TableColumnsType;
     tableData: any[];
+    rawChartResult?: {
+      chart_config?: Record<string, any>;
+      data?: any[];
+      title?: string;
+    };
   };
   // 代码工具（沙箱工具）
   codeResult?: {
@@ -101,6 +150,10 @@ export type DipChatItemContentProgressType = {
     tableColumns: TableColumnsType;
     tableData: any[];
     input: any;
+  };
+  todoListResult?: TodoListResultType;
+  todoListToolResult?: {
+    output: string;
   };
   skillInfo?: any; // 用到的技能信息
   originalAnswer?: string;
