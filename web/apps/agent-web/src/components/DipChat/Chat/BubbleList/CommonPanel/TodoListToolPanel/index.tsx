@@ -111,13 +111,7 @@ const TodoListToolPanel = ({ progressItem, chatItemIndex, readOnly }: TodoListTo
       ),
     [todoListResult.runningProcesses]
   );
-  const taskMap = useMemo(
-    () =>
-      new Map(
-        tasks.map(task => [String(task.id), task] as const)
-      ),
-    [tasks]
-  );
+  const taskMap = useMemo(() => new Map(tasks.map(task => [String(task.id), task] as const)), [tasks]);
   const taskManagerCompleted = Boolean(todoListResult.taskManagerCompleted);
   const showRunningProcess = runningProcesses.length > 0;
   const conversationEnded = Boolean(chatItem) && !streamGenerating && !chatItem.loading && !chatItem.generating;
@@ -127,6 +121,8 @@ const TodoListToolPanel = ({ progressItem, chatItemIndex, readOnly }: TodoListTo
   );
   const [hasManualTodoListToggle, setHasManualTodoListToggle] = useState(false);
   const [hasManualRunningProcessToggle, setHasManualRunningProcessToggle] = useState(false);
+
+  const isTodoListExpanded = useMemo(() => activeKeys.includes('todo-list'), [activeKeys]);
 
   useEffect(() => {
     setActiveKeys(prevActiveKeys => {
@@ -202,9 +198,17 @@ const TodoListToolPanel = ({ progressItem, chatItemIndex, readOnly }: TodoListTo
     return <ToolIcon style={{ width: '16px', height: '16px' }} />;
   };
 
-  const renderRunningProcessBlock = (block: TodoRunningProcessBlockType) => {
+  const renderRunningProcessBlock = (
+    block: TodoRunningProcessBlockType,
+    relatedTask?: TodoTask,
+    isFirstBlock?: boolean
+  ) => {
     if (block.type === 'llm') {
-      return <Markdown readOnly className={styles.processMarkdown} value={block.content} />;
+      const markdownValue = block.content;
+      if (!markdownValue?.trim()) {
+        return null;
+      }
+      return <Markdown readOnly className={styles.processMarkdown} value={markdownValue} />;
     }
 
     const loading = block.status === 'processing' && streamGenerating && chatItemIndex === chatList.length - 1;
@@ -299,7 +303,11 @@ const TodoListToolPanel = ({ progressItem, chatItemIndex, readOnly }: TodoListTo
                   key: 'running-process',
                   label: (
                     <div className={styles.processHeader}>
-                      <div className={styles.processHeaderMain}>
+                      <div
+                        className={classNames(styles.processHeaderMain, {
+                          [styles.processHeaderMainConnected]: !isTodoListExpanded,
+                        })}
+                      >
                         <span className={styles.processHeaderIcon}>
                           <DipIcon type="icon-taskplanning" style={{ fontSize: 12 }} />
                         </span>
@@ -320,7 +328,9 @@ const TodoListToolPanel = ({ progressItem, chatItemIndex, readOnly }: TodoListTo
                                     <span className={styles.processTaskBadge}>
                                       {`${intl.get('dipChat.taskLabel')}${relatedTask.id}`}
                                     </span>
-                                    <span className={styles.processTaskTitle}>{relatedTask.title || relatedTask.task}</span>
+                                    <span className={styles.processTaskTitle}>
+                                      {relatedTask.title || relatedTask.task}
+                                    </span>
                                   </div>
                                   {relatedTask.title ? (
                                     <div className={styles.processTaskDescription}>{relatedTask.task}</div>
@@ -328,9 +338,9 @@ const TodoListToolPanel = ({ progressItem, chatItemIndex, readOnly }: TodoListTo
                                 </div>
                               ) : null}
                               <div className={styles.processBlocks}>
-                                {processItem.blocks.map(block => (
+                                {processItem.blocks.map((block, index) => (
                                   <div key={block.id} className={styles.processBlock}>
-                                    {renderRunningProcessBlock(block)}
+                                    {renderRunningProcessBlock(block, relatedTask, index === 0)}
                                   </div>
                                 ))}
                               </div>

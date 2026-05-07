@@ -279,16 +279,28 @@ const DipChatStore: React.FC<PropsWithChildren<DipChatProps>> = props => {
     }
     // 通用Agent 如果有调用工具的话，需要自动展开工具的侧边栏
     const toolAutoExpandUpdateObj: any = {};
+    const sideBarSupportedProgressTypes = new Set([
+      'common_tool',
+      'metric_tool',
+      'sql_tool',
+      'chart_tool',
+      'code_tool',
+      'ngql_tool',
+      'docQa_tool',
+      'net_search_tool',
+    ]);
     if (toolAutoExpand && !debug) {
       if (newChatListRef.current.length > 1) {
         const activeChatItemIndex = newChatListRef.current.length - 1;
         const chatItem = newChatListRef.current[activeChatItemIndex];
         const content: DipChatItemContentType = chatItem.content || { progress: [], cites: {}, related_queries: [] };
         const progress = _.get(content, 'progress') || [];
-        if (progress.some(progressItem => progressItem.type !== 'llm')) {
-          const lastNonLlmIndex = progress.findLastIndex(progressItem => progressItem.type !== 'llm');
+        if (progress.some(progressItem => sideBarSupportedProgressTypes.has(progressItem.type))) {
+          const lastSupportedProgressIndex = progress.findLastIndex(progressItem =>
+            sideBarSupportedProgressTypes.has(progressItem.type)
+          );
           toolAutoExpandUpdateObj.activeChatItemIndex = activeChatItemIndex;
-          toolAutoExpandUpdateObj.activeProgressIndex = lastNonLlmIndex;
+          toolAutoExpandUpdateObj.activeProgressIndex = lastSupportedProgressIndex;
         }
       }
     }

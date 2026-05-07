@@ -384,32 +384,171 @@ const getTodoTaskStatusMap = (tasks: any) => {
   return statusMap;
 };
 
-const TODO_TASK_START_REGEXP = /\*\*start_task_(\d+)\*\*|start_task_(\d+)/i;
-const TODO_TASK_END_REGEXP = /\*\*end_task_(\d+)\*\*|end_task_(\d+)/i;
+const TODO_TASK_START_LINE_REGEXP =
+  /(^|[\r\n])\s*(?:[-*+]\s+|#{1,6}\s+|>\s+)?(?:\*\*|__|\*|_|`{1,3})?\s*start_task_(\d+)\s*(?:\*\*|__|\*|_|`{1,3})?(?=\s*(?:$|[\r\n]))/i;
+const TODO_TASK_END_LINE_REGEXP =
+  /(^|[\r\n])\s*(?:[-*+]\s+|#{1,6}\s+|>\s+)?(?:\*\*|__|\*|_|`{1,3})?\s*end_task_(\d+)\s*(?:\*\*|__|\*|_|`{1,3})?(?=\s*(?:$|[\r\n]))/i;
+const TODO_TASK_START_INLINE_REGEXP = /(?:\*\*|__|\*|_|`{1,3})?\s*\bstart_task_(\d+)\b\s*(?:\*\*|__|\*|_|`{1,3})?/i;
+const TODO_TASK_END_INLINE_REGEXP = /(?:\*\*|__|\*|_|`{1,3})?\s*\bend_task_(\d+)\b\s*(?:\*\*|__|\*|_|`{1,3})?/i;
+
+const consumeTodoTaskMarkerSuffix = (text: string, startIndex: number) => {
+  let nextIndex = startIndex;
+  while (nextIndex < text.length && /\s/.test(text[nextIndex])) {
+    nextIndex += 1;
+  }
+  return nextIndex;
+};
 
 const transformLlmAnswerText = (text: string, filterEmptyCode: boolean = false) =>
   llmTextCiteTransform(filterLLMAnswerExceptionText(text, filterEmptyCode));
 
-const extractTodoTaskMarker = (text: string, markerType: 'start' | 'end') => {
+const extractTodoTaskMarker = (
+  text: string,
+  markerType: 'start' | 'end',
+  expectedTaskId?: number | string | null
+) => {
   if (!text) {
     return null;
   }
 
-  const regexp = markerType === 'start' ? TODO_TASK_START_REGEXP : TODO_TASK_END_REGEXP;
-  const matched = regexp.exec(text);
-  if (!matched) {
-    return null;
+  const lineRegexp = markerType === 'start' ? TODO_TASK_START_LINE_REGEXP : TODO_TASK_END_LINE_REGEXP;
+  const inlineRegexp = markerType === 'start' ? TODO_TASK_START_INLINE_REGEXP : TODO_TASK_END_INLINE_REGEXP;
+  const buildMarker = (matched: RegExpExecArray, offset: number) => {
+    const taskId = matched[2] || matched[1];
+    if (!taskId) {
+      return null;
+    }
+    if (expectedTaskId !== undefined && expectedTaskId !== null && String(taskId) !== String(expectedTaskId)) {
+      return null;
+    }
+
+    const baseIndex = (matched.index ?? 0) + offset;
+    const markerStartIndex = matched[2] && typeof matched.index === 'number' ? baseIndex + (matched[1]?.length || 0) : baseIndex;
+    const contentStartIndex = consumeTodoTaskMarkerSuffix(text, baseIndex + matched[0].length);
+
+    return {
+      taskId,
+      markerStartIndex,
+      contentStartIndex,
+    };
+  };
+
+  const regexpList = [lineRegexp, inlineRegexp];
+  let earliestMarker: { taskId: string; markerStartIndex: number; contentStartIndex: number } | null = null;
+
+  regexpList.forEach(regexp => {
+    let offset = 0;
+    let remainingText = text;
+
+    while (remainingText) {
+      const matched = regexp.exec(remainingText);
+      if (!matched) {
+        break;
+      }
+
+      const marker = buildMarker(matched, offset);
+      if (marker) {
+        if (!earliestMarker || marker.markerStartIndex < earliestMarker.markerStartIndex) {
+          earliestMarker = marker;
+        }
+        break;
+      }
+
+      const nextOffset = (matched.index ?? 0) + matched[0].length;
+      if (nextOffset <= 0) {
+        break;
+      }
+      offset += nextOffset;
+      remainingText = remainingText.slice(nextOffset);
+    }
+  });
+
+  return earliestMarker;
+};
+
+const processLlmAnswerWithTodoTaskMarkers = (
+  progressItems: DipChatItemContentProgressType[],
+  llmAnswer: string,
+  progressStatus: 'processing' | 'completed' | 'failed',
+  thinking: string,
+  consumeTime: string,
+  consumeTokens: number,
+  activeTaskId: number | string | null
+) => {
+  let remainingText = llmAnswer || '';
+  let currentActiveTaskId = activeTaskId;
+  let normalContent = '';
+  let handledMarker = false;
+
+  const appendNormalContent = (text: string) => {
+    if (!text) {
+      return;
+    }
+    normalContent += text;
+  };
+
+  while (remainingText) {
+    if (currentActiveTaskId !== null) {
+      const endTaskMarker = extractTodoTaskMarker(remainingText, 'end', currentActiveTaskId);
+      const runningProcessText = endTaskMarker
+        ? remainingText.slice(0, endTaskMarker.markerStartIndex)
+        : remainingText;
+
+      if (
+        !updateTodoRunningProcess(
+          progressItems,
+          currentActiveTaskId,
+          transformLlmAnswerText(runningProcessText, progressStatus === 'completed'),
+          { completed: Boolean(endTaskMarker) }
+        )
+      ) {
+        return false;
+      }
+
+      handledMarker = true;
+      if (!endTaskMarker) {
+        remainingText = '';
+        break;
+      }
+
+      currentActiveTaskId = null;
+      remainingText = remainingText.slice(endTaskMarker.contentStartIndex);
+      continue;
+    }
+
+    const startTaskMarker = extractTodoTaskMarker(remainingText, 'start');
+    if (!startTaskMarker) {
+      appendNormalContent(remainingText);
+      remainingText = '';
+      break;
+    }
+
+    if (!getLatestTodoListProgressItem(progressItems)) {
+      return false;
+    }
+
+    appendNormalContent(remainingText.slice(0, startTaskMarker.markerStartIndex));
+    handledMarker = true;
+    currentActiveTaskId = startTaskMarker.taskId;
+      remainingText = remainingText.slice(startTaskMarker.contentStartIndex);
   }
 
-  const taskId = matched[1] || matched[2];
-  if (!taskId) {
-    return null;
+  if (!handledMarker) {
+    return false;
   }
+
+  pushLlmProgressItem(
+    progressItems,
+    progressStatus,
+    transformLlmAnswerText(normalContent, progressStatus === 'completed'),
+    thinking,
+    consumeTime,
+    consumeTokens
+  );
 
   return {
-    taskId,
-    markerStartIndex: matched.index ?? 0,
-    contentStartIndex: (matched.index ?? 0) + matched[0].length,
+    handledMarker,
+    activeTaskId: currentActiveTaskId,
   };
 };
 
@@ -756,54 +895,21 @@ export const getChatItemContent = (message: any): DipChatItemContentType => {
           const llmAnswer = progressItem.answer || '';
           const consumeTime = (end_time - start_time).toFixed(2);
           const consumeTokens = _.get(token_usage, 'total_tokens', 0);
-          const startTaskMarker = extractTodoTaskMarker(llmAnswer, 'start');
-          if (startTaskMarker) {
-            const normalContent = transformLlmAnswerText(
-              llmAnswer.slice(0, startTaskMarker.markerStartIndex),
-              status === 'completed'
-            );
-            const runningProcessContent = transformLlmAnswerText(
-              llmAnswer.slice(startTaskMarker.contentStartIndex),
-              status === 'completed'
-            );
-            if (updateTodoRunningProcess(res, startTaskMarker.taskId, runningProcessContent, { replace: true })) {
-              pushLlmProgressItem(res, status, normalContent, progressItem.think, consumeTime, consumeTokens);
-              activeTodoRunningTaskId = startTaskMarker.taskId;
-              continue;
-            }
-          }
-          if (activeTodoRunningTaskId !== null) {
-            const endTaskMarker = extractTodoTaskMarker(llmAnswer, 'end');
-            const isCurrentTaskCompleted =
-              endTaskMarker && String(endTaskMarker.taskId) === String(activeTodoRunningTaskId);
-            const runningProcessAnswerText =
-              endTaskMarker && isCurrentTaskCompleted ? llmAnswer.slice(0, endTaskMarker.markerStartIndex) : llmAnswer;
-            const normalAnswerText =
-              endTaskMarker && isCurrentTaskCompleted ? llmAnswer.slice(endTaskMarker.contentStartIndex) : '';
+          const handledTodoTaskResult = processLlmAnswerWithTodoTaskMarkers(
+            res,
+            llmAnswer,
+            status,
+            progressItem.think,
+            consumeTime,
+            consumeTokens,
+            activeTodoRunningTaskId
+          );
 
-            if (
-              updateTodoRunningProcess(
-                res,
-                activeTodoRunningTaskId,
-                transformLlmAnswerText(runningProcessAnswerText, status === 'completed'),
-                { completed: Boolean(isCurrentTaskCompleted) }
-              )
-            ) {
-              if (isCurrentTaskCompleted) {
-                activeTodoRunningTaskId = null;
-              }
-
-              pushLlmProgressItem(
-                res,
-                status,
-                transformLlmAnswerText(normalAnswerText, status === 'completed'),
-                progressItem.think,
-                consumeTime,
-                consumeTokens
-              );
-              continue;
-            }
+          if (handledTodoTaskResult && typeof handledTodoTaskResult === 'object' && handledTodoTaskResult.handledMarker) {
+            activeTodoRunningTaskId = handledTodoTaskResult.activeTaskId;
+            continue;
           }
+
           res.push({
             status,
             type: 'llm',
