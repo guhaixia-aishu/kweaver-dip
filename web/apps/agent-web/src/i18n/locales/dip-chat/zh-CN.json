@@ -72,6 +72,7 @@
     "chartTypeLine": "折线图",
     "chartTypePie": "饼图",
     "chartTypeDonut": "环形图",
-    "chartTypeOthers": "其他"
+    "chartTypeOthers": "其他",
+    "runningProcess": "运行过程分析"
   }
 }

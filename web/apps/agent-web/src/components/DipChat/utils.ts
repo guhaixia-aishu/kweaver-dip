@@ -37,13 +37,7 @@ export const chartConfig2Echarts = (chartResult: any) => {
   // 折现图
   if (chartType === 'Line') {
     const {
-      chart_config: {
-        xField: rawXField,
-        yField: rawYField,
-        seriesField,
-        colorField,
-        angleField,
-      },
+      chart_config: { xField: rawXField, yField: rawYField, seriesField, colorField, angleField },
     } = chartResult;
     const xField = rawXField || colorField;
     const yField = rawYField || angleField;
@@ -56,9 +50,7 @@ export const chartConfig2Echarts = (chartResult: any) => {
     const series: any = seriesField
       ? Array.from(
           new Set(
-            normalizedData
-              .map((item: any) => item[seriesField])
-              .filter(value => value !== undefined && value !== null)
+            normalizedData.map((item: any) => item[seriesField]).filter(value => value !== undefined && value !== null)
           )
         ).map(seriesValue => {
           return {
@@ -213,13 +205,7 @@ export const chartConfig2Echarts = (chartResult: any) => {
   // 柱状图
   if (chartType === 'Column') {
     const {
-      chart_config: {
-        xField: rawXField,
-        yField: rawYField,
-        seriesField,
-        colorField,
-        angleField,
-      },
+      chart_config: { xField: rawXField, yField: rawYField, seriesField, colorField, angleField },
     } = chartResult;
     const xField = rawXField || colorField;
     const yField = rawYField || angleField;
@@ -232,9 +218,7 @@ export const chartConfig2Echarts = (chartResult: any) => {
     const series: any = seriesField
       ? Array.from(
           new Set(
-            normalizedData
-              .map((item: any) => item[seriesField])
-              .filter(value => value !== undefined && value !== null)
+            normalizedData.map((item: any) => item[seriesField]).filter(value => value !== undefined && value !== null)
           )
         ).map(seriesValue => {
           return {
@@ -347,7 +331,11 @@ const getChartTableColumnsByTableData = (tableData: any[] = [], chartConfig: Rec
   }
 
   const preferredFieldOrder = _.uniq(
-    [chartConfig.xField || chartConfig.colorField, chartConfig.seriesField, chartConfig.yField || chartConfig.angleField]
+    [
+      chartConfig.xField || chartConfig.colorField,
+      chartConfig.seriesField,
+      chartConfig.yField || chartConfig.angleField,
+    ]
       .filter(Boolean)
       .map(field => String(field))
   );
@@ -358,9 +346,7 @@ const getChartTableColumnsByTableData = (tableData: any[] = [], chartConfig: Rec
 
   const indexColumn = baseColumns.find(column => column.dataIndex === 'index');
   const dataColumns = baseColumns.filter(column => column.dataIndex !== 'index');
-  const fieldToColumnMap = new Map(
-    dataColumns.map(column => [String(column.dataIndex), column])
-  );
+  const fieldToColumnMap = new Map(dataColumns.map(column => [String(column.dataIndex), column]));
 
   const orderedColumns = preferredFieldOrder
     .map(field => fieldToColumnMap.get(field))
@@ -446,6 +432,27 @@ const llmTextCiteTransform = (text: string) => {
   // 然后将匹配到的文本使用i标签替换中括号进行包裹
   if (!text) return '';
   return text.replace(/\[(\d+)\]/g, (_match, p1) => `<i index="${p1}" >${p1}</i>`);
+};
+
+const getFormattedLLMText = (text: string) => {
+  if (!text) {
+    return '';
+  }
+  return llmTextCiteTransform(filterLLMAnswerExceptionText(text, true));
+};
+
+const getFinalAnswerDisplayText = (finalAnswer: any) => {
+  const answerText = _.get(finalAnswer, ['answer', 'text']);
+  if (typeof answerText === 'string' && answerText.trim()) {
+    return answerText;
+  }
+
+  const answerTypeOther = _.get(finalAnswer, 'answer_type_other');
+  if (typeof answerTypeOther === 'string') {
+    return answerTypeOther;
+  }
+
+  return `\`\`\`json\n${JSON.stringify(answerTypeOther ?? null, null, 2)}\n\`\`\``;
 };
 
 /** 后端数据获取前端渲染需要的聊天项的content */
@@ -789,9 +796,15 @@ export const getChatItemContent = (message: any): DipChatItemContentType => {
       }
     }
   }
+  const finalAnswerText = getFinalAnswerDisplayText(_.get(content, 'final_answer'));
   return {
     progress: res,
     cites,
+    finalAnswer: finalAnswerText
+      ? {
+          text: getFormattedLLMText(finalAnswerText),
+        }
+      : undefined,
     related_queries: _.get(ext, 'related_queries', []),
     totalTime: ext.total_time,
     totalTokens: ext.total_tokens,
