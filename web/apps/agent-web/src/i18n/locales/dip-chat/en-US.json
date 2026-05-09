@@ -73,6 +73,7 @@
     "chartTypePie": "Pie Chart",
     "chartTypeDonut": "Donut Chart",
     "chartTypeOthers": "Others",
-    "runningProcess": "Running Process Analysis"
+    "runningProcess": "Running Process Analysis",
+    "consumeTime": "Duration: "
   }
 }
