@@ -73,6 +73,7 @@
     "chartTypePie": "餅圖",
     "chartTypeDonut": "環形圖",
     "chartTypeOthers": "其他",
-    "runningProcess": "運行過程分析"
+    "runningProcess": "運行過程分析",
+    "consumeTime": "耗時："
   }
 }
