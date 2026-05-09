@@ -18,6 +18,7 @@ import CommonToolPanel from './CommonToolPanel';
 import DocQaToolPanel from './DocQaToolPanel';
 import NetSearchToolPanel from './NetSearchToolPanel';
 import MetricToolPanel from './MetricToolPanel';
+import TodoListToolPanel from './TodoListToolPanel';
 import AgentIcon from '@/components/AgentIcon';
 import { nanoid } from 'nanoid';
 import intl from 'react-intl-universal';
@@ -240,6 +241,17 @@ const CommonPanel = ({ chatItemIndex, readOnly }: any) => {
             chatItemIndex={chatItemIndex}
             progressIndex={progressIndex}
             progressItem={item}
+            readOnly={readOnly}
+          />
+        );
+        break;
+      case 'task_manager_tool':
+      case 'todo_list_tool':
+        toolResult = (
+          <TodoListToolPanel
+            key={progressIndex}
+            progressItem={item}
+            chatItemIndex={chatItemIndex}
             readOnly={readOnly}
           />
         );

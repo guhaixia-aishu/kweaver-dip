@@ -30,6 +30,12 @@ const RightSideBar = () => {
     }
     if (activeProgressIndex !== -1) {
       const activeProgressItem = chatItem.content.progress[activeProgressIndex];
+      if (
+        activeProgressItem?.type === 'todo_list_tool' ||
+        activeProgressItem?.type === 'task_manager_tool'
+      ) {
+        return null;
+      }
       const renderSide = () => {
         if (activeProgressItem.type === 'common_tool') {
           return <CommonToolSide />;

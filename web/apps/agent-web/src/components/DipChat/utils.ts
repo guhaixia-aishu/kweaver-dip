@@ -10,6 +10,7 @@ import type { TableColumnsType } from 'antd';
 import dayjs from 'dayjs';
 import { isJSONString } from '@/utils/handle-function';
 import { removeInvalidCodeBlocks } from '@/components/Markdown/utils';
+import intl from 'react-intl-universal';
 
 /** 获取引用的数据 */
 export const getCitesData = (other_variables: any) => {
@@ -455,6 +456,170 @@ const getFinalAnswerDisplayText = (finalAnswer: any) => {
   return `\`\`\`json\n${JSON.stringify(answerTypeOther ?? null, null, 2)}\n\`\`\``;
 };
 
+const normalizeTodoTaskCollection = (tasks: any) => {
+  if (Array.isArray(tasks)) {
+    return tasks.filter(Boolean);
+  }
+  if (_.isPlainObject(tasks) && !_.isEmpty(tasks)) {
+    return [tasks];
+  }
+  return [];
+};
+
+const getTodoTaskIds = (tasks: any) =>
+  normalizeTodoTaskCollection(tasks)
+    .map(task => task?.id)
+    .filter((id): id is number | string => typeof id === 'number' || typeof id === 'string');
+
+const getTodoTaskStatusMap = (tasks: any) => {
+  const statusMap = new Map<number | string, string>();
+
+  normalizeTodoTaskCollection(tasks).forEach(task => {
+    const taskId = task?.id;
+    if ((typeof taskId === 'number' || typeof taskId === 'string') && task?.status) {
+      statusMap.set(taskId, task.status);
+    }
+  });
+
+  return statusMap;
+};
+
+const getTodoListResult = (result: any) => {
+  const tasks = Array.isArray(result?.tasks)
+    ? result.tasks
+        .filter((task: any) => task && task.task)
+        .map((task: any) => ({
+          id: task.id ?? nanoid(),
+          title: task.title,
+          task: task.task,
+          blockedBy: Array.isArray(task.blockedBy) ? task.blockedBy : [],
+          status: task.status ?? 'pending',
+        }))
+    : [];
+
+  return {
+    sessionId: result?.session_id,
+    status: result?.status,
+    tasks,
+    runnableTaskIds: getTodoTaskIds(result?.runnable_tasks),
+    completedTaskIds: getTodoTaskIds(result?.completed_tasks),
+    blockedTaskIds: getTodoTaskIds(result?.blocked_tasks),
+    blockedTaskStatusMap: getTodoTaskStatusMap(result?.blocked_tasks),
+  };
+};
+
+const getInitialTodoTasks = (tasks: any[] = []) =>
+  tasks.map(task => ({
+    ...task,
+    status: 'pending',
+  }));
+
+const getLatestTodoListProgressItem = (progressItems: DipChatItemContentProgressType[]) => {
+  const matchedIndex = _.findLastIndex(progressItems, item => item.type === 'todo_list_tool');
+  if (matchedIndex === -1) {
+    return null;
+  }
+  return {
+    matchedIndex,
+    item: progressItems[matchedIndex] as DipChatItemContentProgressType,
+  };
+};
+
+const mergeTodoTasks = (
+  currentTasks: any[] = [],
+  nextTasks: any[] = [],
+  updateSource: 'todo_list_tool' | 'task_manager_tool',
+  runnableTaskIds: Array<number | string> = [],
+  blockedTaskStatusMap: Map<number | string, string> = new Map()
+) => {
+  if (!nextTasks.length) {
+    return currentTasks;
+  }
+
+  const maxLength = Math.max(currentTasks.length, nextTasks.length);
+  const runnableTaskIdSet = new Set(runnableTaskIds);
+
+  return Array.from({ length: maxLength }, (_, index) => {
+    const currentTask = currentTasks[index];
+    const nextTask = nextTasks[index];
+
+    if (!nextTask) {
+      return currentTask;
+    }
+
+    const mergedTask = {
+      ...currentTask,
+      ...nextTask,
+    };
+
+    if (nextTask.status && nextTask.status !== 'pending') {
+      mergedTask.status = nextTask.status;
+    } else if (updateSource === 'task_manager_tool') {
+      if (runnableTaskIdSet.has(mergedTask.id)) {
+        mergedTask.status = 'running';
+      } else if (blockedTaskStatusMap.get(mergedTask.id) === 'failed') {
+        mergedTask.status = 'failed';
+      } else {
+        mergedTask.status = 'pending';
+      }
+    } else {
+      mergedTask.status = currentTask?.status ?? nextTask.status ?? 'pending';
+    }
+
+    return mergedTask;
+  }).filter(Boolean);
+};
+
+const updateTodoProgressItem = (
+  progressItems: DipChatItemContentProgressType[],
+  todoListResult: ReturnType<typeof getTodoListResult>,
+  commonSkillRes: Record<string, any>,
+  updateSource: 'todo_list_tool' | 'task_manager_tool'
+) => {
+  const matchedTodoListProgress = getLatestTodoListProgressItem(progressItems);
+
+  if (!matchedTodoListProgress) {
+    return false;
+  }
+
+  const { matchedIndex } = matchedTodoListProgress;
+  const currentItem: any = matchedTodoListProgress.item;
+  const currentTasks = currentItem.todoListResult?.tasks || [];
+  const mergedTasks = mergeTodoTasks(
+    currentTasks,
+    todoListResult.tasks || [],
+    updateSource,
+    todoListResult.runnableTaskIds || [],
+    todoListResult.blockedTaskStatusMap || new Map()
+  );
+  const nextItem = {
+    ...currentItem,
+    ...commonSkillRes,
+    title: currentItem.title || intl.get('dipChat.taskPlanning'),
+    todoListResult: {
+      ...currentItem.todoListResult,
+      ...todoListResult,
+      hasTaskManagerUpdate: currentItem.todoListResult?.hasTaskManagerUpdate || updateSource === 'task_manager_tool',
+      taskManagerCompleted:
+        currentItem.todoListResult?.taskManagerCompleted ||
+        (updateSource === 'task_manager_tool' && todoListResult.status === 'completed'),
+      tasks: mergedTasks,
+    },
+  } as DipChatItemContentProgressType;
+
+  const shouldMoveToCurrentPosition =
+    updateSource === 'todo_list_tool' && !currentTasks.length && mergedTasks.length > 0;
+
+  if (shouldMoveToCurrentPosition) {
+    progressItems.splice(matchedIndex, 1);
+    progressItems.push(nextItem);
+  } else {
+    progressItems[matchedIndex] = nextItem;
+  }
+
+  return true;
+};
+
 /** 后端数据获取前端渲染需要的聊天项的content */
 export const getChatItemContent = (message: any): DipChatItemContentType => {
   const { content } = message || {};
@@ -543,6 +708,46 @@ export const getChatItemContent = (message: any): DipChatItemContentType => {
             originalAnswer: answer,
             skillInfo,
           };
+
+          if (name === 'task_manager_tool') {
+            const taskManagerResult = !_.isEmpty(result) ? result : !_.isEmpty(full_result) ? full_result : answer;
+            const todoListResult = getTodoListResult(taskManagerResult);
+            updateTodoProgressItem(
+              res,
+              todoListResult,
+              { ...commonSkillRes, originalAnswer: null },
+              'task_manager_tool'
+            );
+            continue;
+          }
+
+          if (name === 'todo_list_tool') {
+            const todoListResult = getTodoListResult(
+              !_.isEmpty(result) ? result : !_.isEmpty(full_result) ? full_result : answer
+            );
+            if (
+              !updateTodoProgressItem(
+                res,
+                todoListResult,
+                { ...commonSkillRes, originalAnswer: null },
+                'todo_list_tool'
+              )
+            ) {
+              res.push({
+                title: intl.get('dipChat.taskPlanning'),
+                type: 'todo_list_tool',
+                ...commonSkillRes,
+                originalAnswer: null,
+                todoListResult: {
+                  ...todoListResult,
+                  hasTaskManagerUpdate: false,
+                  taskManagerCompleted: false,
+                  tasks: getInitialTodoTasks(todoListResult.tasks || []),
+                },
+              });
+            }
+            continue;
+          }
 
           if (name === 'text2metric') {
             let title = defaultTitle;

@@ -285,10 +285,22 @@ const DipChatStore: React.FC<PropsWithChildren<DipChatProps>> = props => {
         const chatItem = newChatListRef.current[activeChatItemIndex];
         const content: DipChatItemContentType = chatItem.content || { progress: [], cites: {}, related_queries: [] };
         const progress = _.get(content, 'progress') || [];
-        if (progress.some(progressItem => progressItem.type !== 'llm')) {
-          const lastNonLlmIndex = progress.findLastIndex(progressItem => progressItem.type !== 'llm');
+        const rightSideVisibleProgressTypes = new Set([
+          'common_tool',
+          'metric_tool',
+          'sql_tool',
+          'chart_tool',
+          'code_tool',
+          'ngql_tool',
+          'docQa_tool',
+          'net_search_tool',
+        ]);
+        const lastVisibleProgressIndex = progress.findLastIndex(progressItem =>
+          rightSideVisibleProgressTypes.has(progressItem.type)
+        );
+        if (lastVisibleProgressIndex !== -1) {
           toolAutoExpandUpdateObj.activeChatItemIndex = activeChatItemIndex;
-          toolAutoExpandUpdateObj.activeProgressIndex = lastNonLlmIndex;
+          toolAutoExpandUpdateObj.activeProgressIndex = lastVisibleProgressIndex;
         }
       }
     }

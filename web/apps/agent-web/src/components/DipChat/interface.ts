@@ -1,10 +1,8 @@
-// 定义状态类型
-// 定义状态类型
 import type { GetStateAction } from '@/hooks/useLatestState';
-import type { AiInputValue } from './components/AiInput/interface';
 import type { FormInstance, TableColumnsType } from 'antd';
 import type { EChartsOption } from 'echarts';
 import type { GetConversationListOption } from '@/apis/super-assistant';
+import type { AiInputValue } from './components/AiInput/interface';
 
 type ToolArgsType = {
   key: string;
@@ -12,10 +10,29 @@ type ToolArgsType = {
   type: 'string';
 };
 
+export type TodoListTaskType = {
+  id: number | string;
+  title?: string;
+  task: string;
+  blockedBy: Array<number | string>;
+  status: string;
+};
+
+export type TodoListResultType = {
+  sessionId?: string;
+  status?: string;
+  tasks?: TodoListTaskType[];
+  runnableTaskIds?: Array<number | string>;
+  completedTaskIds?: Array<number | string>;
+  blockedTaskIds?: Array<number | string>;
+  blockedTaskStatusMap?: Map<number | string, string>;
+  hasTaskManagerUpdate?: boolean;
+  taskManagerCompleted?: boolean;
+};
+
 export type InterruptDataType = {
   handle: any;
   data: {
-    // session_id: string;
     tool_name: string;
     tool_description: string;
     tool_args: ToolArgsType[];
@@ -38,6 +55,8 @@ export type DipChatItemContentProgressType = {
     | 'llm'
     | 'docQa_tool'
     | 'common_tool'
+    | 'task_manager_tool'
+    | 'todo_list_tool'
     | 'sql_tool'
     | 'chart_tool'
     | 'code_tool'
@@ -107,6 +126,7 @@ export type DipChatItemContentProgressType = {
     tableData: any[];
     input: any;
   };
+  todoListResult?: TodoListResultType;
   skillInfo?: any; // 用到的技能信息
   originalAnswer?: string;
 };

@@ -1,0 +1,158 @@
+.container {
+  margin-bottom: 16px;
+}
+
+.collapse {
+  overflow: hidden;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.94));
+  box-shadow:
+    0 2px 10px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+
+  :global {
+    .@{ant-prefix}-collapse-item {
+      border-bottom: none !important;
+    }
+
+    .@{ant-prefix}-collapse-header {
+      align-items: flex-start !important;
+      padding: 0 !important;
+    }
+
+    .@{ant-prefix}-collapse-header-text {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .@{ant-prefix}-collapse-expand-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 16px;
+      margin-top: 9px;
+      padding-inline-end: 0 !important;
+      color: rgba(0, 0, 0, 0.65);
+    }
+
+    .@{ant-prefix}-collapse-content {
+      background: transparent;
+      border-top: none !important;
+    }
+
+    .@{ant-prefix}-collapse-content-box {
+      padding: 0 !important;
+    }
+  }
+}
+
+.collapseArrow {
+  font-size: 14px !important;
+  color: rgba(0, 0, 0, 0.85) !important;
+}
+
+.todoHeader {
+  width: 100%;
+}
+
+.todoHeaderMain {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 10px;
+  padding: 9px 14px;
+}
+
+.todoHeaderIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  color: rgba(0, 0, 0, 0.72);
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 4px;
+}
+
+.todoHeaderTitle {
+  min-width: 0;
+  color: rgba(0, 0, 0, 0.85);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.todoContent {
+  padding: 0 18px 16px 18px;
+}
+
+.todoTaskList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.todoTaskItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.todoTaskMarker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  margin-top: 5px;
+  border-radius: 8px;
+  flex: 0 0 14px;
+  line-height: 1;
+}
+
+.todoTaskMarkerCompleted {
+  border: 1px solid #52c41a;
+  background: #52c41a;
+  color: #fff;
+}
+
+.todoTaskMarkerActive {
+  color: #1677ff;
+}
+
+.todoTaskMarkerPending {
+  border: 1px solid rgba(15, 23, 42, 0.28);
+  background: #fff;
+}
+
+.todoTaskMarkerFailed {
+  border: 1px solid #ff4d4f;
+  background: #ff4d4f;
+  color: #fff;
+}
+
+.todoTaskText {
+  color: rgba(0, 0, 0, 0.65);
+  font-size: 14px;
+  line-height: 24px;
+  word-break: break-word;
+}
+
+.todoTaskTitle {
+  color: inherit;
+  font-weight: 500;
+}
+
+.todoTaskDescription {
+  color: inherit;
+}
+
+.todoTaskTextCompleted {
+  color: rgba(0, 0, 0, 0.45);
+  text-decoration: line-through;
+}
+
+.todoTaskTextActive {
+  color: rgba(0, 0, 0, 0.85);
+}
