@@ -29,30 +29,54 @@ export const getCitesData = (other_variables: any) => {
   }
 };
 
-const chartConfig2Echarts = (chartResult: any) => {
+export const chartConfig2Echarts = (chartResult: any) => {
   const { chart_config, data } = chartResult || {};
   let options: EChartsOption = {};
   const chartType = _.get(chart_config, 'chart_type', '');
+  const normalizedData = Array.isArray(data) ? data : [];
   // 折现图
   if (chartType === 'Line') {
     const {
-      chart_config: { xField, yField, seriesField },
+      chart_config: { xField: rawXField, yField: rawYField, seriesField, colorField, angleField },
     } = chartResult;
-    const seriesValues = Array.from(new Set(data.map((item: any) => item[seriesField])));
-    const xValues: string[] = Array.from(new Set(data.map((item: any) => item[xField])));
-    const series: any = seriesValues.map(seriesValue => {
-      return {
-        name: seriesValue,
-        type: 'line',
-        data: xValues.map(xValue => {
-          const item = data.find((d: any) => d[xField] === xValue && d[seriesField] === seriesValue);
-          return item ? item[yField] : null; // 如果没有数据则返回 null
-        }),
-      };
-    });
+    const xField = rawXField || colorField;
+    const yField = rawYField || angleField;
+    if (!xField || !yField) {
+      return options;
+    }
+    const xValues: string[] = Array.from(
+      new Set(normalizedData.map((item: any) => item[xField]).filter(value => value !== undefined && value !== null))
+    );
+    const series: any = seriesField
+      ? Array.from(
+          new Set(
+            normalizedData.map((item: any) => item[seriesField]).filter(value => value !== undefined && value !== null)
+          )
+        ).map(seriesValue => {
+          return {
+            name: seriesValue,
+            type: 'line',
+            data: xValues.map(xValue => {
+              const item = normalizedData.find((d: any) => d[xField] === xValue && d[seriesField] === seriesValue);
+              return item ? item[yField] : null; // 如果没有数据则返回 null
+            }),
+          };
+        })
+      : [
+          {
+            name: yField,
+            type: 'line',
+            data: xValues.map(xValue => {
+              const item = normalizedData.find((d: any) => d[xField] === xValue);
+              return item ? item[yField] : null;
+            }),
+          },
+        ];
 
     options = {
-      legend: {},
+      legend: {
+        show: series.length > 1,
+      },
       grid: {
         containLabel: true,
         top: '10%',
@@ -91,10 +115,12 @@ const chartConfig2Echarts = (chartResult: any) => {
   // 饼图
   if (chartType === 'Pie') {
     const {
-      chart_config: { colorField, angleField },
+      chart_config: { colorField: rawColorField, angleField: rawAngleField, xField, yField },
     } = chartResult;
+    const colorField = rawColorField || xField;
+    const angleField = rawAngleField || yField;
     const pieData: any = [];
-    data.forEach((item: any) => {
+    normalizedData.forEach((item: any) => {
       pieData.push({
         name: item[colorField],
         value: Number(item[angleField]),
@@ -134,10 +160,12 @@ const chartConfig2Echarts = (chartResult: any) => {
   // 圆环
   if (chartType === 'Circle') {
     const {
-      chart_config: { colorField, angleField },
+      chart_config: { colorField: rawColorField, angleField: rawAngleField, xField, yField },
     } = chartResult;
+    const colorField = rawColorField || xField;
+    const angleField = rawAngleField || yField;
     const pieData: any = [];
-    data.forEach((item: any) => {
+    normalizedData.forEach((item: any) => {
       pieData.push({
         name: item[colorField],
         value: Number(item[angleField]),
@@ -161,7 +189,7 @@ const chartConfig2Echarts = (chartResult: any) => {
           name: angleField,
           data: pieData,
           type: 'pie',
-          radius: '55%',
+          radius: ['40%', '55%'],
           center: ['40%', '50%'],
           emphasis: {
             itemStyle: {
@@ -177,22 +205,46 @@ const chartConfig2Echarts = (chartResult: any) => {
   // 柱状图
   if (chartType === 'Column') {
     const {
-      chart_config: { xField, yField, seriesField },
+      chart_config: { xField: rawXField, yField: rawYField, seriesField, colorField, angleField },
     } = chartResult;
-    const seriesValues = Array.from(new Set(data.map((item: any) => item[seriesField])));
-    const xValues: string[] = Array.from(new Set(data.map((item: any) => item[xField])));
-    const series: any = seriesValues.map(seriesValue => {
-      return {
-        name: seriesValue,
-        type: 'bar',
-        data: xValues.map(xValue => {
-          const item = data.find((d: any) => d[xField] === xValue && d[seriesField] === seriesValue);
-          return item ? item[yField] : null; // 如果没有数据则返回 null
-        }),
-      };
-    });
+    const xField = rawXField || colorField;
+    const yField = rawYField || angleField;
+    if (!xField || !yField) {
+      return options;
+    }
+    const xValues: string[] = Array.from(
+      new Set(normalizedData.map((item: any) => item[xField]).filter(value => value !== undefined && value !== null))
+    );
+    const series: any = seriesField
+      ? Array.from(
+          new Set(
+            normalizedData.map((item: any) => item[seriesField]).filter(value => value !== undefined && value !== null)
+          )
+        ).map(seriesValue => {
+          return {
+            name: seriesValue,
+            type: 'bar',
+            data: xValues.map(xValue => {
+              const item = normalizedData.find((d: any) => d[xField] === xValue && d[seriesField] === seriesValue);
+              return item ? item[yField] : null; // 如果没有数据则返回 null
+            }),
+          };
+        })
+      : [
+          {
+            name: yField,
+            type: 'bar',
+            data: xValues.map(xValue => {
+              const item = normalizedData.find((d: any) => d[xField] === xValue);
+              return item ? item[yField] : null;
+            }),
+          },
+        ];
 
     options = {
+      legend: {
+        show: series.length > 1,
+      },
       grid: {
         containLabel: true,
         top: '15%',
@@ -233,6 +285,20 @@ const chartConfig2Echarts = (chartResult: any) => {
   return options;
 };
 
+export const buildChartToolEchartsOptions = (chartResult: any, chartType?: string) => {
+  if (_.isEmpty(chartResult)) {
+    return {};
+  }
+
+  if (!chartType) {
+    return chartConfig2Echarts(chartResult);
+  }
+
+  const nextChartResult = _.cloneDeep(chartResult);
+  _.set(nextChartResult, ['chart_config', 'chart_type'], chartType);
+  return chartConfig2Echarts(nextChartResult);
+};
+
 const getTableColumnByTableData = (tableData: any) => {
   if (tableData.length === 0) {
     return [];
@@ -256,6 +322,40 @@ const getTableColumnByTableData = (tableData: any) => {
     render: (_text: any, _record: any, index: number) => index + 1,
   });
   return columns;
+};
+
+const getChartTableColumnsByTableData = (tableData: any[] = [], chartConfig: Record<string, any> = {}) => {
+  const baseColumns = getTableColumnByTableData(tableData);
+  if (!baseColumns.length) {
+    return baseColumns;
+  }
+
+  const preferredFieldOrder = _.uniq(
+    [
+      chartConfig.xField || chartConfig.colorField,
+      chartConfig.seriesField,
+      chartConfig.yField || chartConfig.angleField,
+    ]
+      .filter(Boolean)
+      .map(field => String(field))
+  );
+
+  if (!preferredFieldOrder.length) {
+    return baseColumns;
+  }
+
+  const indexColumn = baseColumns.find(column => column.dataIndex === 'index');
+  const dataColumns = baseColumns.filter(column => column.dataIndex !== 'index');
+  const fieldToColumnMap = new Map(dataColumns.map(column => [String(column.dataIndex), column]));
+
+  const orderedColumns = preferredFieldOrder
+    .map(field => fieldToColumnMap.get(field))
+    .filter(Boolean) as TableColumnsType;
+
+  const orderedFieldSet = new Set(preferredFieldOrder);
+  const remainingColumns = dataColumns.filter(column => !orderedFieldSet.has(String(column.dataIndex)));
+
+  return [indexColumn, ...orderedColumns, ...remainingColumns].filter(Boolean) as TableColumnsType;
 };
 
 const ngqlData2TableData = (data: any) => {
@@ -492,8 +592,13 @@ export const getChatItemContent = (message: any): DipChatItemContentType => {
               type: 'chart_tool',
               chartResult: {
                 echartsOptions,
-                tableColumns: getTableColumnByTableData(tableData),
+                tableColumns: getChartTableColumnsByTableData(tableData, _.get(finalResult, ['chart_config'], {})),
                 tableData,
+                rawChartResult: {
+                  chart_config: _.get(finalResult, ['chart_config'], {}),
+                  data: tableData,
+                  title: titleRes || title,
+                },
               },
               ...commonSkillRes,
             });
