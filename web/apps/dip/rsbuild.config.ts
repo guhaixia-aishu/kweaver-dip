@@ -83,6 +83,8 @@ export default defineConfig({
       '/api/policy-management': proxyBase,
       '/api/license': proxyBase,
       '/api/thirdparty-message-plugin': proxyBase,
+      '/api/auth-service': proxyBase,
+      '/api/af-sailor-agent': proxyBase,
       '/api/dataset-manager': proxyBase,
       '/api/benchmark-manager': proxyBase,
       // 开发环境：将 API 请求代理到远程服务器
