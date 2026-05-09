@@ -60,6 +60,11 @@ export type DipChatItemContentProgressType = {
     echartsOptions: EChartsOption;
     tableColumns: TableColumnsType;
     tableData: any[];
+    rawChartResult?: {
+      chart_config?: Record<string, any>;
+      data?: any[];
+      title?: string;
+    };
   };
   // 代码工具（沙箱工具）
   codeResult?: {
@@ -109,6 +114,9 @@ export type DipChatItemContentProgressType = {
 export type DipChatItemContentType = {
   cites: any[]; // 此次回答引用的数据
   progress: DipChatItemContentProgressType[];
+  finalAnswer?: {
+    text: string;
+  };
   related_queries: string[]; // 此次回答的相关问题
   totalTokens: number; // 总消耗Token
   totalTime: string; // 总耗时
