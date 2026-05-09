@@ -1,4 +1,4 @@
-{
+﻿{
   "dipChat": {
     "return": "返回",
     "expandSidebar": "展开侧边栏",
@@ -62,6 +62,7 @@
     "selectConversationToPreview": "选择要预览的会话",
     "historyConversations": "历史会话",
     "save": "保存",
-    "rename": "重命名"
+    "rename": "重命名",
+    "runningProcess":  "运行过程"
   }
 } 

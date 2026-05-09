@@ -334,6 +334,27 @@ const llmTextCiteTransform = (text: string) => {
   return text.replace(/\[(\d+)\]/g, (_match, p1) => `<i index="${p1}" >${p1}</i>`);
 };
 
+const getFormattedLLMText = (text: string) => {
+  if (!text) {
+    return '';
+  }
+  return llmTextCiteTransform(filterLLMAnswerExceptionText(text, true));
+};
+
+const getFinalAnswerDisplayText = (finalAnswer: any) => {
+  const answerText = _.get(finalAnswer, ['answer', 'text']);
+  if (typeof answerText === 'string' && answerText.trim()) {
+    return answerText;
+  }
+
+  const answerTypeOther = _.get(finalAnswer, 'answer_type_other');
+  if (typeof answerTypeOther === 'string') {
+    return answerTypeOther;
+  }
+
+  return `\`\`\`json\n${JSON.stringify(answerTypeOther ?? null, null, 2)}\n\`\`\``;
+};
+
 /** 后端数据获取前端渲染需要的聊天项的content */
 export const getChatItemContent = (message: any): DipChatItemContentType => {
   const { content } = message || {};
@@ -670,9 +691,15 @@ export const getChatItemContent = (message: any): DipChatItemContentType => {
       }
     }
   }
+  const finalAnswerText = getFinalAnswerDisplayText(_.get(content, 'final_answer'));
   return {
     progress: res,
     cites,
+        finalAnswer: finalAnswerText
+          ? {
+              text: getFormattedLLMText(finalAnswerText),
+            }
+          : undefined,
     related_queries: _.get(ext, 'related_queries', []),
     totalTime: ext.total_time,
     totalTokens: ext.total_tokens,

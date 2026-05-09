@@ -1,4 +1,4 @@
-{
+﻿{
   "dipChat": {
     "return": "Return",
     "expandSidebar": "Expand Sidebar",
@@ -62,6 +62,7 @@
     "selectConversationToPreview": "Select a conversation to preview",
     "historyConversations": "History Conversations",
     "save": "Save",
-    "rename": "Rename"
+    "rename": "Rename",
+    "runningProcess":  "Running Process"
   }
 } 
