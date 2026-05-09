@@ -8,7 +8,7 @@ import ChartToolPanel from './ChartToolPanel';
 import CodeToolPanel from './CodeToolPanel';
 import NGQLToolPanel from './NGQLToolPanel';
 import Markdown from '@/components/Markdown';
-import { Collapse, Skeleton } from 'antd';
+import { Collapse, Skeleton, Spin } from 'antd';
 import ShinyText from '@/components/animation/ShinyText';
 import type { ChatBody, DipChatItemContentProgressType, DipChatItemContentType } from '@/components/DipChat/interface';
 import DipIcon from '@/components/DipIcon';
@@ -23,7 +23,7 @@ import { nanoid } from 'nanoid';
 import intl from 'react-intl-universal';
 import LLMPanel from './LLMPanel';
 import dayjs from 'dayjs';
-import { DownOutlined, UpOutlined } from '@ant-design/icons';
+import { DownOutlined, LoadingOutlined, UpOutlined } from '@ant-design/icons';
 
 const CommonPanel = ({ chatItemIndex, readOnly }: any) => {
   const {
@@ -306,7 +306,13 @@ const CommonPanel = ({ chatItemIndex, readOnly }: any) => {
                     </span>
                   </span>
                   <span className={styles.processHeaderMeta}>
-                    {!!content.totalTime && <span className={styles.processHeaderTime}>耗时：{content.totalTime}s</span>}
+                    {generating && !cancel && <Spin size="small" indicator={<LoadingOutlined spin />} />}
+                    {!generating && !cancel && !!content.totalTime && (
+                      <span className={styles.processHeaderTime}>
+                        {intl.get('dipChat.consumeTime')}
+                        {content.totalTime}s
+                      </span>
+                    )}
                     <span className={styles.processHeaderView}>{intl.get('dipChat.view')}</span>
                   </span>
                 </div>
