@@ -328,6 +328,7 @@ const SmartDataQuery: React.FC = () => {
 
             try {
                 sessionStorage.setItem(questionKey, value)
+                // eslint-disable-next-line no-empty
             } catch (error) {}
 
             const url = `/business-network/agent-square/usage?id=${
