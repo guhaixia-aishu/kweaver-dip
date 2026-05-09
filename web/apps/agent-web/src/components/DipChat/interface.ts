@@ -60,6 +60,11 @@ export type DipChatItemContentProgressType = {
     echartsOptions: EChartsOption;
     tableColumns: TableColumnsType;
     tableData: any[];
+    rawChartResult?: {
+      chart_config?: Record<string, any>;
+      data?: any[];
+      title?: string;
+    };
   };
   // 代码工具（沙箱工具）
   codeResult?: {
