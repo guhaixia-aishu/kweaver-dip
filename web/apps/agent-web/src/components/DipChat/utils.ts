@@ -449,11 +449,19 @@ const getFinalAnswerDisplayText = (finalAnswer: any) => {
   }
 
   const answerTypeOther = _.get(finalAnswer, 'answer_type_other');
-  if (typeof answerTypeOther === 'string') {
+  if (typeof answerTypeOther === 'string' && answerTypeOther.trim()) {
     return answerTypeOther;
   }
 
-  return `\`\`\`json\n${JSON.stringify(answerTypeOther ?? null, null, 2)}\n\`\`\``;
+  if (
+    _.isNil(answerTypeOther) ||
+    (Array.isArray(answerTypeOther) && answerTypeOther.length === 0) ||
+    (_.isPlainObject(answerTypeOther) && _.isEmpty(answerTypeOther))
+  ) {
+    return '';
+  }
+
+  return `\`\`\`json\n${JSON.stringify(answerTypeOther, null, 2)}\n\`\`\``;
 };
 
 const normalizeTodoTaskCollection = (tasks: any) => {

@@ -35,21 +35,27 @@ const CommonPanel = ({ chatItemIndex, readOnly }: any) => {
   const chatItem = chatList[chatItemIndex];
   const { generating, interrupt, cancel } = chatItem;
   const content: DipChatItemContentType = chatItem.content || { progress: [], cites: {}, related_queries: [] };
+  const hasInterrupt = !_.isEmpty(interrupt) && !!interrupt.data && chatItemIndex === chatList.length - 1 && !cancel;
   const hasProgress = content.progress?.length > 0;
+  const hasProcessPanel = hasProgress || hasInterrupt;
   const [processExpanded, setProcessExpanded] = useState(Boolean(generating && hasProgress));
   const processManualRef = useRef(false);
   const skeletonLoading = !content?.progress?.length && streamGenerating && chatItemIndex === chatList.length - 1;
 
   useEffect(() => {
-    if (!hasProgress) {
+    if (!hasProcessPanel) {
       processManualRef.current = false;
       setProcessExpanded(false);
+      return;
+    }
+    if (hasInterrupt) {
+      setProcessExpanded(true);
       return;
     }
     if (!processManualRef.current) {
       setProcessExpanded(Boolean(generating));
     }
-  }, [generating, hasProgress]);
+  }, [generating, hasInterrupt, hasProcessPanel]);
 
   const renderFooter = () => {
     if (!generating && !readOnly) {
@@ -150,7 +156,7 @@ const CommonPanel = ({ chatItemIndex, readOnly }: any) => {
   };
 
   const renderInterrupt = () => {
-    if (!_.isEmpty(interrupt) && interrupt.data && chatItemIndex === chatList.length - 1 && !cancel) {
+    if (hasInterrupt) {
       return (
         <div className="dip-mt-16">
           <InterruptFormPanel chatItemIndex={chatItemIndex} />
@@ -288,7 +294,7 @@ const CommonPanel = ({ chatItemIndex, readOnly }: any) => {
   };
 
   const renderProcessPanel = () => {
-    if (!hasProgress) {
+    if (!hasProcessPanel) {
       return null;
     }
     return (
@@ -329,7 +335,12 @@ const CommonPanel = ({ chatItemIndex, readOnly }: any) => {
                   </span>
                 </div>
               ),
-              children: <div className={styles.processContent}>{content.progress.map(renderProgressItem)}</div>,
+              children: (
+                <div className={styles.processContent}>
+                  {content.progress.map(renderProgressItem)}
+                  {renderInterrupt()}
+                </div>
+              ),
             },
           ]}
         />
@@ -421,7 +432,6 @@ const CommonPanel = ({ chatItemIndex, readOnly }: any) => {
           {renderCites()}
           {renderProcessPanel()}
           {renderFinalAnswer()}
-          {renderInterrupt()}
           {renderStopGenerate()}
           {renderFooter()}
           {renderRelatedQueries()}
