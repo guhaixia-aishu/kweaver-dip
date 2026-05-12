@@ -72,7 +72,7 @@ const SkillDropdown: React.FC<{ params: any; fetchInfo: () => void }> = ({ param
   const showOfflineConfirm = () => {
     confirmModal({
       title: intl.get('skill.unpublishAction'),
-      content: intl.get('confirmUnpublishAction'),
+      content: intl.get('skill.confirmUnpublishAction'),
       onOk() {
         handleStatus(OperatorStatusType.Offline, intl.get('action.unpublishSuccess'));
       },
