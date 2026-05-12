@@ -729,6 +729,25 @@ export const getChatItemContent = (message: any): DipChatItemContentType => {
             continue;
           }
 
+          if (name === 'todo_list_tool' && typeof answer === 'string' && answer.trim()) {
+            let title = defaultTitle;
+            const inputArgs = toolArgs.find((arg: any) => arg?.name === 'query' || arg?.name === 'input');
+            if (inputArgs && typeof inputArgs.value !== 'object' && inputArgs.value?.toString().trim()) {
+              title = inputArgs.value;
+            }
+            res.push({
+              title,
+              type: 'common_tool',
+              commonToolResult: {
+                input: JSON.stringify(toolArgs, null, 2),
+                output: answer,
+              },
+              ...commonSkillRes,
+              originalAnswer: null,
+            });
+            continue;
+          }
+
           if (name === 'todo_list_tool') {
             const todoListResult = getTodoListResult(
               !_.isEmpty(result) ? result : !_.isEmpty(full_result) ? full_result : answer
