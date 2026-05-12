@@ -113,7 +113,7 @@ export default function EditSkillModal({ skillInfo, onCancel, onOk }: EditSkillM
           name="description"
           rules={[{ required: true, message: intl.get('skill.descriptionRequired') }]}
         >
-          <TextArea rows={4} maxLength={255} showCount placeholder={intl.get('skill.descriptionPlaceholder')} />
+          <TextArea rows={4} placeholder={intl.get('skill.descriptionPlaceholder')} />
         </Form.Item>
 
         <Form.Item

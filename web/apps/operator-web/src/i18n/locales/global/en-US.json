@@ -35,6 +35,18 @@
     "previewUnsupported": "This file type is not supported for online preview",
     "imageLoading": "Loading image",
     "fileUrlMissing": "File URL does not exist",
-    "fileLoadFailed": "Failed to load file content"
+    "fileLoadFailed": "Failed to load file content",
+    "deleteAction": "Delete Skill",
+    "confirmDeleteAction": "Are you sure you want to delete this Skill?",
+    "unpublishAction": "Unpublish Skill",
+    "confirmUnpublishAction": "After unpublishing, agents or workflows referencing this Skill will become invalid. This operation cannot be undone."
+  },
+  "action": {
+    "publish": "Publish",
+    "unpublish": "Unpublish",
+    "delete": "Delete",
+    "publishSuccess": "Published successfully",
+    "deleteSuccess": "Deleted successfully",
+    "unpublishSuccess": "Unpublished successfully"
   }
 }

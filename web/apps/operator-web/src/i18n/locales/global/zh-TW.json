@@ -35,6 +35,18 @@
     "previewUnsupported": "目前檔案暫不支援線上預覽",
     "imageLoading": "圖片載入中",
     "fileUrlMissing": "檔案地址不存在",
-    "fileLoadFailed": "檔案內容載入失敗"
+    "fileLoadFailed": "檔案內容載入失敗",
+    "deleteAction": "刪除Skill",
+    "confirmDeleteAction": "請確認是否刪除此Skill？",
+    "unpublishAction": "下架Skill",
+    "confirmUnpublishAction": "下架後，引用了該Skill的智能體或工作流會失效，此操作不可撤回。"
+  },
+  "action": {
+    "publish": "發布",
+    "unpublish": "下架",
+    "delete": "刪除",
+    "publishSuccess": "發布成功",
+    "deleteSuccess": "刪除成功",
+    "unpublishSuccess": "下架成功"
   }
 }

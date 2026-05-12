@@ -49,7 +49,7 @@ const SkillDropdown: React.FC<{ params: any; fetchInfo: () => void }> = ({ param
   const handleDelete = async () => {
     try {
       await delSkill(record?.skill_id);
-      message.success('删除成功');
+      message.success(intl.get('action.deleteSuccess'));
       fetchInfo?.();
     } catch (error: any) {
       if (error?.description) {
@@ -60,8 +60,8 @@ const SkillDropdown: React.FC<{ params: any; fetchInfo: () => void }> = ({ param
 
   const showDeleteConfirm = () => {
     confirmModal({
-      title: '删除Skill',
-      content: '请确认是否删除此Skill？',
+      title: intl.get('skill.deleteAction'),
+      content: intl.get('skill.confirmDeleteAction'),
       onOk() {
         handleDelete();
       },
@@ -71,10 +71,10 @@ const SkillDropdown: React.FC<{ params: any; fetchInfo: () => void }> = ({ param
 
   const showOfflineConfirm = () => {
     confirmModal({
-      title: '下架Skill',
-      content: '下架后，引用了该Skill的智能体或工作流会失效，此操作不可撤回。',
+      title: intl.get('skill.unpublishAction'),
+      content: intl.get('confirmUnpublishAction'),
       onOk() {
-        handleStatus(OperatorStatusType.Offline, '下架成功');
+        handleStatus(OperatorStatusType.Offline, intl.get('action.unpublishSuccess'));
       },
       onCancel() {},
     });
@@ -110,13 +110,13 @@ const SkillDropdown: React.FC<{ params: any; fetchInfo: () => void }> = ({ param
         overlay={
           <Menu>
             {permissionCheckInfo?.includes(PermConfigTypeEnum.View) && (
-              <Menu.Item onClick={() => handlePreview(OperateTypeEnum.Edit)}>{intl.get('adminManagement.view')}</Menu.Item>
+              <Menu.Item onClick={() => handlePreview(OperateTypeEnum.Edit)}>
+                {intl.get('adminManagement.view')}
+              </Menu.Item>
             )}
 
             {permissionCheckInfo?.includes(PermConfigTypeEnum.Modify) && (
-              <Menu.Item onClick={() => setUpdatePackageOpen(true)}>
-                {intl.get('skill.updatePackageAction')}
-              </Menu.Item>
+              <Menu.Item onClick={() => setUpdatePackageOpen(true)}>{intl.get('skill.updatePackageAction')}</Menu.Item>
             )}
 
             {permissionCheckInfo?.includes(PermConfigTypeEnum.Modify) && (
@@ -131,12 +131,16 @@ const SkillDropdown: React.FC<{ params: any; fetchInfo: () => void }> = ({ param
 
             {record?.status !== OperatorStatusType.Published &&
               permissionCheckInfo?.includes(PermConfigTypeEnum.Publish) && (
-                <Menu.Item onClick={() => handleStatus(OperatorStatusType.Published, '发布成功')}>发布</Menu.Item>
+                <Menu.Item
+                  onClick={() => handleStatus(OperatorStatusType.Published, intl.get('action.publishSuccess'))}
+                >
+                  {intl.get('action.publish')}
+                </Menu.Item>
               )}
 
             {record?.status === OperatorStatusType.Published &&
               permissionCheckInfo?.includes(PermConfigTypeEnum.Unpublish) && (
-                <Menu.Item onClick={showOfflineConfirm}>下架</Menu.Item>
+                <Menu.Item onClick={showOfflineConfirm}>{intl.get('action.unpublish')}</Menu.Item>
               )}
 
             {permissionCheckInfo?.includes(PermConfigTypeEnum.Authorize) && (
@@ -146,9 +150,10 @@ const SkillDropdown: React.FC<{ params: any; fetchInfo: () => void }> = ({ param
             )}
 
             {record?.status !== OperatorStatusType.Published &&
+              record?.status !== OperatorStatusType.Editing &&
               permissionCheckInfo?.includes(PermConfigTypeEnum.Delete) && (
                 <Menu.Item className="operator-menu-delete" onClick={showDeleteConfirm}>
-                  删除
+                  {intl.get('action.delete')}
                 </Menu.Item>
               )}
           </Menu>
