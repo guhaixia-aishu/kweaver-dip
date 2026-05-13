@@ -24,6 +24,7 @@ import intl from 'react-intl-universal';
 import LLMPanel from './LLMPanel';
 import dayjs from 'dayjs';
 import { DownOutlined, LoadingOutlined, UpOutlined } from '@ant-design/icons';
+import SwitchableChartPanel from './ChartToolPanel/SwitchableChartPanel';
 
 const CommonPanel = ({ chatItemIndex, readOnly }: any) => {
   const {
@@ -337,17 +338,42 @@ const CommonPanel = ({ chatItemIndex, readOnly }: any) => {
   };
 
   const renderFinalAnswer = () => {
-    if (generating || !content.finalAnswer?.text) {
+    if (generating || (!content.finalAnswer?.text && !content.finalAnswer?.chartResult)) {
       return null;
     }
     return (
-      <LLMPanel
-        isLLMProcess={false}
-        status="completed"
-        text={content.finalAnswer.text}
-        cites={onlineSearchCites}
-        consumeTime={content.totalTime}
-      />
+      <>
+        {content.finalAnswer?.text && (
+          <LLMPanel
+            isLLMProcess={false}
+            status="completed"
+            text={content.finalAnswer.text}
+            cites={onlineSearchCites}
+            consumeTime={content.totalTime}
+          />
+        )}
+        {content.finalAnswer?.chartResult && (
+          <div className="dip-mb-16">
+            <SwitchableChartPanel
+              chartResult={content.finalAnswer.chartResult}
+              previewTitle={content.finalAnswer.chartResult.rawChartResult?.title || intl.get('dipChat.finalAnswerChart')}
+              showChartTitle
+              transformTableColumns={columns =>
+                columns.map((column, index) => {
+                  if (index === 1) {
+                    return {
+                      ...column,
+                      width: 500,
+                    };
+                  }
+
+                  return column;
+                })
+              }
+            />
+          </div>
+        )}
+      </>
     );
   };
 

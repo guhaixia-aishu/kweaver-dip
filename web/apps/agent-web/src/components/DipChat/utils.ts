@@ -2,6 +2,7 @@ import _ from 'lodash';
 import { nanoid } from 'nanoid';
 import type {
   ConversationItemType,
+  DipChatChartResultType,
   DipChatItemContentProgressType,
   DipChatItemContentType,
 } from '@/components/DipChat/interface';
@@ -344,18 +345,165 @@ const getChartTableColumnsByTableData = (tableData: any[] = [], chartConfig: Rec
     return baseColumns;
   }
 
-  const indexColumn = baseColumns.find(column => column.dataIndex === 'index');
-  const dataColumns = baseColumns.filter(column => column.dataIndex !== 'index');
-  const fieldToColumnMap = new Map(dataColumns.map(column => [String(column.dataIndex), column]));
+  const indexColumn = baseColumns.find((column: any) => column?.dataIndex === 'index');
+  const dataColumns = baseColumns.filter((column: any) => column?.dataIndex !== 'index');
+  const fieldToColumnMap = new Map(dataColumns.map((column: any) => [String(column.dataIndex), column]));
 
   const orderedColumns = preferredFieldOrder
     .map(field => fieldToColumnMap.get(field))
     .filter(Boolean) as TableColumnsType;
 
   const orderedFieldSet = new Set(preferredFieldOrder);
-  const remainingColumns = dataColumns.filter(column => !orderedFieldSet.has(String(column.dataIndex)));
+  const remainingColumns = dataColumns.filter((column: any) => !orderedFieldSet.has(String(column.dataIndex)));
 
   return [indexColumn, ...orderedColumns, ...remainingColumns].filter(Boolean) as TableColumnsType;
+};
+
+const buildChartResult = (
+  chartConfig: Record<string, any> = {},
+  tableData: any[] = [],
+  title?: string
+): DipChatChartResultType | undefined => {
+  if (_.isEmpty(chartConfig) || !Array.isArray(tableData) || tableData.length === 0) {
+    return undefined;
+  }
+
+  const rawChartResult = {
+    chart_config: chartConfig,
+    data: tableData,
+    title,
+  };
+  const echartsOptions = chartConfig2Echarts(rawChartResult);
+  if (_.isEmpty(echartsOptions)) {
+    return undefined;
+  }
+
+  return {
+    echartsOptions,
+    tableColumns: getChartTableColumnsByTableData(tableData, chartConfig),
+    tableData,
+    rawChartResult,
+  };
+};
+
+const getCodeBlockContents = (text: string) => {
+  const matches = [...text.matchAll(/```(?:json)?\s*([\s\S]*?)```/gi)];
+  return matches.map(match => match[1]?.trim()).filter(Boolean) as string[];
+};
+
+const removeResultCacheComments = (text: string) => text.replace(/<!--\s*result_cache_key:[\s\S]*?-->/g, '').trim();
+
+const normalizeFinalAnswerPayload = (payload: any) => {
+  if (!_.isPlainObject(payload)) {
+    return undefined;
+  }
+
+  const rawTitle = _.get(payload, 'chart_title');
+
+  const chartConfig = _.get(payload, 'chart_config');
+  const chartData = _.get(payload, 'chart_data');
+  const fallbackData = _.get(payload, 'data');
+  const tableData = Array.isArray(chartData) ? chartData : Array.isArray(fallbackData) ? fallbackData : [];
+
+  return {
+    text: typeof payload.text === 'string' ? payload.text : '',
+    title: typeof rawTitle === 'string' ? rawTitle : '',
+    chartConfig,
+    tableData,
+  };
+};
+
+const parseFinalAnswerPayloadFromText = (text?: string) => {
+  if (!text || typeof text !== 'string') {
+    return undefined;
+  }
+
+  const normalizedText = removeResultCacheComments(text.trim());
+  if (!normalizedText) {
+    return undefined;
+  }
+
+  if (isJSONString(normalizedText)) {
+    const normalizedPayload = normalizeFinalAnswerPayload(JSON.parse(normalizedText));
+    if (normalizedPayload) {
+      return normalizedPayload;
+    }
+  }
+
+  const codeBlockPayload = getCodeBlockContents(normalizedText)
+    .map(block => {
+      const normalizedBlock = removeResultCacheComments(block);
+      if (!isJSONString(normalizedBlock)) {
+        return undefined;
+      }
+      return normalizeFinalAnswerPayload(JSON.parse(normalizedBlock));
+    })
+    .find(Boolean);
+  if (codeBlockPayload) {
+    return codeBlockPayload;
+  }
+
+  const chartConfigIndex = normalizedText.indexOf('"chart_config"');
+  if (chartConfigIndex > -1) {
+    const startIndex = normalizedText.lastIndexOf('{', chartConfigIndex);
+    const endIndex = normalizedText.lastIndexOf('}');
+    if (startIndex > -1 && endIndex > startIndex) {
+      const candidate = normalizedText.slice(startIndex, endIndex + 1);
+      if (isJSONString(candidate)) {
+        return normalizeFinalAnswerPayload(JSON.parse(candidate));
+      }
+    }
+  }
+
+  return undefined;
+};
+
+const parseFinalAnswerChartPayloadFromPayload = (payload: any) => {
+  if (!payload || _.isEmpty(payload.chartConfig) || !Array.isArray(payload.tableData) || payload.tableData.length === 0) {
+    return undefined;
+  }
+
+  return payload;
+};
+
+const parseFinalAnswerChartPayload = (finalAnswer: any) => {
+  const answerText = _.get(finalAnswer, ['answer', 'text']);
+  const answerTypeOther = _.get(finalAnswer, 'answer_type_other');
+
+  const parsedFromText = parseFinalAnswerPayloadFromText(answerText);
+  if (parsedFromText) {
+    return parseFinalAnswerChartPayloadFromPayload(parsedFromText);
+  }
+
+  if (_.isPlainObject(answerTypeOther)) {
+    return parseFinalAnswerChartPayloadFromPayload(normalizeFinalAnswerPayload(answerTypeOther));
+  }
+
+  if (typeof answerTypeOther === 'string') {
+    return parseFinalAnswerChartPayloadFromPayload(parseFinalAnswerPayloadFromText(answerTypeOther));
+  }
+
+  return undefined;
+};
+
+const parseFinalAnswerPayload = (finalAnswer: any) => {
+  const answerText = _.get(finalAnswer, ['answer', 'text']);
+  const answerTypeOther = _.get(finalAnswer, 'answer_type_other');
+
+  const parsedFromText = parseFinalAnswerPayloadFromText(answerText);
+  if (parsedFromText) {
+    return parsedFromText;
+  }
+
+  if (_.isPlainObject(answerTypeOther)) {
+    return normalizeFinalAnswerPayload(answerTypeOther);
+  }
+
+  if (typeof answerTypeOther === 'string') {
+    return parseFinalAnswerPayloadFromText(answerTypeOther);
+  }
+
+  return undefined;
 };
 
 const ngqlData2TableData = (data: any) => {
@@ -416,7 +564,10 @@ const filterLLMAnswerExceptionText = (markdownText: string, filterEmptyCode: boo
   if (markdownText) {
     // console.log('llm-处理之前的结果');
     // console.log(markdownText);
-    const result = removeInvalidCodeBlocks(markdownText, filterEmptyCode);
+    const result = removeInvalidCodeBlocks(
+      removeResultCacheComments(markdownText),
+      filterEmptyCode
+    );
     // console.log('llm-处理之后的结果');
     // console.log(result);
     return result;
@@ -442,6 +593,11 @@ const getFormattedLLMText = (text: string) => {
 };
 
 const getFinalAnswerDisplayText = (finalAnswer: any) => {
+  const parsedPayload = parseFinalAnswerPayload(finalAnswer);
+  if (parsedPayload?.text?.trim()) {
+    return parsedPayload.text;
+  }
+
   const answerText = _.get(finalAnswer, ['answer', 'text']);
   if (typeof answerText === 'string' && answerText.trim()) {
     return answerText;
@@ -615,20 +771,10 @@ export const getChatItemContent = (message: any): DipChatItemContentType => {
               title = titleRes;
             }
             const tableData = _.get(finalResult, ['data']) || [];
-            const echartsOptions = chartConfig2Echarts(finalResult);
             res.push({
               title,
               type: 'chart_tool',
-              chartResult: {
-                echartsOptions,
-                tableColumns: getChartTableColumnsByTableData(tableData, _.get(finalResult, ['chart_config'], {})),
-                tableData,
-                rawChartResult: {
-                  chart_config: _.get(finalResult, ['chart_config'], {}),
-                  data: tableData,
-                  title: titleRes || title,
-                },
-              },
+              chartResult: buildChartResult(_.get(finalResult, ['chart_config'], {}), tableData, titleRes || title),
               ...commonSkillRes,
             });
             continue;
@@ -805,12 +951,21 @@ export const getChatItemContent = (message: any): DipChatItemContentType => {
     }
   }
   const finalAnswerText = getFinalAnswerDisplayText(_.get(content, 'final_answer'));
+  const finalAnswerChartPayload = parseFinalAnswerChartPayload(_.get(content, 'final_answer'));
+  const finalAnswerChartResult = finalAnswerChartPayload
+      ? buildChartResult(
+        finalAnswerChartPayload.chartConfig,
+        finalAnswerChartPayload.tableData,
+        finalAnswerChartPayload.title
+      )
+    : undefined;
   return {
     progress: res,
     cites,
-    finalAnswer: finalAnswerText
+    finalAnswer: finalAnswerText || finalAnswerChartResult
       ? {
-          text: getFormattedLLMText(finalAnswerText),
+          text: finalAnswerText ? getFormattedLLMText(finalAnswerText) : undefined,
+          chartResult: finalAnswerChartResult,
         }
       : undefined,
     related_queries: _.get(ext, 'related_queries', []),

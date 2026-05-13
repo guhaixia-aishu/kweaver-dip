@@ -23,6 +23,22 @@
   z-index: 2;
 }
 
+.chartTitle {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 150px;
+  z-index: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22px;
+  color: rgba(0, 0, 0, 0.88);
+  cursor: default;
+}
+
 .outputHeader {
   display: flex;
   align-items: center;
@@ -43,6 +59,11 @@
 .chartBody {
   height: 100%;
   padding: 16px 8px;
+}
+
+.chartBodyWithTitle {
+  height: 100%;
+  padding: 48px 8px 16px;
 }
 
 .modalBody {
