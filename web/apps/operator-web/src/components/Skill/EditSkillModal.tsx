@@ -96,16 +96,12 @@ export default function EditSkillModal({ skillInfo, onCancel, onOk }: EditSkillM
                   return Promise.reject(new Error(intl.get('skill.nameRequired')));
                 }
 
-                if (!validateName(value, true)) {
-                  return Promise.reject(new Error(intl.get('skill.nameInvalid')));
-                }
-
                 return Promise.resolve();
               },
             },
           ]}
         >
-          <Input maxLength={50} showCount placeholder={intl.get('skill.namePlaceholder')} />
+          <Input maxLength={64} showCount placeholder={intl.get('skill.namePlaceholder')} />
         </Form.Item>
 
         <Form.Item
