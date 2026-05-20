@@ -22,19 +22,19 @@ releases:
     version: 0.3.0-1d43acc
   mf-model-manager-nginx:
     chart: mf-model-manager-nginx
-    version: 0.5.0-main.git-2a143e0.1796934
+    version: 0.7.0-main.git-97e24ed.1813807
   vega-web:
     chart: vega-web
     version: 0.5.1-main
   operator-web:
     chart: operator-web
-    version: 0.6.0-main.git-7fc6f24
+    version: 0.7.0-main.git-97e24ed
   mdl-manage-web:
     chart: mdl-manage-web
     version: 0.5.0-develop.git-c7b1b0
   agent-web:
     chart: agent-web
-    version: 0.6.0-main.git-36b7a29
+    version: 0.7.0-main.git-6035cad
   flow-web:
     chart: flow-web
     version: 0.5.1-main.git+671eead
@@ -52,10 +52,10 @@ releases:
     version: 0.5.0-main.git-84bea21
   anyfabric-frontend:
     chart: anyfabric-frontend
-    version: 0.6.0-main.20260430.3
+    version: 0.7.0-main.20260513.1
   dip-frontend:
     chart: dip-frontend
-    version: 0.7.0-6035cad.1816613
+    version: 0.7.0-main.f3c8034.1816653
     values:
       runtimeEnv:
         publicEnabledModules: "store,studio"  # 允许值：store,studio（多个用英文逗号分隔）
