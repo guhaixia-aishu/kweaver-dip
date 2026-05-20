@@ -55,7 +55,7 @@ releases:
     version: 0.6.0-main.20260430.3
   dip-frontend:
     chart: dip-frontend
-    version: 0.6.0-82198b9.1804257
+    version: 0.7.0-6035cad.1816613
     values:
       runtimeEnv:
         publicEnabledModules: "store,studio"  # 允许值：store,studio（多个用英文逗号分隔）
